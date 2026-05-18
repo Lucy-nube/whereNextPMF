@@ -1,93 +1,21 @@
 import { useEffect, useState } from "react";
+import { getTrips } from "../services/tripService";
 
-import {
-  getTrips,
-  createTripRequest,
-  deleteTripRequest,
-  updateTripRequest,
-} from "../services/tripService";
-
-export const useTrips = (token) => {
-
+export const useTrips = () => {
   const [trips, setTrips] = useState([]);
 
-  // =========================
-  // CARGAR VIAJES
-  // =========================
-
   useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await getTrips();
+        setTrips(data);
+      } catch (e) {
+        console.log("GET trips error:", e);
+      }
+    };
 
-    if (!token) return;
+    load();
+  }, []);
 
-    loadTrips();
-
-  }, [token]);
-
-  const loadTrips = async () => {
-
-    try {
-
-      const data = await getTrips(token);
-
-      setTrips(data);
-
-    } catch (error) {
-
-      console.log(error);
-
-    }
-  };
-
-  // =========================
-  // CREAR
-  // =========================
-
-  const createTrip = async (trip) => {
-
-    const newTrip = await createTripRequest(
-      trip,
-      token
-    );
-
-    setTrips((prev) => [...prev, newTrip]);
-  };
-
-  // =========================
-  // ELIMINAR
-  // =========================
-
-  const deleteTrip = async (id) => {
-
-    await deleteTripRequest(id, token);
-
-    setTrips((prev) =>
-      prev.filter((trip) => trip.id !== id)
-    );
-  };
-
-  // =========================
-  // ACTUALIZAR
-  // =========================
-
-  const updateTrip = async (updatedTrip) => {
-
-    const trip = await updateTripRequest(
-      updatedTrip.id,
-      updatedTrip,
-      token
-    );
-
-    setTrips((prev) =>
-      prev.map((t) =>
-        t.id === trip.id ? trip : t
-      )
-    );
-  };
-
-  return {
-    trips,
-    createTrip,
-    deleteTrip,
-    updateTrip,
-  };
+  return { trips };
 };

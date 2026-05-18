@@ -1,0 +1,191 @@
+/* =========================
+   AUTH BACKGROUND (CARRUSEL)
+   ========================= */
+
+.auth-background {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: black;
+}
+
+/* IMÁGENES DEL CARRUSEL */
+.auth-bg-image {
+  position: absolute;
+  inset: 0;
+
+  background-size: cover;
+  background-position: center;
+
+  opacity: 0;
+  transform: scale(1.1);
+
+  transition: opacity 1.2s ease-in-out, transform 6s ease-in-out;
+}
+
+/* IMAGEN ACTIVA */
+.auth-bg-image.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* OVERLAY OSCURO */
+.auth-overlay {
+  position: absolute;
+  inset: 0;
+
+  background: radial-gradient(
+    circle at center,
+    rgba(0,0,0,0.3),
+    rgba(0,0,0,0.88)
+  );
+
+  z-index: 1;
+}
+
+/* =========================
+   LOGIN CONTAINER (GLASS)
+   ========================= */
+
+.auth-container {
+  position: relative;
+  z-index: 2;
+
+  width: 380px;
+  max-width: 92%;
+
+  padding: 32px;
+
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(18px);
+
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+
+  color: white;
+
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+
+  animation: fadeIn 0.6s ease;
+}
+
+/* TITULO */
+.auth-container h1 {
+  margin-bottom: 16px;
+}
+
+/* SUBTITLE OPCIONAL */
+.subtitle {
+  margin-bottom: 18px;
+  color: rgba(255,255,255,0.7);
+  font-size: 14px;
+}
+
+/* =========================
+   INPUTS
+   ========================= */
+
+.auth-container input {
+  width: 100%;
+  padding: 14px;
+
+  margin-bottom: 14px;
+
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+
+  background: rgba(255,255,255,0.05);
+  color: white;
+
+  outline: none;
+
+  transition: 0.2s;
+}
+
+.auth-container input::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+.auth-container input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.2);
+}
+
+/* =========================
+   BUTTON
+   ========================= */
+
+.auth-container button {
+  width: 100%;
+  padding: 14px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  color: white;
+
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.auth-container button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(99,102,241,0.35);
+}
+
+/* =========================
+   ERROR
+   ========================= */
+
+.error {
+  margin-top: 10px;
+  color: #f87171;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* =========================
+   ANIMATION
+   ========================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media (max-width: 768px) {
+  .auth-container {
+    width: 90%;
+    padding: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .auth-container h1 {
+    font-size: 20px;
+  }
+}

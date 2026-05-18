@@ -1,84 +1,20 @@
-const API_URL = "http://127.0.0.1:8000/api/trips";
+import API from "./api";
 
-// =========================
-// GET TRIPS
-// =========================
+const tripService = {
+  getAll: async () => {
+    const response = await API.get("/trips/");
+    return response.data;
+  },
 
-export const getTrips = async (token) => {
+  getById: async (id) => {
+    const response = await API.get(`/trips/${id}/`);
+    return response.data;
+  },
 
-  const response = await fetch(API_URL + "/", {
-    headers: {
-      Authorization: `Token ${token}`,
-    },
-  });
-
-  return await response.json();
+  addPlaceToTrip: async (placeId) => {
+    const response = await API.post("/trips/add_place/", { place_id: placeId });
+    return response.data;
+  },
 };
 
-// =========================
-// CREATE TRIP
-// =========================
-
-export const createTripRequest = async (
-  trip,
-  token
-) => {
-
-  const response = await fetch(API_URL + "/", {
-    method: "POST",
-
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Token ${token}`,
-    },
-
-    body: JSON.stringify(trip),
-  });
-
-  return await response.json();
-};
-
-// =========================
-// DELETE TRIP
-// =========================
-
-export const deleteTripRequest = async (
-  id,
-  token
-) => {
-
-  await fetch(`${API_URL}/${id}/`, {
-    method: "DELETE",
-
-    headers: {
-      Authorization: `Token ${token}`,
-    },
-  });
-};
-
-// =========================
-// UPDATE TRIP
-// =========================
-
-export const updateTripRequest = async (
-  id,
-  trip,
-  token
-) => {
-
-  const response = await fetch(
-    `${API_URL}/${id}/`,
-    {
-      method: "PUT",
-
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Token ${token}`,
-      },
-
-      body: JSON.stringify(trip),
-    }
-  );
-
-  return await response.json();
-};
+export default tripService;
