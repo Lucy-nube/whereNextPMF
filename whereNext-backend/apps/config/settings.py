@@ -107,6 +107,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'apps.config.wsgi.application'
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 
 
