@@ -5,28 +5,56 @@ from .views import (
     TripViewSet,
     TripPlaceViewSet,
     TripPlacesListCreateView,
-    ReorderTripPlacesView
+    ReorderTripPlacesView,
+    TripDetailPublicView,
+    TripPhotoUploadView, 
+    TripSuggestionsView,
+    FeedTripsView,
+    TripLikeToggleView, 
+    TripCommentView
+
 )
 
 router = DefaultRouter()
-router.register(r"trips", TripViewSet, basename="trips")
+router.register(r"", TripViewSet, basename="trips")  
 router.register(r"trip-places", TripPlaceViewSet, basename="trip-places")
 
 urlpatterns = [
-    # Router endpoints (CRUD automático)
+
+    path("feed/", FeedTripsView.as_view(), name="trips-feed"),
+    # ⭐ CRUD AUTOMÁTICO (primero SIEMPRE)
     path("", include(router.urls)),
 
-    # List + create places dentro de un trip
+    # ⭐ DETALLE DEL VIAJE (después del router)
+    path("<int:trip_id>/", TripDetailPublicView.as_view()),
+
+    # ⭐ NESTED
     path(
-        "trips/<int:trip_id>/places/",
+        "<int:trip_id>/places/",
         TripPlacesListCreateView.as_view(),
         name="trip-places-nested"
     ),
 
-    # 🔥 Reordenar places dentro de un trip
     path(
-        "trips/<int:trip_id>/reorder-places/",
+        "<int:trip_id>/reorder-places/",
         ReorderTripPlacesView.as_view(),
         name="reorder-trip-places"
     ),
+
+    path(
+        "<int:trip_id>/photos/",
+        TripPhotoUploadView.as_view(),
+        name="trip-photo-upload"
+    ),
+
+    path(
+        "<int:trip_id>/suggestions/",
+        TripSuggestionsView.as_view(),
+        name="trip-suggestions"
+    ),
+
+    path("<int:trip_id>/like/", TripLikeToggleView.as_view(), name="trip-like"),
+    path("<int:trip_id>/comments/", TripCommentView.as_view(), name="trip-comments"),
 ]
+
+

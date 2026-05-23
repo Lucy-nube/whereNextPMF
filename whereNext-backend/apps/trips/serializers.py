@@ -1,10 +1,7 @@
 from rest_framework import serializers
 from django.core.validators import MinValueValidator
-
 from apps.places.models import Place
-from apps.trips.models import Trip
-from .models import TripPlace
-
+from .models import Trip, TripPlace, TripPhoto
 
 # ---------------------------------------------------------
 # 1) Serializer para cada item del reordenamiento
@@ -99,7 +96,7 @@ class ReorderTripPlacesSerializer(serializers.Serializer):
 
 
 # ---------------------------------------------------------
-# 3) Serializers existentes (TripPlace y Trip)
+# 3) Serializers existentes (TripPlace, Trip y Photo)
 # ---------------------------------------------------------
 class NestedPlaceSerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -122,7 +119,6 @@ class TripPlaceSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         place_data = validated_data.pop("place")
         place = Place.objects.get(id=place_data["id"])
-
         trip = validated_data["trip"]
 
         trip_place = TripPlace.objects.create(
@@ -143,8 +139,18 @@ class TripPlaceSerializer(serializers.ModelSerializer):
         return instance
 
 
+class TripPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TripPhoto
+        fields = ["id", "image", "caption", "created_at"]
+
+
 class TripSerializer(serializers.ModelSerializer):
-    trip_places = TripPlaceSerializer(many=True, read_only=False)
+    trip_places = TripPlaceSerializer(many=True, read_only=False, required=False)
+    photos = TripPhotoSerializer(many=True, read_only=True)
+    
+    # 🚀 Campo calculado para pintar el @username de tu amigo en React de forma directa
+    co_traveler_username = serializers.CharField(source="co_traveler.username", read_only=True)
 
     class Meta:
         model = Trip
@@ -152,21 +158,29 @@ class TripSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
+            "destination",
+            "mood",
             "start_date",
             "end_date",
             "is_public",
             "trip_places",
+            "photos",
+            # 🚀 CAMPOS EXCLUSIVOS VINCULADOS A TU MODELO
+            "trip_type",
+            "co_traveler",
+            "co_traveler_username"
         ]
         read_only_fields = ["id"]
 
     def create(self, validated_data):
         trip_places_data = validated_data.pop("trip_places", [])
+        
+        # 🚀 CORREGIDO: Django ahora extrae e inyecta el tipo de viaje y co-viajero al instanciar
         trip = Trip.objects.create(**validated_data)
 
         for tp_data in trip_places_data:
             place_data = tp_data.pop("place")
             place_id = place_data.get("id")
-
             place = Place.objects.get(id=place_id)
 
             TripPlace.objects.create(
@@ -185,9 +199,15 @@ class TripSerializer(serializers.ModelSerializer):
 
         instance.title = validated_data.get("title", instance.title)
         instance.description = validated_data.get("description", instance.description)
+        instance.destination = validated_data.get("destination", instance.destination)
+        instance.mood = validated_data.get("mood", instance.mood)
         instance.start_date = validated_data.get("start_date", instance.start_date)
         instance.end_date = validated_data.get("end_date", instance.end_date)
         instance.is_public = validated_data.get("is_public", instance.is_public)
+        
+        # 🚀 ACTUALIZACIÓN: Sincroniza las columnas relacionales al guardar cambios parciales
+        instance.trip_type = validated_data.get("trip_type", instance.trip_type)
+        instance.co_traveler = validated_data.get("co_traveler", instance.co_traveler)
 
         instance.save()
         return instance

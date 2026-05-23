@@ -1,35 +1,45 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
 from users.models import User
+
 
 class EmailOrUsernameTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
 
-        username = attrs.get("username")
+        username_or_email = attrs.get("username")
         password = attrs.get("password")
 
-        user = authenticate(username=username, password=password)
+        # 1. LOGIN POR USERNAME
+        user = authenticate(
+            username=username_or_email,
+            password=password
+        )
 
-        # intentar con email
+        # 2. LOGIN POR EMAIL
         if user is None:
             try:
-                user_obj = User.objects.get(email=username)
+                user_obj = User.objects.get(email=username_or_email)
 
                 user = authenticate(
                     username=user_obj.username,
                     password=password
                 )
 
-                # 🔥 IMPORTANTE
-                attrs["username"] = user_obj.username
-
             except User.DoesNotExist:
-                pass
+                user = None
 
+        # 3. ERROR FINAL
         if user is None:
-            raise Exception(
+            raise AuthenticationFailed(
                 "No active account found with the given credentials"
             )
 
-        return super().validate(attrs)
+        # 4. IMPORTANTE: usar usuario real
+        data = super().validate({
+            "username": user.username,
+            "password": password
+        })
+
+        return data
