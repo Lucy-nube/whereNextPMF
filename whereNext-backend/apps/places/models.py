@@ -1,5 +1,5 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 
 class Place(models.Model):
@@ -13,15 +13,10 @@ class Place(models.Model):
     ]
 
     name = models.CharField(max_length=200)
-
     description = models.TextField(blank=True)
-
     city = models.CharField(max_length=100, blank=True)
-
     country = models.CharField(max_length=100, blank=True)
-
     latitude = models.FloatField(null=True, blank=True)
-
     longitude = models.FloatField(null=True, blank=True)
 
     category = models.CharField(
@@ -32,49 +27,51 @@ class Place(models.Model):
 
     image_url = models.URLField(blank=True)
 
-    # 👤 usuario que sube el lugar
+    # 🔥 IMPORTANTE: permitir null temporalmente para migración
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="places"
+        related_name="places",
+        null=True,
+        blank=True,
     )
 
-    # ❤️ likes
     likes = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         related_name="liked_places",
         blank=True
     )
 
-    # 🌍 lugar oficial de la app
     is_official = models.BooleanField(default=False)
-
-    # ✔ lugar verificado
     verified = models.BooleanField(default=False)
-
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def total_likes(self):
-        return self.likes.count()
-
-    def total_comments(self):
-        return self.comments.count()
 
     def __str__(self):
         return self.name
+    
+    @property
+    def source_type(self):
+        if self.is_official or (self.owner and self.owner.is_staff):
+            return "OFFICIAL"
+        return "TRAVELER"
 
 
 class Comment(models.Model):
+    """
+    Comentarios simples asociados a un Place
+    (evita el error de total_comments si no tenías el modelo)
+    """
 
     place = models.ForeignKey(
         Place,
         on_delete=models.CASCADE,
-        related_name="comments"
+        related_name="comments",
     )
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="comments",
     )
 
     text = models.TextField()

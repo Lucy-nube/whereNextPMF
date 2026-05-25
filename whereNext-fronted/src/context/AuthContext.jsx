@@ -5,32 +5,24 @@ import * as authService from "../services/authService";
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem("access"));
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Cargar token desde localStorage al iniciar
-  useEffect(() => {
-    const access = localStorage.getItem("access");
-
-    if (access) {
-      setToken(access);
-    }
-
-    setLoading(false);
-  }, []);
-
-  // Cuando el token cambia → cargar usuario
   useEffect(() => {
     if (token) {
+      localStorage.setItem("access", token);
       fetchMe();
+    } else {
+      localStorage.removeItem("access");
     }
+    setLoading(false);
   }, [token]);
 
   const login = async (username, password) => {
     const data = await authService.login(username, password);
 
-    // Esto dispara el useEffect de arriba
+    localStorage.setItem("access", data.access);
     setToken(data.access);
 
     return data;
@@ -40,12 +32,15 @@ export function AuthProvider({ children }) {
     authService.logout();
     setToken(null);
     setUser(null);
+    localStorage.removeItem("access");
+    localStorage.removeItem("user");
   };
 
   const fetchMe = async () => {
     try {
       const res = await API.get("me/");
       setUser(res.data);
+      localStorage.setItem("user", JSON.stringify(res.data));
     } catch (err) {
       console.log("Error loading user:", err.response?.data);
       logout();

@@ -8,7 +8,7 @@ from .views import (
     FeedTripsView,
     PublicUserView,
     UserTripsView, 
-    UserSearchView,
+    UsersearchView,
     IsCompanionView,
     SendTripInviteView,
     ManageTripInvitesView
@@ -39,13 +39,13 @@ urlpatterns = [
     # =========================
     # SOCIAL FEATURES
     # =========================
-    path("search/", UserSearchView.as_view(), name="user-search"),
+    path("search/", UsersearchView.as_view(), name="user-search"),
     path("feed/", FeedTripsView.as_view()),
     path("is-companion/<int:user_id>/", IsCompanionView.as_view()),
 
     # Rutas dinámicas
-    path("users/<int:user_id>/", PublicUserView.as_view()),
-    path("users/<int:user_id>/trips/", UserTripsView.as_view()),
+    path("apps.users/<int:user_id>/", PublicUserView.as_view()),
+    path("apps.users/<int:user_id>/trips/", UserTripsView.as_view()),
 
     # =========================
     # INVITES

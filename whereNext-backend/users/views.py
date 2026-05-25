@@ -26,7 +26,7 @@ from .models import Companion, TripInvite
 from .serializers import CompanionSerializer
 
 from apps.trips.models import Trip
-from users.models import User   # Tu User real
+from apps.users.models import User   # Tu User real
 
 
 # =========================
@@ -221,7 +221,7 @@ class UserTripsView(APIView):
 # =========================
 # BUSCADOR GLOBAL
 # =========================
-class UserSearchView(APIView):
+class UsersearchView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 

@@ -1,12 +1,11 @@
 from rest_framework import serializers
 from .models import Place
-from users.serializers import UserSerializer
+from apps.users.serializers import Userserializer
+
 
 class PlaceSerializer(serializers.ModelSerializer):
-
-    owner = UserSerializer(source="created_by", read_only=True)
+    source_type = serializers.ReadOnlyField()
 
     class Meta:
         model = Place
         fields = "__all__"
-

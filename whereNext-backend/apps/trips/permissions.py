@@ -1,5 +1,8 @@
+
+
 from rest_framework.permissions import BasePermission
-from trips.models import Trip
+from apps.trips.models import Trip
+
 
 class IsTripOwner(BasePermission):
     """
@@ -12,6 +15,6 @@ class IsTripOwner(BasePermission):
         try:
             trip = Trip.objects.get(id=trip_id)
         except Trip.DoesNotExist:
-            return False  # DRF devolverá 404
+            return False
 
-        return trip.user == request.user
+        return trip.owner == request.user

@@ -1,107 +1,415 @@
-.explore-container {
-  padding: 2rem;
+/* =========================================================================
+   EXPLORE HUB — DISCOVER DESTINATIONS EXPERIENCE
+   ========================================================================= */
+
+.explore-page {
+  max-width: 1400px;
+  margin: 110px auto 80px;
+  padding: 0 24px;
+  box-sizing: border-box;
 }
 
-.explore-title {
-  font-size: 2rem;
-  margin-bottom: 1.5rem;
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.explore-header {
+  text-align: center;
+  margin-bottom: 40px;
 }
 
-.places-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1.5rem;
-}
-
-.place-card {
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  transition: transform .2s ease;
-}
-
-.place-card:hover {
-  transform: translateY(-4px);
-}
-
-.place-image {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-}
-
-.place-info {
-  padding: 1rem;
-}
-
-.badge {
-  display: inline-block;
-  background: #e3f2fd;
-  color: #1976d2;
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 0.8rem;
-  margin-top: 6px;
-}
-
-.details-btn {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 8px 12px;
-  background: #1976d2;
+.explore-header h1 {
+  font-size: 3rem;
+  font-weight: 900;
   color: white;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.9rem;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
 }
 
-/* =========================
-   PLACE DETAILS
-   ========================= */
-
-.place-details-container {
-  max-width: 900px;
-  margin: 2rem auto;
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-}
-
-.place-details-image {
-  width: 100%;
-  height: 380px;
-  object-fit: cover;
-}
-
-.place-details-info {
-  padding: 2rem;
-}
-
-.place-country {
-  color: var(--muted);
-  margin-bottom: 1rem;
-}
-
-.place-description {
-  margin: 1rem 0 1.5rem;
+.explore-header p {
+  color: rgba(255,255,255,0.62);
+  font-size: 1.05rem;
+  max-width: 650px;
+  margin: 0 auto;
   line-height: 1.6;
 }
 
-.add-btn {
-  margin-top: 1rem;
-  padding: 12px 18px;
-  background: var(--primary);
-  color: white;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
-  transition: 0.2s ease;
+/* =========================================================
+   FILTERS CONTAINER
+   ========================================================= */
+
+.filters-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 👈 centra todo */
+  gap: 16px;
+  margin-bottom: 40px;
 }
 
-.add-btn:hover {
+/* FILTER ROW */
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* 👈 centra los botones */
+  align-items: center;
+  gap: 12px;
+
+  width: 100%;
+}
+
+/* FILTER BUTTON */
+
+.filters button {
+  border: none;
+
+  background: rgba(255,255,255,0.05);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  color: rgba(255,255,255,0.72);
+
+  padding: 12px 18px;
+
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+
+  backdrop-filter: blur(10px);
+}
+
+.filters button:hover {
+  background: rgba(255,255,255,0.09);
+
+  border-color: rgba(255,255,255,0.18);
+
   transform: translateY(-2px);
-  opacity: 0.9;
+}
+
+/* ACTIVE FILTER */
+
+.filters button.active {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(56,189,248,0.18),
+      rgba(14,165,233,0.18)
+    );
+
+  border-color: #38bdf8;
+
+  color: #38bdf8;
+
+  box-shadow:
+    0 0 18px rgba(56,189,248,0.18);
+}
+/* =========================================================
+   GRID
+   ========================================================= */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+}
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.card {
+  position: relative;
+
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  border-radius: 28px;
+
+  overflow: hidden;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.25);
+}
+
+.card:hover {
+  transform: translateY(-6px);
+
+  border-color: rgba(56,189,248,0.28);
+
+  box-shadow:
+    0 24px 50px rgba(0,0,0,0.38);
+}
+
+/* GLOW */
+
+.card::before {
+  content: "";
+
+  position: absolute;
+
+  top: -80px;
+  right: -80px;
+
+  width: 200px;
+  height: 200px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(56,189,248,0.12),
+      transparent 70%
+    );
+
+  pointer-events: none;
+
+  z-index: 1;
+}
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.card-image {
+  position: relative;
+  width: 100%;
+  height: 230px;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  transition: transform 0.4s ease;
+}
+
+.card:hover .card-image img {
+  transform: scale(1.06);
+}
+
+/* IMAGE OVERLAY */
+
+.card-image::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      to top,
+      rgba(15,23,42,0.85),
+      rgba(15,23,42,0.1)
+    );
+}
+
+/* =========================================================
+   BADGES
+   ========================================================= */
+
+.official-badge-tag {
+  position: absolute;
+
+  top: 16px;
+  right: 16px;
+
+  z-index: 20;
+
+  padding: 8px 14px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  backdrop-filter: blur(10px);
+
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.variant-official {
+  background: rgba(56,189,248,0.18);
+  color: #38bdf8;
+}
+
+.variant-traveler {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.8);
+}
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
+
+.card-content {
+  padding: 22px;
+}
+
+.card-content h3 {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.card-content p {
+  color: rgba(255,255,255,0.62);
+
+  font-size: 14px;
+
+  line-height: 1.6;
+
+  margin-bottom: 18px;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+}
+
+/* =========================================================
+   OWNER
+   ========================================================= */
+
+.place-owner-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  margin-bottom: 18px;
+
+  width: fit-content;
+
+  cursor: pointer;
+
+  transition: opacity 0.2s ease;
+}
+
+.place-owner-mini:hover {
+  opacity: 0.8;
+}
+
+.place-owner-avatar {
+  width: 36px;
+  height: 36px;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+
+  border: 2px solid rgba(255,255,255,0.1);
+}
+
+.place-owner-mini span {
+  color: rgba(255,255,255,0.78);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* =========================================================
+   CATEGORY BADGE
+   ========================================================= */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+
+  background: rgba(255,255,255,0.06);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  color: #34d399;
+
+  padding: 8px 12px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.td-empty-gallery-msg {
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+  margin-top: 40px;
+  font-size: 15px;
+}
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.td-loading-state {
+  min-height: 70vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  color: rgba(255,255,255,0.65);
+
+  font-size: 15px;
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .explore-page {
+    margin-top: 95px;
+    padding: 0 16px;
+  }
+
+  .explore-header h1 {
+    font-size: 2.2rem;
+  }
+
+  .explore-header p {
+    font-size: 0.95rem;
+  }
+
+  .filters {
+    gap: 10px;
+  }
+
+  .filters button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card-image {
+    height: 220px;
+  }
+
 }

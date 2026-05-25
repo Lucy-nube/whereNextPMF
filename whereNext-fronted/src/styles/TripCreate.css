@@ -1,0 +1,245 @@
+/* =========================================================================
+   ESTILOS EXCLUSIVOS: FORMULARIO DE CREACIÓN DE VIAJES (TripCreate View)
+   ========================================================================= */
+
+.create-trip-container {
+  max-width: 650px;
+  margin: 80px auto 60px;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.create-trip-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.create-trip-header h1 {
+  font-size: 2.4rem;
+  color: #ffffff;
+  margin-bottom: 8px;
+  font-weight: 800;
+}
+
+.create-trip-header p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1.05rem;
+}
+
+/* Tarjeta del Formulario Pasaporte */
+.create-trip-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 36px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.create-trip-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 8px;
+  text-align: left;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Campos de entrada, dropdowns y selectores de fecha */
+.create-trip-card input,
+.create-trip-card textarea,
+.create-trip-card select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: white;
+  padding: 14px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+/* Icono de Calendario Forzado a Blanco */
+.create-trip-card input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.create-trip-card input:hover,
+.create-trip-card textarea:hover,
+.create-trip-card select:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.create-trip-card input:focus,
+.create-trip-card textarea:focus,
+.create-trip-card select:focus {
+  background: rgba(15, 23, 42, 0.9);
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+}
+
+.create-trip-card textarea {
+  min-height: 140px;
+  resize: none;
+  line-height: 1.5;
+}
+
+.create-trip-card input::placeholder,
+.create-trip-card textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Checkbox */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #38bdf8;
+}
+
+.checkbox-text {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+/* Botón Guardar */
+.submit-trip-btn {
+  width: 100%;
+  padding: 15px;
+  background: #38bdf8;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+  margin-top: 12px;
+}
+
+.submit-trip-btn:hover {
+  background: #0ea5e9;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+}
+
+/* Recomendación Inferior */
+.create-trip-suggestion {
+  margin-top: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 20px;
+  border-radius: 16px;
+  text-align: center;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+}
+
+.create-trip-suggestion p {
+  margin: 0 0 12px 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+/* Utilidad para ordenar los márgenes en los bloques del formulario */
+.checkbox-wrapper-block {
+  margin-top: 10px;
+}
+
+/* =========================================================
+   ⚡ COMPANION SELECTION WORKSPACE CHIPS (Friends Hub UI)
+   ========================================================= */
+.create-trip-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.create-trip-friend-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.create-trip-friend-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.create-trip-friend-chip.active {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38bdf8;
+  color: #38bdf8;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+}
+
+.create-trip-empty-msg {
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  font-size: 13.5px;
+  margin: 4px 0 0 0;
+}
+
+/* =========================================================
+   MEDIA QUERIES - RESPONSIVE CALIBRADO REMASTERIZADO
+   ========================================================= */
+@media (max-width: 768px) {
+  .create-trip-container {
+    padding: 0 16px;
+    margin-top: 90px;
+  }
+  .create-trip-header h1 {
+    font-size: 1.9rem;
+  }
+  .create-trip-header p {
+    font-size: 0.95rem;
+  }
+  .submit-trip-btn {
+    padding: 14px;
+  }
+  .create-trip-card {
+    padding: 24px 18px;
+  }
+  /* 🚀 FIXED: Kept spacing gap intact to prevent input labels layout deformation on mobile */
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

@@ -3,39 +3,41 @@ from django.db import models
 from django.conf import settings
 
 
-
 class User(AbstractUser):
     email = models.EmailField(unique=True)
-
     bio = models.TextField(blank=True, null=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
 
     def __str__(self):
         return self.username
-    
-# En tu users/models.py (Asegúrate de que tu modelo Profile tenga esta línea)
+
+
 class Profile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile")
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="profile"
+    )
+
     bio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
-    
-    # 🚀 NUEVO CAMPO DE PRIVACIDAD: Por defecto los perfiles son públicos
-    is_private = models.BooleanField(default=False) 
+
+    # privacidad
+    is_private = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Perfil de {self.user.username}"
 
-    
-class Companion(models.Model):
 
+class Companion(models.Model):
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="sent_companions"
     )
 
     companion = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="received_companions"
     )
@@ -55,10 +57,27 @@ class Companion(models.Model):
     class Meta:
         unique_together = ("user", "companion")
 
+    def __str__(self):
+        return f"{self.user} -> {self.companion}"
+
+
 class TripInvite(models.Model):
-    from_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_invites")
-    to_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_invites")
-    place = models.ForeignKey("places.Place", on_delete=models.CASCADE)
+    from_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_invites"
+    )
+
+    to_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="received_invites"
+    )
+
+    place = models.ForeignKey(
+        "places.Place",
+        on_delete=models.CASCADE
+    )
 
     status = models.CharField(
         max_length=20,
@@ -71,3 +90,39 @@ class TripInvite(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.from_user} invited {self.to_user}"
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notifications"
+    )
+
+    from_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="sent_notifications"
+    )
+
+    notification_type = models.CharField(max_length=20)
+
+    trip = models.ForeignKey(
+        "trips.Trip",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    text_preview = models.CharField(
+        max_length=100,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Notification for {self.user.username}"

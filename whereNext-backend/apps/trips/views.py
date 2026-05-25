@@ -12,7 +12,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
 from .models import Trip, TripPlace, TripPhoto ,TripComment
-from users.models import Companion
+from apps.users.models import Companion
 from apps.places.models import Place
 
 from .serializers import (

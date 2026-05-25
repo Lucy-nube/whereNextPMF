@@ -1,7 +1,7 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
-from users.models import User
+from apps.users.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import serializers
 from .models import Companion
@@ -69,12 +69,12 @@ class CompanionSerializer(serializers.ModelSerializer):
 
 User = get_user_model()
 
-class UserSerializer(serializers.ModelSerializer):
+class serializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["id", "username", "email","avatar"]
 
-class PublicUserSerializer(serializers.ModelSerializer):
+class Publicuserserializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
 
     class Meta:

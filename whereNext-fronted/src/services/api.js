@@ -4,6 +4,7 @@ const API = axios.create({
   baseURL: "http://127.0.0.1:8000/api/",
 });
 
+// Attach token
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("access");
 
@@ -13,5 +14,18 @@ API.interceptors.request.use((config) => {
 
   return config;
 });
+
+// Si el token es inválido → logout automático (MUY PRO)
+API.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem("access");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
+    return Promise.reject(err);
+  }
+);
 
 export default API;

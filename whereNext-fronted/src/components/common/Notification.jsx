@@ -1,12 +1,17 @@
-function Notification({ notification }) {
+import { useNotifications } from "./useNotifications";
 
-  if (!notification) return null;
+export default function Notifications({ userId }) {
+  const notifications = useNotifications(userId);
 
   return (
-    <div className="notification">
-      {notification}
+    <div>
+      <h3>Notificaciones 🔔</h3>
+
+      {notifications.map((n) => (
+        <div key={n.id}>
+          {n.text}
+        </div>
+      ))}
     </div>
   );
 }
-
-export default Notification;
