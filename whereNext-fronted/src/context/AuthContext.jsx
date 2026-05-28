@@ -1,51 +1,72 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import * as authService from "../services/authService";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
+  const navigate = useNavigate();
+
   const [token, setToken] = useState(localStorage.getItem("access"));
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem("access", token);
-      fetchMe();
-    } else {
-      localStorage.removeItem("access");
-    }
-    setLoading(false);
-  }, [token]);
-
+  // ============================================================
+  // LOGIN
+  // ============================================================
   const login = async (username, password) => {
     const data = await authService.login(username, password);
 
-    localStorage.setItem("access", data.access);
+    // Guardar tokens
     setToken(data.access);
+    localStorage.setItem("access", data.access);
+    localStorage.setItem("refresh", data.refresh);
 
     return data;
   };
 
+  // ============================================================
+  // LOGOUT
+  // ============================================================
   const logout = () => {
     authService.logout();
     setToken(null);
     setUser(null);
     localStorage.removeItem("access");
-    localStorage.removeItem("user");
+    localStorage.removeItem("refresh");
+    navigate("/login");
   };
 
-  const fetchMe = async () => {
-    try {
-      const res = await API.get("me/");
-      setUser(res.data);
-      localStorage.setItem("user", JSON.stringify(res.data));
-    } catch (err) {
-      console.log("Error loading user:", err.response?.data);
-      logout();
-    }
-  };
+  // ============================================================
+  // CARGAR USUARIO AUTENTICADO
+  // ============================================================
+  useEffect(() => {
+    const loadUser = async () => {
+      if (!token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Mantener token en localStorage
+        localStorage.setItem("access", token);
+
+        // RUTA CORRECTA (sin slash inicial)
+        const res = await API.get("users/me/");
+
+        setUser(res.data);
+      } catch (err) {
+        console.log("Token inválido, cerrando sesión");
+        logout();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUser();
+  }, [token]);
 
   return (
     <AuthContext.Provider

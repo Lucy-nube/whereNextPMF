@@ -1,280 +1,599 @@
-/* =========================
-   NAVBAR GLASS CLEAN
-   ========================= */
+/* =========================================================================
+   WHERENEXT — FLOATING NAVBAR + SIDEBAR EXPERIENCE
+   ========================================================================= */
 
-.navbar {
+/* =========================================================
+   TOP CAPSULE NAVBAR
+   ========================================================= */
+
+.navbar-capsule {
   position: fixed;
-  top: 16px;
+  top: 20px;
   left: 50%;
   transform: translateX(-50%);
 
-  width: 92%;
-  height: 64px;
+  width: calc(100% - 40px);
+  max-width: 1350px;
+
+  height: 74px;
+
+  padding: 0 22px;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  padding: 0 20px;
+  background: rgba(15, 23, 42, 0.72);
 
-  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+
+  border-radius: 24px;
+
   backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.35);
 
-  color: white;
-
-  z-index: 1000;
-}
-
-/* =========================
-   LEFT
-   ========================= */
-.navbar-left {
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* =========================
-   CENTER LINKS
-   ========================= */
-.navbar-center {
-  display: flex;
-  gap: 18px;
-}
-
-.navbar-center a {
-  color: rgba(255, 255, 255, 0.75);
-  text-decoration: none;
-  font-size: 14px;
-  transition: 0.2s;
-}
-
-.navbar-center a:hover {
-  color: #38bdf8;
-}
-
-/* =========================
-   RIGHT SECTION
-   ========================= */
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* =========================
-   BUTTONS
-   ========================= */
-.navbar-right button {
-  background: linear-gradient(135deg, #38bdf8, #6366f1);
-  border: none;
-  color: white;
-
-  padding: 8px 12px;
-  border-radius: 10px;
-
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.navbar-right button:hover {
-  transform: translateY(-2px);
-}
-
-/* =========================
-   NOTIFICATIONS
-   ========================= */
-.notif-wrapper {
-  position: relative;
-  cursor: pointer;
-}
-
-.notif-bell {
-  font-size: 20px;
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-/* badge bien centrado */
-.notif-badge {
-  position: absolute;
-  top: -6px;
-  right: -10px;
-
-  background: red;
-  color: white;
-
-  border-radius: 50%;
-  font-size: 11px;
-
-  padding: 2px 6px;
-}
-
-/* dropdown fijo y limpio */
-.notif-dropdown {
-  position: absolute;
-  right: 0;
-  top: 34px;
-
-  width: 260px;
-
-  background: white;
-  color: black;
-
-  border-radius: 10px;
-  border: 1px solid #ddd;
-
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-
-  z-index: 2000;
-  overflow: hidden;
-}
-
-.notif-item {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  font-size: 14px;
-}
-
-.notif-item:hover {
-  background: #f5f5f5;
+  z-index: 999;
 }
 
 /* =========================================================
-   FUSED INTERACTION CONTROLS & COMPACT BUTTON HIDDEN MAPPINGS
+   LOGO
    ========================================================= */
-.navbar-left {
+
+.capsule-logo {
+  font-size: 1.2rem;
+  font-weight: 900;
+
+  color: white;
+
   cursor: pointer;
+
+  letter-spacing: -0.5px;
+
+  transition: all 0.2s ease;
+}
+
+.capsule-logo:hover {
+  color: #38bdf8;
+  transform: translateY(-1px);
+}
+
+/* =========================================================
+   RIGHT SECTION
+   ========================================================= */
+
+.capsule-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* =========================================================
+   AVATAR
+   ========================================================= */
+
+.capsule-avatar {
+  width: 46px;
+  height: 46px;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+
+  cursor: pointer;
+
+  border: 2px solid rgba(255,255,255,0.12);
+
+  transition: all 0.25s ease;
+}
+
+.capsule-avatar:hover {
+  transform: scale(1.05);
+
+  border-color: #38bdf8;
+
+  box-shadow:
+    0 0 18px rgba(56,189,248,0.35);
+}
+
+/* =========================================================
+   NOTIFICATIONS
+   ========================================================= */
+
+.notif-wrapper {
+  position: relative;
+}
+
+.notif-bell {
+  position: relative;
+
+  width: 48px;
+  height: 48px;
+
+  border-radius: 16px;
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  background: rgba(255,255,255,0.05);
+
+  color: white;
+
+  font-size: 18px;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.notif-bell:hover {
+  background: rgba(56,189,248,0.12);
+
+  border-color: rgba(56,189,248,0.3);
+
+  transform: translateY(-1px);
+}
+
+.notif-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+
+  min-width: 20px;
+  height: 20px;
+
+  border-radius: 999px;
+
+  background: #ef4444;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  color: white;
+}
+
+/* =========================================================
+   NOTIFICATION DROPDOWN
+   ========================================================= */
+
+.notif-dropdown {
+  position: absolute;
+  top: 62px;
+  right: 0;
+
+  width: 320px;
+
+  background: rgba(15,23,42,0.95);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  border-radius: 22px;
+
+  padding: 18px;
+
+  backdrop-filter: blur(18px);
+
+  box-shadow:
+    0 20px 50px rgba(0,0,0,0.45);
+
+  z-index: 999;
+}
+
+.notif-dropdown h4 {
+  margin: 0 0 16px 0;
+
+  color: white;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.notif-item {
+  padding: 14px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(255,255,255,0.06);
+
+  margin-bottom: 10px;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.notif-item:hover {
+  background: rgba(56,189,248,0.08);
+
+  border-color: rgba(56,189,248,0.25);
+
+  transform: translateY(-1px);
+}
+
+.notif-item span {
+  color: rgba(255,255,255,0.85);
+
+  font-size: 13px;
+
+  line-height: 1.5;
+}
+
+.no-notifs {
+  color: rgba(255,255,255,0.45);
+
+  text-align: center;
+
+  font-size: 13px;
+}
+
+/* =========================================================
+   FLOATING MENU BUTTON
+   ========================================================= */
+
+.ambient-scroll-trigger {
+  position: fixed;
+
+  top: 110px;
+  left: 28px;
+
+  width: 58px;
+  height: 58px;
+
+  border-radius: 18px;
+
+  background: rgba(15,23,42,0.82);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  backdrop-filter: blur(18px);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+  cursor: pointer;
+
+  z-index: 1001;
+
+  transition: all 0.3s ease;
+}
+
+.ambient-scroll-trigger:hover {
+  transform: scale(1.04);
+
+  border-color: rgba(56,189,248,0.25);
+
+  box-shadow:
+    0 10px 30px rgba(56,189,248,0.15);
+}
+
+/* =========================================================
+   MENU LINES
+   ========================================================= */
+
+.trigger-line {
+  width: 24px;
+  height: 2px;
+
+  background: white;
+
+  border-radius: 999px;
+
+  transition: all 0.3s ease;
+}
+
+/* =========================================================
+   TRANSFORM INTO X
+   ========================================================= */
+
+.trigger--active-close .line-top {
+  transform:
+    translateY(8px)
+    rotate(45deg);
+}
+
+.trigger--active-close .line-mid {
+  opacity: 0;
+}
+
+.trigger--active-close .line-bottom {
+  transform:
+    translateY(-8px)
+    rotate(-45deg);
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+.navigation-sidebar {
+  position: fixed;
+
+  top: 0;
+  left: 0;
+
+  width: 340px;
+  height: 100vh;
+
+  padding: 120px 30px 30px;
+
+  background: rgba(15,23,42,0.92);
+
+  border-right: 1px solid rgba(255,255,255,0.08);
+
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+
+  display: flex;
+  flex-direction: column;
+
+  z-index: 1000;
+
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* =========================================================
+   OPEN/CLOSE STATES
+   ========================================================= */
+
+.sidebar--closed {
+  transform: translateX(-100%);
+}
+
+.sidebar--open {
+  transform: translateX(0);
+}
+
+/* =========================================================
+   USER AREA
+   ========================================================= */
+
+.sidebar-passport-pic {
+  width: 95px;
+  height: 95px;
+
+  border-radius: 50%;
+
+  object-fit: cover;
+
+  margin-bottom: 18px;
+
+  border: 3px solid rgba(56,189,248,0.35);
+
+  box-shadow:
+    0 0 25px rgba(56,189,248,0.2);
+}
+
+.navigation-sidebar h3 {
+  color: white;
+
+  font-size: 1.4rem;
+  font-weight: 800;
+
+  margin-bottom: 6px;
+}
+
+.navigation-sidebar span {
+  color: rgba(255,255,255,0.45);
+
+  font-size: 13px;
+
+  margin-bottom: 36px;
+}
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+.sidebar-links-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sidebar-links-stack a {
+  padding: 16px 18px;
+
+  border-radius: 16px;
+
+  text-decoration: none;
+
+  color: rgba(255,255,255,0.75);
+
+  font-size: 15px;
+  font-weight: 700;
+
+  background: rgba(255,255,255,0.03);
+
+  border: 1px solid rgba(255,255,255,0.05);
+
+  transition: all 0.25s ease;
+}
+
+.sidebar-links-stack a:hover {
+  background: rgba(56,189,248,0.12);
+
+  border-color: rgba(56,189,248,0.28);
+
+  color: #38bdf8;
+
+  transform: translateX(4px);
+}
+
+.sidebar-links-stack a.active {
+  background: rgba(56,189,248,0.14);
+
+  border-color: #38bdf8;
+
+  color: #38bdf8;
+
+  box-shadow:
+    0 0 18px rgba(56,189,248,0.14);
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.sidebar-footer {
+  margin-top: auto;
+}
+
+.sidebar-logout-btn {
+  width: 100%;
+
+  padding: 16px;
+
+  border: none;
+
+  border-radius: 16px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ef4444,
+      #dc2626
+    );
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.sidebar-logout-btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 16px 35px rgba(239,68,68,0.35);
+}
+
+.capsule-avatar {
+  position: relative;
+  z-index: 20; /* Avatar siempre arriba */
 }
 
 .notif-wrapper {
   position: relative;
-  display: inline-flex;
-  align-items: center;
+  z-index: 5; /* Notificaciones por debajo */
+}
+/* =========================================================================
+   💬 CONTADOR DE CHATS NO LEÍDOS — BURBUJA FLOTANTE NEÓN
+   ========================================================================= */
+
+.sidebar-link-with-badge-wrapper {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: justify !important;
+  gap: 8px !important;
 }
 
-.notif-bell {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  position: relative;
-  padding: 4px;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* El Red Badge de alta gama */
+.sidebar-chats-notif-counter-badge {
+  position: absolute !important;
+  right: 24px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: #ef4444 !important; /* Rojo vibrante de alerta de aduana */
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  padding: 2px 7px !important;
+  border-radius: 8px !important; /* Estilo píldora compacta */
+  min-width: 14px !important;
+  text-align: center !important;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4) !important;
+  animation: badgePulseAlpha 2s infinite ease-in-out !important;
 }
 
-.notif-item {
-  display: flex;
-  flex-direction: column;
-  padding: 10px 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+@keyframes badgePulseAlpha {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
 
-.notif-item:last-child {
-  border-bottom: none;
+
+
+/* =========================================================
+   BACKDROP
+   ========================================================= */
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0,0,0,0.45);
+
+  backdrop-filter: blur(4px);
+
+  z-index: 998;
+
+  animation: fadeBackdrop 0.25s ease;
 }
 
-.notif-clickable-body {
-  cursor: pointer;
-  width: 100%;
-  padding: 4px;
-  border-radius: 6px;
-  transition: background 0.2s ease;
+@keyframes fadeBackdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.notif-clickable-body:hover {
-  background: rgba(255, 255, 255, 0.03);
-}
+/* =========================================================
+   MOBILE
+   ========================================================= */
 
-.notif-companion-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 12px;
-}
-
-.notif-clickable-body em {
-  color: #38bdf8;
-  font-style: normal;
-  font-weight: 600;
-}
-
-.logout-desktop {
-  display: block;
-}
-
-.logout-mobile {
-  display: none;
-}
-
-.chat-link-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.chat-link {
-  position: relative;
-}
-
-.chat-badge {
-  position: absolute;
-  top: -6px;
-  right: -10px;
-
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-
-  border-radius: 999px;
-  background: #ff3b30;
-  color: white;
-
-  font-size: 11px;
-  font-weight: 700;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-
-  z-index: 20;
-}
-
-/* RESPONSIVE BREAKPOINT LOCK ADJUSTMENTS */
 @media (max-width: 768px) {
-  .logout-desktop {
-    display: none;
-  }
-  .logout-mobile {
-    display: block;
+
+  .navbar-capsule {
+    width: calc(100% - 24px);
+
+    padding: 0 16px;
+
+    height: 68px;
+
+    border-radius: 20px;
   }
 
-  .navbar {
-    height: auto;
-    flex-direction: column;
-    gap: 10px;
-    padding: 14px;
+  .capsule-logo {
+    font-size: 1rem;
   }
 
-  .navbar-center {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-  }
-
-  .navbar-right {
+  .navigation-sidebar {
     width: 100%;
-    justify-content: center;
   }
+
+  .ambient-scroll-trigger {
+    left: 16px;
+    top: 96px;
+  }
+
+  .sidebar-chats-notif-counter-badge {
+    right: 16px !important;
+  }
+
+
+  .notif-dropdown {
+    width: 290px;
+    right: -30px;
+  }
+
 }
+

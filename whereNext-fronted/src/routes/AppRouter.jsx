@@ -1,36 +1,58 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import Login from "../pages/login";
+import Register from "../pages/Register";
+
 import PrivateRoute from "./PrivateRoute";
 
 import Home from "../pages/Home";
 import AppLayout from "../components/layout/layout";
 
 import Trips from "../pages/trips";
+import TripCreate from "../pages/tripsCreate";
+import TripDetail from "../pages/TripDetails";
 import Explore from "../pages/Explore";
 import Profile from "../pages/Profile";
 import ChatsPage from "../pages/Chatspage";
+import PlaceDetails from "../pages/PlaceDetails";
+import EditProfile from "../pages/EditProfile";
+
+import CompanionsHub from "../pages/companionsHub"; // ✅ FIX: capitalizado
 
 export default function AppRouter() {
   return (
     <Routes>
 
-      {/* LOGIN */}
+      {/* 🌍 PUBLIC ROUTES */}
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-      {/* RUTAS PROTEGIDAS */}
+      {/* 🔐 PROTECTED ROUTES */}
       <Route element={<PrivateRoute />}>
-        <Route element={<AppLayout />}>
+        <Route element={<AppLayout />}> 
 
+          {/* HOME */}
           <Route path="/" element={<Home />} />
 
+          {/* TRIPS */}
           <Route path="/trips" element={<Trips />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/trips/create" element={<TripCreate />} />
+          <Route path="/trips/:id" element={<TripDetail />} />
 
-          {/* CHAT */}
-          <Route path="/chats" element={<Navigate to="/chats/1" replace />} />
-          <Route path="/chats/:id" element={<ChatsPage />} />
+          {/* EXPLORE */}
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/places/:id" element={<PlaceDetails />} />
+
+          {/* PROFILE */}
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/users/:id" element={<Profile />} />
+          <Route path="/profile/edit" element={<EditProfile />} />
+
+          {/* COMPANIONS HUB */}
+          <Route path="/companions-hub" element={<CompanionsHub />} />
+
+          {/* CHATS */}
+          <Route path="/chats/:id?" element={<ChatsPage />} />
 
         </Route>
       </Route>

@@ -152,6 +152,32 @@
   text-align: center;
   font-size: 14px;
 }
+/* =========================================================================
+   🔗 TEXTO DE REDIRECCIÓN AL REGISTRO INTEGRADO FLUIDO
+   ========================================================================= */
+
+.login-footer-redirect {
+  margin-top: 20px !important;
+  font-size: 13.5px !important;
+  text-align: center !important;
+  color: rgba(255, 255, 255, 0.6) !important;
+  letter-spacing: 0.1px !important;
+  font-weight: 500 !important;
+}
+
+.login-redirect-link {
+  color: #38bdf8 !important; /* Azul cian brillante WhereNext */
+  text-decoration: none !important;
+  font-weight: 700 !important;
+  margin-left: 4px !important;
+  transition: all 0.2s ease !important;
+}
+
+.login-redirect-link:hover {
+  color: #0ea5e9 !important;
+  text-decoration: underline !important;
+}
+
 
 /* =========================
    ANIMATION

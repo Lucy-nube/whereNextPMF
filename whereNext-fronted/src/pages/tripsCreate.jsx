@@ -1,84 +1,79 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import API from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import TripSuggestions from "../components/trips/TripSuggestions";
+import "../styles/TripCreate.css";
 
 export default function TripCreate() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditing = Boolean(id);
+  const { user } = useAuth();
 
-  // ESTADOS DEL FORMULARIO BASE
+  const [loading, setLoading] = useState(false);
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [destination, setDestination] = useState("");
-  const [mood, setMood] = useState("");
+
+
+  const [mood, setMood] = useState("CITY");
+
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [isPublic, setIsPublic] = useState(false);
-
-  // ESTADOS DE RELACIONES SINCRONIZADOS
   const [tripType, setTripType] = useState("solo");
-  const [friends, setFriends] = useState([]);
+
   const [selectedFriends, setSelectedFriends] = useState([]);
+  const [selectedImageUrl, setSelectedImageUrl] = useState("");
 
-  // 🚀 NUEVOS ESTADOS: Para las sugerencias en tiempo real basadas en el mood
-  const [suggestions, setSuggestions] = useState([]);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-
-  // 1. Carga inicial del Hub de amigos para el selector de acompañantes
+  // =========================================================
+  // CARGAR VIAJE EN MODO EDICIÓN
+  // =========================================================
   useEffect(() => {
-    const fetchFriends = async () => {
-      try {
-        const res = await API.get("/companions/hub/");
-        setFriends(res.data || []);
-      } catch (err) {
-        console.error("Error al cargar compañeros:", err);
-      }
-    };
-    fetchFriends();
-  }, []);
 
-  // 🚀 2. MOTOR DE SUGERENCIAS AL VUELO: Escucha los cambios de la variable 'mood'
-  useEffect(() => {
-    if (!mood) {
-      setSuggestions([]);
-      return;
-    }
+    if (!isEditing) return;
 
-    const fetchMoodSuggestions = async () => {
-      setLoadingSuggestions(true);
-      try {
-        // Golpeamos el endpoint de lugares filtrando por la categoría/mood seleccionada
-        const res = await API.get(`places/?category=${mood}`);
-        // Nos quedamos con un máximo de 3 sugerencias para no saturar el formulario
-        setSuggestions(res.data ? res.data.slice(0, 3) : []);
-      } catch (err) {
-        console.error("Error cargando sugerencias de destinos:", err);
-      } finally {
-        setLoadingSuggestions(false);
-      }
-    };
+    API.get(`/trips/${id}/`)
+      .then((res) => {
+        const t = res.data;
 
-    fetchMoodSuggestions();
-  }, [mood]);
+        setTitle(t.title || "");
+        setDescription(t.description || "");
+        setDestination(t.destination || "");
+        setMood(t.mood || "CITY");
+        setStartDate(t.start_date || "");
+        setEndDate(t.end_date || "");
+        setIsPublic(t.is_public || false);
+        setTripType(t.trip_type || "solo");
 
-  // 🚀 ACCIÓN INTERACTIVA: Si pulsan una sugerencia, rellena el campo Destino automáticamente
-  const handleSelectSuggestion = (placeName, placeCountry) => {
-    setDestination(`${placeName}, ${placeCountry}`);
+        if (t.photos?.length > 0) {
+          setSelectedImageUrl(t.photos[0].image);
+        }
+      })
+      .catch((err) => console.error("Error cargando viaje:", err));
+  }, [isEditing, id]);
+
+  // =========================================================
+  // SELECCIÓN DE SUGERENCIA
+  // =========================================================
+  const handleSelectSuggestion = (placeName, placeImage) => {
+    setDestination(placeName);
+    setSelectedImageUrl(placeImage);
   };
+  
 
-  const handleToggleFriend = (friendId) => {
-    if (tripType === "couple") {
-      setSelectedFriends([friendId]);
-    } else {
-      setSelectedFriends((prev) =>
-        prev.includes(friendId)
-          ? prev.filter((id) => id !== friendId)
-          : [...prev, friendId]
-      );
-    }
-  };
-
+  // =========================================================
+  // SUBMIT
+  // =========================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!title.trim()) return;
+
+    setLoading(true);
+
     try {
       const payload = {
         title,
@@ -89,181 +84,159 @@ export default function TripCreate() {
         end_date: endDate || null,
         is_public: isPublic,
         trip_type: tripType,
-        co_travelers: tripType !== "solo" ? selectedFriends : []
+        invited_companions: selectedFriends,
+
+        photos: selectedImageUrl
+          ? [
+              {
+                image: selectedImageUrl,
+                caption: `Recuerdo en ${destination}`,
+              },
+            ]
+          : [],
       };
 
-      const res = await API.post("/trips/", payload);
-      navigate(`/trips/${res.data.id}`);
+      if (isEditing) {
+        await API.put(`/trips/${id}/`, payload);
+      } else {
+        await API.post("/trips/", payload);
+      }
+
+      navigate("/trips");
+
     } catch (err) {
-      console.error("Error al crear itinerario:", err.response?.data || err);
+      console.error("Error al guardar viaje:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getMediaUrl = (path, fallback = "/default-avatar.png") => {
-    if (!path) return fallback;
-    return path.startsWith("http") ? path : `http://127.0.0.1:8000${path}`;
+  
+  // =========================================================
+  // MEDIA FORMATTER
+  // =========================================================
+  const getMediaUrl = (path) => {
+    if (!path) return "/default-place.jpg";
+
+    if (
+      path.startsWith("http://") ||
+      path.startsWith("https://")
+    ) {
+      return path;
+    }
+
+    return `http://127.0.0.1:8000${path}`;
   };
 
   return (
-    <div className="create-trip-container">
-      
-      <div className="create-trip-header">
-        <h1>✈️ Nueva Bitácora</h1>
-        <p>Registra tu próximo destino en tu pasaporte digital de WhereNext</p>
+    <div className="trip-details-view">
+
+      <div className="td-header">
+        <div className="header-info">
+          <h1>
+            {isEditing
+              ? "Editar Aventura"
+              : "Planificar Nueva Aventura"}
+          </h1>
+
+          <p className="td-description">
+            {isEditing
+              ? "Actualiza tu ruta, portada o detalles del viaje."
+              : "Inmortaliza tu próxima ruta o borrador en el pasaporte digital WhereNext."
+            }
+          </p>
+        </div>
       </div>
 
-      <form className="create-trip-card" onSubmit={handleSubmit}>
-        <div className="create-trip-content">
-          
-          <div className="form-group">
-            <label className="form-label">Título del viaje *</label>
-            <input 
-              placeholder="Ej: Aventura de Verano en Seúl" 
-              required 
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
+      <form onSubmit={handleSubmit} className="td-meta-card">
 
-          <div className="form-group">
-            <label className="form-label">Descripción</label>
-            <textarea 
-              placeholder="¿Qué buscas o qué planeas en este viaje?"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
+        {/* TÍTULO */}
+        <div className="td-meta-item">
+          <label>TÍTULO DE LA AVENTURA</label>
 
-          <div className="form-group">
-            <label className="form-label">Destino</label>
-            <input 
-              placeholder="¿A dónde quieres ir? (O elige una sugerencia abajo)" 
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-            />
-          </div>
-
-          {/* COLUMNAS COMPACTAS DE SELECCIÓN */}
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Mood del viaje</label>
-              <select 
-                required
-                value={mood}
-                onChange={(e) => setMood(e.target.value)}
-              >
-                <option value="">Selecciona un mood...</option>
-                <option value="CITY">🏙️ Ciudad</option>
-                <option value="NATURE">🌿 Naturaleza</option>
-                <option value="BEACH">🏖️ Playa</option>
-                <option value="MUSEUM">🏛️ Museo</option>
-                <option value="FOOD">🍜 Gastronomía</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Tipo de viaje</label>
-              <select 
-                value={tripType} 
-                onChange={(e) => {
-                  setTripType(e.target.value);
-                  setSelectedFriends([]); 
-                }}
-              >
-                <option value="solo">🌙 Viaje sola</option>
-                <option value="couple">💞 Viaje para dos</option>
-                <option value="group">👥 Viaje en grupo</option>
-              </select>
-            </div>
-          </div>
-
-          {/* 🚀 NUEVA SECCIÓN DE SUGERENCIAS AL VUELO COINCIDENTES */}
-          {mood && (
-            <div className="form-group suggestions-box-wrapper">
-              <label className="form-label">✨ Destinos sugeridos para mood {mood}</label>
-              
-              {loadingSuggestions ? (
-                <p className="create-trip-empty-msg">Buscando rincones idóneos...</p>
-              ) : suggestions.length === 0 ? (
-                <p className="create-trip-empty-msg">No hay lugares registrados en Explore con este mood todavía.</p>
-              ) : (
-                <div className="create-trip-suggestions-grid">
-                  {suggestions.map((p) => (
-                    <div 
-                      key={p.id} 
-                      className="create-trip-suggestion-item"
-                      onClick={() => handleSelectSuggestion(p.name, p.country)}
-                    >
-                      <img src={getMediaUrl(p.image_url || p.image)} alt={p.name} className="suggestion-item-img" />
-                      <div className="suggestion-item-info">
-                        <strong>{p.name}</strong>
-                        <span>📍 {p.country}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* SECCIÓN INTERACTIVA SELECCIÓN AMIGOS */}
-          {tripType !== "solo" && (
-            <div className="form-group">
-              <label className="form-label">
-                {tripType === "couple" ? "Elegir compañero de aventura" : "Elegir compañeros de grupo"}
-              </label>
-              <div className="create-trip-chips-container">
-                {friends.length === 0 ? (
-                  <p className="create-trip-empty-msg">Necesitas compañeros aceptados en tu hub para seleccionarlos.</p>
-                ) : (
-                  friends.map((f) => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      className={selectedFriends.includes(f.id) ? "create-trip-friend-chip active" : "create-trip-friend-chip"}
-                      onClick={() => handleToggleFriend(f.id)}
-                    >
-                      @{f.username}
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="form-row">
-            <div className="form-group">
-              <label className="form-label">Fecha de inicio</label>
-              <input 
-                type="date" 
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Fecha de fin</label>
-              <input 
-                type="date" 
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="form-group checkbox-wrapper-block">
-            <label className="checkbox-container">
-              <input 
-                type="checkbox"
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
-              />
-              <span className="checkbox-text">Hacer este viaje público</span>
-            </label>
-          </div>
-
-          <button type="submit" className="submit-trip-btn">Crear viaje</button>
+          <input
+            type="text"
+            className="td-edit-input"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
         </div>
+
+        {/* DESCRIPCIÓN */}
+        <div className="td-meta-item">
+          <label>DESCRIPCIÓN</label>
+
+          <textarea
+            className="td-edit-input"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+
+        {/* DESTINO */}
+        <div className="td-meta-item">
+          <label>DESTINO</label>
+
+          <input
+            type="text"
+            className="td-edit-input"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+          />
+        </div>
+
+        {/* MOOD */}
+        <div className="td-meta-item">
+          <label>MOOD DEL VIAJE</label>
+
+          <select
+            className="td-edit-input select-mood-variant"
+            value={mood}
+            onChange={(e) => setMood(e.target.value)}
+          >
+            <option value="CITY">🏙️ Ciudad</option>
+            <option value="NATURE">🌿 Naturaleza</option>
+            <option value="BEACH">🏖️ Playa</option>
+            <option value="MUSEUM">🏛️ Museo</option>
+            <option value="FOOD">🍜 Gastronomía</option>
+          </select>
+        </div>
+
+        {/* PREVIEW */}
+        {selectedImageUrl && (
+          <div className="td-preview-wrapper">
+            <img
+              src={getMediaUrl(selectedImageUrl)}
+              alt="preview"
+              className="td-preview-image"
+            />
+          </div>
+        )}
+
+        {/* BOTÓN */}
+        <div className="td-publish-wrapper">
+          <button
+            type="submit"
+            className="td-publish-btn"
+            disabled={loading}
+          >
+            {loading
+              ? "Guardando..."
+              : isEditing
+              ? "💾 Guardar Cambios"
+              : "🚀 Crear Viaje"}
+          </button>
+        </div>
+
       </form>
+
+      {/* SUGERENCIAS */}
+      <TripSuggestions
+        mood={mood}
+        onSelectDestination={handleSelectSuggestion}
+      />
+
     </div>
   );
 }

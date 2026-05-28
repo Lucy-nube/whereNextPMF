@@ -1,14 +1,7 @@
-from django.urls import path
-from .views import InviteViewSet
+from rest_framework.routers import DefaultRouter
+from .views import TripInviteViewSet
 
-urlpatterns = [
-    path("", InviteViewSet.as_view({
-        "get": "list",
-        "post": "create"
-    })),
+router = DefaultRouter()
+router.register(r"", TripInviteViewSet, basename="trip-invites")
 
-    path("<int:pk>/", InviteViewSet.as_view({
-        "patch": "partial_update",
-        "get": "retrieve"
-    })),
-]
+urlpatterns = router.urls

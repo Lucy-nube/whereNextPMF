@@ -1,7 +1,12 @@
-from rest_framework import serializers
+from django.db import transaction
 from django.core.validators import MinValueValidator
+from rest_framework import serializers
+
 from apps.places.models import Place
-from .models import Trip, TripPlace, TripPhoto
+from apps.users.serializers import UserSerializer,PublicUserSerializer
+
+from .models import Trip, TripPlace, TripPhoto,TripComment
+
 
 # ---------------------------------------------------------
 # 1) Serializer para cada item del reordenamiento
@@ -31,7 +36,6 @@ class ReorderTripPlacesSerializer(serializers.Serializer):
     def validate(self, data):
         items = data["items"]
 
-        # Validar IDs duplicados
         ids = [item["id"] for item in items]
         if len(ids) != len(set(ids)):
             raise serializers.ValidationError("Hay TripPlaces duplicados en la lista.")
@@ -41,34 +45,34 @@ class ReorderTripPlacesSerializer(serializers.Serializer):
     def save(self, trip):
         items = self.validated_data["items"]
 
-        # 1. Cargar todos los TripPlaces del trip
+        # Cargar todos los TripPlaces del trip
         trip_places = TripPlace.objects.filter(trip=trip)
 
-        # 2. Mapear por ID para acceso rápido
+        # Mapa por ID
         tp_map = {tp.id: tp for tp in trip_places}
 
-        # 3. Aplicar cambios de día enviados por el frontend
+        # Aplicar cambios de día
         for item in items:
             tp = tp_map[item["id"]]
             tp.day = item["day"]
 
-        # 4. Reagrupar por día
+        # Reagrupar por día
         days = {}
         for tp in trip_places:
             days.setdefault(tp.day, []).append(tp)
 
-        # 5. Ordenar días ascendentemente
+        # Ordenar días
         sorted_days = sorted(days.keys())
 
-        # 6. Recalcular order dentro de cada día
+        # Recalcular order dentro de cada día
         for day in sorted_days:
             tps = days[day]
-            tps.sort(key=lambda x: x.id)  # orden estable
+            tps.sort(key=lambda x: x.id)
             for index, tp in enumerate(tps, start=1):
                 tp.order = index
                 tp.save()
 
-        # 7. Construir respuesta final
+        # Respuesta final
         response = []
         for day in sorted_days:
             tps = days[day]
@@ -104,6 +108,9 @@ class NestedPlaceSerializer(serializers.Serializer):
 
 class TripPlaceSerializer(serializers.ModelSerializer):
     place = NestedPlaceSerializer()
+    likes_count = serializers.IntegerField(source="likes.count", read_only=True)
+    liked_by_me = serializers.SerializerMethodField()
+
 
     class Meta:
         model = TripPlace
@@ -115,11 +122,14 @@ class TripPlaceSerializer(serializers.ModelSerializer):
         if not Place.objects.filter(id=place_id).exists():
             raise serializers.ValidationError("Place with this ID does not exist.")
         return value
+    def get_liked_by_me(self, obj):
+     user = self.context["request"].user
+     return obj.likes.filter(id=user.id).exists()
+
 
     def create(self, validated_data):
         place_data = validated_data.pop("place")
         place = Place.objects.get(id=place_data["id"])
-        trip = validated_data["trip"]
 
         trip_place = TripPlace.objects.create(
             place=place,
@@ -142,15 +152,16 @@ class TripPlaceSerializer(serializers.ModelSerializer):
 class TripPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TripPhoto
-        fields = ["id", "image", "caption", "created_at"]
+        fields = ["id", "trip", "image", "caption", "created_at"]
+        read_only_fields = ["trip", "created_at"]
 
 
 class TripSerializer(serializers.ModelSerializer):
-    trip_places = TripPlaceSerializer(many=True, read_only=False, required=False)
-    photos = TripPhotoSerializer(many=True, read_only=True)
-    
-    # 🚀 Campo calculado para pintar el @username de tu amigo en React de forma directa
-    co_traveler_username = serializers.CharField(source="co_traveler.username", read_only=True)
+    trip_places = TripPlaceSerializer(many=True, required=False)
+    photos = serializers.SerializerMethodField()
+    owner = PublicUserSerializer(read_only=True)
+    likes_count = serializers.IntegerField(source="likes.count", read_only=True)
+    liked_by_me = serializers.SerializerMethodField()
 
     class Meta:
         model = Trip
@@ -163,30 +174,54 @@ class TripSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "is_public",
+            "trip_type",
+            "owner",
             "trip_places",
             "photos",
-            # 🚀 CAMPOS EXCLUSIVOS VINCULADOS A TU MODELO
-            "trip_type",
-            "co_traveler",
-            "co_traveler_username"
+            "likes_count",
+            "liked_by_me"
         ]
         read_only_fields = ["id"]
 
-    def create(self, validated_data):
-        trip_places_data = validated_data.pop("trip_places", [])
-        
-        # 🚀 CORREGIDO: Django ahora extrae e inyecta el tipo de viaje y co-viajero al instanciar
-        trip = Trip.objects.create(**validated_data)
+    # ⭐ DEVOLVER FOTOS REALES
+    def get_photos(self, obj):
+        return [
+            {
+                "id": p.id,
+                "image": p.image.url if p.image else None,
+                "caption": p.caption,
+                "created_at": p.created_at
+            }
+            for p in obj.photos.all()
+        ]
 
-        for tp_data in trip_places_data:
-            place_data = tp_data.pop("place")
-            place_id = place_data.get("id")
+    def get_liked_by_me(self, obj):
+        user = self.context["request"].user
+        return obj.likes.filter(id=user.id).exists()
+
+    @transaction.atomic
+    def create(self, validated_data):
+        request = self.context["request"]
+        trip_places_data = validated_data.pop("trip_places", [])
+
+        validated_data.pop("owner", None)
+
+        trip = Trip.objects.create(
+            owner=request.user,
+            **validated_data
+        )
+
+        for tp in trip_places_data:
+            place_id = tp["place"]["id"]
             place = Place.objects.get(id=place_id)
 
             TripPlace.objects.create(
                 trip=trip,
                 place=place,
-                **tp_data
+                day=tp.get("day", 1),
+                order=tp.get("order", 1),
+                notes=tp.get("notes", ""),
+                added_by=request.user
             )
 
         return trip
@@ -194,20 +229,18 @@ class TripSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if "trip_places" in validated_data:
             raise serializers.ValidationError(
-                "TripPlaces cannot be updated from Trip. Use the TripPlace endpoint."
+                "TripPlaces se gestionan por endpoint separado."
             )
 
-        instance.title = validated_data.get("title", instance.title)
-        instance.description = validated_data.get("description", instance.description)
-        instance.destination = validated_data.get("destination", instance.destination)
-        instance.mood = validated_data.get("mood", instance.mood)
-        instance.start_date = validated_data.get("start_date", instance.start_date)
-        instance.end_date = validated_data.get("end_date", instance.end_date)
-        instance.is_public = validated_data.get("is_public", instance.is_public)
-        
-        # 🚀 ACTUALIZACIÓN: Sincroniza las columnas relacionales al guardar cambios parciales
-        instance.trip_type = validated_data.get("trip_type", instance.trip_type)
-        instance.co_traveler = validated_data.get("co_traveler", instance.co_traveler)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
 
         instance.save()
         return instance
+
+class TripCommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = TripComment
+        fields = ["id", "text", "created_at", "user"]

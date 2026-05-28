@@ -1,32 +1,25 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 
-from .models import User, Companion, Profile, TripInvite
+from .models import User, Profile, TripInvite
+from apps.social.companions.models import Companion
+
+class ProfileInline(admin.StackedInline):
+    model = Profile
+    can_delete = False
+    verbose_name_plural = "Perfil"
+    fk_name = "user"
 
 
 @admin.register(User)
-class CustomUserAdmin(UserAdmin):
-    fieldsets = UserAdmin.fieldsets + (
-        (
-            "Perfil",
-            {
-                "fields": ("bio", "avatar"),
-            },
-        ),
-    )
+class CustomUserAdmin(BaseUserAdmin):
+    inlines = (ProfileInline,)
 
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        (
-            "Perfil",
-            {
-                "fields": ("bio", "avatar"),
-            },
-        ),
-    )
+    list_display = ("username", "email", "get_avatar")
 
+    def get_avatar(self, obj):
+        if hasattr(obj, "profile") and obj.profile.avatar:
+            return obj.profile.avatar.url
+        return "—"
 
-@admin.register(Companion)
-class CompanionAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "companion", "status", "created_at")
-    search_fields = ("user__username", "companion__username")
-    list_filter = ("status", "created_at")
+    get_avatar.short_description = "Avatar"

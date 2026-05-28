@@ -1,14 +1,11 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import authenticate
-
 from apps.users.models import User
-
 
 class EmailOrUsernameTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
-
         username_or_email = attrs.get("username")
         password = attrs.get("password")
 
@@ -22,12 +19,10 @@ class EmailOrUsernameTokenObtainPairSerializer(TokenObtainPairSerializer):
         if user is None:
             try:
                 user_obj = User.objects.get(email=username_or_email)
-
                 user = authenticate(
                     username=user_obj.username,
                     password=password
                 )
-
             except User.DoesNotExist:
                 user = None
 
@@ -37,10 +32,17 @@ class EmailOrUsernameTokenObtainPairSerializer(TokenObtainPairSerializer):
                 "No active account found with the given credentials"
             )
 
-        # 4. TOKEN GENERATION (manteniendo compatibilidad SimpleJWT)
+        # 4. GENERAR TOKENS CORRECTAMENTE
         data = super().validate({
             "username": user.username,
             "password": password
         })
+
+        # 5. AGREGAR INFO DEL USUARIO
+        data["user"] = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+        }
 
         return data

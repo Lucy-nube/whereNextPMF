@@ -1,0 +1,111 @@
+/* =========================================================
+   IMMERSIVE NOTIFICATIONS WORKSPACE CARD DESIGN MIXINS
+   ========================================================= */
+.notif-page {
+  max-width: 850px;
+  margin: 125px auto 50px auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 26px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 16px;
+}
+
+.notif-header h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: white;
+  margin: 0;
+}
+
+.notif-markall {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notif-markall:hover {
+  background: rgba(56, 189, 248, 0.08);
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.notif-item {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 18px 22px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.notif-info p {
+  margin: 0 0 6px 0;
+  font-size: 14.5px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.5;
+}
+
+.notif-info p em {
+  color: #38bdf8;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.notif-time-stamp {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 600;
+}
+
+.notif-read-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.notif-read-btn:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+
+.notif-empty-box {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.notif-empty-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.notif-empty {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 14.5px;
+  font-style: italic;
+}

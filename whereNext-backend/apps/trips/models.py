@@ -69,7 +69,11 @@ class TripComment(models.Model):
         return f"{self.user.username} - {self.trip.title}"
 
 
+
+
+
 class TripPlace(models.Model):
+
     trip = models.ForeignKey(
         "trips.Trip",
         on_delete=models.CASCADE,
@@ -95,12 +99,25 @@ class TripPlace(models.Model):
         blank=True
     )
 
+    # ⭐ IMPORTANTE: tracking social
+    added_by = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="added_trip_places"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
         ordering = ["day", "order"]
 
+        # evita duplicados dentro del mismo día
+        unique_together = ["trip", "place", "day", "order"]
+
     def __str__(self):
         return f"{self.place.name} in {self.trip.title}"
-
 
 class TripPhoto(models.Model):
     trip = models.ForeignKey(

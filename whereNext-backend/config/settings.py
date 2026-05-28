@@ -31,10 +31,16 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.trips',
     'apps.places',
-    'apps.social',
-    'apps.social.chats',
-]
 
+    # Social main app
+    'apps.social',
+
+    # Sub-apps inside social
+    'apps.social.chats.apps.ChatsConfig',
+    'apps.social.companions',
+    'apps.social.notifications',
+    'apps.social.invites',
+    ]
 
 # =========================
 # ASGI / WSGI

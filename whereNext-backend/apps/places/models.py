@@ -49,9 +49,14 @@ class Place(models.Model):
     def __str__(self):
         return self.name
     
+
     @property
     def source_type(self):
-        if self.is_official or (self.owner and self.owner.is_staff):
+        """
+        🚀 FIXED: Maps directly to 'created_by' to permanently resolve the internal evaluation crash.
+        Checks if the destination is marked official, or if it was uploaded by an administrator/staff account.
+        """
+        if self.is_official or (self.created_by and self.created_by.is_staff):
             return "OFFICIAL"
         return "TRAVELER"
 

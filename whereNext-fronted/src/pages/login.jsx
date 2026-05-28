@@ -1,9 +1,8 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
 
 import API from "../services/api";
 import "../styles/Auth.css";
-
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
@@ -13,24 +12,34 @@ export default function Login() {
   const [error, setError] = useState("");
 
   const { login } = useAuth();
-
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const images = document.querySelectorAll(".auth-bg-image");
+    let index = 0;
+
+    const interval = setInterval(() => {
+      images[index].classList.remove("active");
+      index = (index + 1) % images.length;
+      images[index].classList.add("active");
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError("");
+    e.preventDefault();
+    setError("");
 
-  try {
-    // Usa SOLO el login del AuthContext
-    await login(username, password);
-
-    // Cuando login() termine, el token YA está guardado
-    navigate("/");
-
-  } catch (err) {
-    console.log(err.response?.data);
-    setError("Credenciales incorrectas");
-  }
+    try {
+      await login(username, password);
+      navigate("/");
+    } catch (err) {
+      console.log(err.response?.data);
+      setError("Credenciales incorrectas");
+    }
   };
+
   return (
     <div className="auth-background">
 
@@ -61,11 +70,9 @@ export default function Login() {
       <div className="auth-overlay"></div>
 
       <div className="auth-container">
-
         <h1>Iniciar sesión</h1>
 
         <form onSubmit={handleSubmit}>
-
           <input
             type="text"
             placeholder="Usuario"
@@ -80,14 +87,17 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <button type="submit">
-            Entrar
-          </button>
+          <button type="submit">Entrar</button>
 
           {error && <p className="error">{error}</p>}
 
+          <div className="login-footer-redirect">
+            ¿Eres un nuevo explorador?{" "}
+            <Link to="/register" className="login-redirect-link">
+              Crea tu pasaporte aquí
+            </Link>
+          </div>
         </form>
-
       </div>
     </div>
   );

@@ -2,88 +2,82 @@ from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 
 from rest_framework import serializers
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import get_user_model
 
-from apps.users.models import Companion
+from apps.users.models import Profile, TripInvite
+from apps.places.models import Place
+
+
 
 User = get_user_model()
 
 
-class EmailOrUsernameTokenObtainPairSerializer(TokenObtainPairSerializer):
 
-    def validate(self, attrs):
-
-        username_or_email = attrs.get("username")
-        password = attrs.get("password")
-
-        # 1. LOGIN POR USERNAME
-        user = authenticate(
-            username=username_or_email,
-            password=password
-        )
-
-        # 2. LOGIN POR EMAIL
-        if user is None:
-            try:
-                user_obj = User.objects.get(email=username_or_email)
-
-                user = authenticate(
-                    username=user_obj.username,
-                    password=password
-                )
-            except User.DoesNotExist:
-                user = None
-
-        # 3. ERROR FINAL
-        if user is None:
-            raise AuthenticationFailed(
-                "No active account found with the given credentials"
-            )
-
-        # 4. FIX SIMPLEJWT FLOW
-        attrs["username"] = user.username
-        data = super().validate(attrs)
-
-        # 5. EXTRA RESPONSE DATA
-        data["user"] = {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-        }
-
-        return data
-
-
-class CompanionSerializer(serializers.ModelSerializer):
-
-    companion_username = serializers.CharField(
-        source="companion.username",
-        read_only=True
-    )
-
-    companion_avatar = serializers.CharField(
-        source="companion.avatar.url",
-        read_only=True
-    )
-
-    class Meta:
-        model = Companion
-        fields = "__all__"
-
-
-class Userserializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "username", "email", "avatar"]
-
-
-class Publicuserserializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
+    bio = serializers.CharField(source="profile.bio", read_only=True)
     avatar = serializers.SerializerMethodField()
+    is_private = serializers.BooleanField(source="profile.is_private", read_only=True)
 
     class Meta:
         model = User
-        fields = ["id", "username", "avatar"]
+        fields = ["id", "username", "email", "bio", "avatar", "is_private"]
 
     def get_avatar(self, obj):
-        return obj.avatar.url if obj.avatar else None
+        if hasattr(obj, "profile") and obj.profile.avatar:
+            return obj.profile.avatar.url
+        return None
+    
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ["bio", "avatar", "is_private"]
+
+
+class PublicUserSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+    bio = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "avatar", "bio"]
+
+    def get_avatar(self, obj):
+        if hasattr(obj, "profile") and obj.profile.avatar:
+            return obj.profile.avatar.url
+        return None
+
+    def get_bio(self, obj):
+        if hasattr(obj, "profile"):
+            return obj.profile.bio
+        return ""
+
+    
+class UserProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+    bio = serializers.CharField(source="profile.bio", read_only=True)
+    is_private = serializers.BooleanField(source="profile.is_private", read_only=True)
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "avatar", "bio", "is_private"]
+
+    def get_avatar(self, obj):
+        if hasattr(obj, "profile") and obj.profile.avatar:
+            return obj.profile.avatar.url
+        return None
+
+
+class TripInviteSerializer(serializers.ModelSerializer):
+    from_user = PublicUserSerializer(read_only=True)
+    to_user = PublicUserSerializer(read_only=True)
+
+    class Meta:
+        model = TripInvite
+        fields = [
+            "id",
+            "from_user",
+            "to_user",
+            "place",
+            "status",
+            "created_at",
+        ]

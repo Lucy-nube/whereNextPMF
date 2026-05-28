@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import API from "../services/api";
 import TripPhotoUpload from "../components/trips/TripPhotoUpload";
 import TripSuggestions from "../components/trips/TripSuggestions";
-import "/src/styles/TripDetails.css"; // 🚀 Forzamos la carga absoluta desde la raíz
+import "/src/styles/TripDetails.css"; 
 
 export default function TripDetails() {
   const { id } = useParams();
@@ -59,8 +59,8 @@ export default function TripDetails() {
       setTripType(data.trip_type || "solo");
       setSelectedFriend(data.co_traveler || null);
 
-      // 2. Solicitamos tu lista de amigos ACCEPTED desde el endpoint real de usuarios
-      const friendsRes = await API.get("/users/companions/hub/");
+      // 2. Solicitamos tu lista de amigos desde el endpoint real
+      const friendsRes = await API.get("companions/");
       setFriends(friendsRes.data || []);
 
       setError(false);
@@ -230,8 +230,8 @@ export default function TripDetails() {
           ) : (
             <strong className="td-mood-highlight">
               {tripType === "solo" && "🌙 Viaje sola"}
-              {tripType === "couple" && "💞 Viaje para dos"}
-              {tripType === "group" && "👥 Viaje en grupo"}
+              {tripType === "couple" && "💞 En pareja"}
+              {tripType === "group" && "👥 En grupo"}
             </strong>
           )}
         </div>
@@ -249,7 +249,7 @@ export default function TripDetails() {
                     <button
                       key={f.id}
                       type="button"
-                      className={selectedFriend == f.id ? "td-friend-chip active" : "td-friend-chip"}
+                      className={selectedFriend === f.id ? "td-friend-chip active" : "td-friend-chip"}
                       onClick={() => setSelectedFriend(f.id)}
                     >
                       @{f.username}
@@ -279,7 +279,7 @@ export default function TripDetails() {
               <span className="td-date-val">{trip.start_date || "No definido"}</span>
             )}
           </div>
-          
+
           <div className="td-meta-item">
             <label>FECHA FIN</label>
             {isEditing ? (
@@ -342,13 +342,27 @@ export default function TripDetails() {
         )}
       </div>
 
-      {/* SUGERENCIAS INTEGRADAS */}
-      {trip.id && (
-        <TripSuggestions 
-          tripId={trip.id} 
-          onSelectDestination={handleUpdateDestination} 
-        />
-      )}
+      {/* =========================================================================
+         🚀 CONDITIONAL TRIGGER: Only show suggestions when editing OR when destination is empty
+         ========================================================================= */}
+       {(isEditing || !trip.destination) && trip.id && (
+  <TripSuggestions 
+    mood={isEditing ? editMood : trip.mood}
+    onSelectDestination={(name /*, image */) => {
+      // 1) Actualizamos solo el formulario
+      setEditDestination(name);
+
+      // 2) Si NO estás editando, sincronizamos backend con el nuevo destino
+      if (!isEditing) {
+        handleUpdateDestination(name);
+      }
+
+      // 3) No tocamos trip.photos en ningún caso
+      showToast("📍 Destino actualizado");
+    }}
+  />
+)}
+
 
       {/* GALERÍA MULTIMEDIA */}
       <div className="td-gallery-section">
@@ -379,7 +393,7 @@ export default function TripDetails() {
         />
       )}
 
-      {/* MODAL ELIMINAR REPARADO */}
+      {/* MODAL ELIMINAR */}
       {showDeleteModal && (
         <div className="td-modal-overlay">
           <div className="td-modal-card">
@@ -400,4 +414,3 @@ export default function TripDetails() {
     </div>
   );
 }
-

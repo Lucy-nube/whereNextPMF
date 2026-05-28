@@ -15,15 +15,15 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// Si el token es inválido → logout automático (MUY PRO)
+// Manejo de errores global
 API.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
+      // Token inválido → limpiar token
       localStorage.removeItem("access");
-      localStorage.removeItem("user");
-      window.location.href = "/login";
     }
+
     return Promise.reject(err);
   }
 );

@@ -1,5 +1,5 @@
 # =========================================================
-# DJANGO
+# DJANGO / MODELS / UTILS
 # =========================================================
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -10,114 +10,86 @@ from django.contrib.auth import get_user_model
 # =========================================================
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.views import TokenObtainPairView
-
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+from django.contrib.auth.hashers import make_password
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.parsers import MultiPartParser, FormParser
 # =========================================================
 # LOCAL IMPORTS
 # =========================================================
 from .authentication import EmailOrUsernameTokenObtainPairSerializer
-from .models import Companion, TripInvite
-from .serializers import CompanionSerializer
-
-from apps.trips.models import Trip
+from .serializers import UserSerializer, PublicUserSerializer,ProfileSerializer
+from .models import Profile, User
 
 User = get_user_model()
 
+
+# =========================================================
+# LOGIN PERSONALIZADO
+# =========================================================
 class EmailOrUsernameTokenObtainPairView(TokenObtainPairView):
     serializer_class = EmailOrUsernameTokenObtainPairSerializer
 
+
+# =========================================================
+# PERFIL /api/me/
+# =========================================================
 class MeView(APIView):
-    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        user = request.user
-        return Response({
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "bio": user.bio,
-            "avatar": user.avatar.url if user.avatar else None,
-        })
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
 
     def put(self, request):
-        user = request.user
-        user.username = request.data.get("username", user.username)
-        user.bio = request.data.get("bio", user.bio)
+        serializer = UserSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
-        if "avatar" in request.FILES:
-            user.avatar = request.FILES["avatar"]
+# apps/users/views.py
 
-        user.save()
 
-        return Response({
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "bio": user.bio,
-            "avatar": user.avatar.url if user.avatar else None,
-        })
-    
-
-class FeedTripsView(APIView):
-    authentication_classes = [JWTAuthentication]
+class ProfileMeView(APIView):
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
-        user = request.user
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        return Response(ProfileSerializer(profile).data)
 
-        friends = Companion.objects.filter(
-            Q(user=user) | Q(companion=user)
-        )
+    def patch(self, request):
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        serializer = ProfileSerializer(profile, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
-        friend_ids = {f.user_id for f in friends} | {f.companion_id for f in friends}
 
-        trips = Trip.objects.filter(
-            Q(owner=user) |
-            Q(owner__id__in=friend_ids) |
-            Q(is_public=True)
-        ).select_related("owner").order_by("-created_at")
 
-        return Response([
-            {
-                "id": t.id,
-                "title": t.title,
-                "description": t.description,
-                "created_at": t.created_at,
-                "owner": {
-                    "id": t.owner.id,
-                    "username": t.owner.username,
-                    "avatar": t.owner.avatar.url if t.owner.avatar else None,
-                }
-            }
-            for t in trips
-        ])
-
+# =========================================================
+# PERFIL PÚBLICO (SIN LÓGICA SOCIAL)
+# =========================================================
 class PublicUserView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
+        return Response(PublicUserSerializer(user).data)
 
-        is_friend = Companion.objects.filter(
-            Q(user=request.user, companion=user) |
-            Q(user=user, companion=request.user),
-            status="ACCEPTED"
-        ).exists()
 
-        return Response({
-            "id": user.id,
-            "username": user.username,
-            "avatar": user.avatar.url if user.avatar else None,
-            "bio": user.bio,
-            "is_friend": is_friend
-        })
-
+# =========================================================
+# BUSCADOR DE USUARIOS
+# =========================================================
 class UsersearchView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
@@ -139,87 +111,62 @@ class UsersearchView(APIView):
             {
                 "id": u.id,
                 "username": u.username,
-                "avatar": u.avatar.url if u.avatar else None,
-                "bio": u.bio or ""
+                "avatar": u.profile.avatar.url if u.profile.avatar else None,
+                "bio": u.profile.bio or ""
             }
             for u in users
         ])
-    
-class CompanionViewSet(viewsets.ModelViewSet):
-    serializer_class = CompanionSerializer
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return Companion.objects.filter(
-            Q(user=self.request.user) |
-            Q(companion=self.request.user)
-        )
 
-class CompanionHubListView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        user = request.user
+User = get_user_model()
 
-        connections = Companion.objects.filter(
-            Q(user=user) | Q(companion=user),
-            status="ACCEPTED"
-        ).select_related("user", "companion")
+from .models import Profile
 
-        return Response([
-            {
-                "id": (c.companion if c.user == user else c.user).id,
-                "username": (c.companion if c.user == user else c.user).username,
-                "avatar": (c.companion if c.user == user else c.user).avatar.url
-                if (c.companion if c.user == user else c.user).avatar else None
-            }
-            for c in connections
-        ])
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
 
-class UserTripsView(APIView):
-    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        data = request.data
+        username = data.get("username", "").strip()
+        email = data.get("email", "").strip()
+        password = data.get("password", "")
 
-    def get(self, request):
-        trips = Trip.objects.filter(owner=request.user)
+        if not username or not email or not password:
+            return Response({"error": "Todos los campos son obligatorios"}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response([
-            {
-                "id": t.id,
-                "title": t.title,
-                "description": t.description,
-                "created_at": t.created_at,
-                "is_public": t.is_public,
-            }
-            for t in trips
-        ])
-    
-class IsCompanionView(APIView):
-    permission_classes = [IsAuthenticated]
+        if User.objects.filter(username__iexact=username).exists():
+            return Response({"error": "El nombre de usuario ya está registrado"}, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request, user_id):
-        is_friend = Companion.objects.filter(
-            Q(user=request.user, companion_id=user_id, status="ACCEPTED") |
-            Q(user_id=user_id, companion=request.user, status="ACCEPTED")
-        ).exists()
+        if User.objects.filter(email__iexact=email).exists():
+            return Response({"error": "El correo electrónico ya está registrado"}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({"is_companion": is_friend})
-    
-class NotificationListView(APIView):
-    permission_classes = [IsAuthenticated]
+        try:
+            new_user = User.objects.create(
+                username=username,
+                email=email,
+                password=make_password(password)
+            )
 
-    def get(self, request):
-        notifications = request.user.notifications.all().order_by("-created_at")
+            # 🔥 CREA EL PROFILE AUTOMÁTICAMENTE
+            Profile.objects.create(
+                user=new_user,
+                bio="¡Nuevo explorador de WhereNext!"
+            )
 
-        return Response([
-            {
-                "id": n.id,
-                "type": n.notification_type,
-                "text": n.text_preview,
-                "from_user": n.from_user.username,
-                "created_at": n.created_at,
-            }
-            for n in notifications
-        ])
-    
+            refresh = RefreshToken.for_user(new_user)
+
+            return Response({
+                "message": "Usuario registrado con éxito",
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+                "user": {
+                    "id": new_user.id,
+                    "username": new_user.username,
+                    "email": new_user.email
+                }
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            print(f"🔬 Excepción en el registro del PFM: {e}")
+            return Response({"error": "Fallo interno al procesar el pasaporte de viajero"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -8,168 +8,302 @@ export default function Profile() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
-  const [places, setPlaces] = useState([]);
   const [trips, setTrips] = useState([]);
-  const [companions, setCompanions] = useState([]);
+  const [companions, setcompanions] = useState({ sent: [], received: [], friends: [] });
   const [isMe, setIsMe] = useState(false);
-  const [inviteSent, setInviteSent] = useState(false);
-  const [isCompanion, setIsCompanion] = useState(false);
   const [loading, setLoading] = useState(true);
-  
-  // 🚀 ESTADO DE PRIVACIDAD SINCRONIZADO
   const [isProfilePrivate, setIsProfilePrivate] = useState(false);
+
+  const [showCompanionsModal, setShowCompanionsModal] = useState(false);
+  const [friendsProfiles, setFriendsProfiles] = useState([]);
+
+  const [toastMessage, setToastMessage] = useState("");
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(""), 2500);
+  };
 
   useEffect(() => {
     setLoading(true);
-    
-    const userEndpoint = id ? `users/${id}/` : "me/";
-    const tripsEndpoint = id ? `users/${id}/trips/` : "trips/";
+
+    const userEndpoint = id ? `users/${id}/` : "users/me/";
+    const tripsEndpoint = "trips/";
+    const companionsEndpoint = "companions/hub/";
 
     Promise.all([
-      API.get("me/").catch(err => { console.error("Error loading 'me':", err); return { data: {} }; }),
-      API.get(userEndpoint).catch(err => { console.error("Error loading profile user:", err); return { data: null }; }),
-      API.get("places/").catch(err => { console.error("Error loading places:", err); return { data: [] }; }),
-      API.get(tripsEndpoint).catch(err => { console.error("Error loading trips:", err); return { data: [] }; }),
-      API.get("/companions/hub/").catch(err => { console.error("Error loading companions:", err); return { data: [] }; })
+      API.get("users/me/").catch(() => ({ data: {} })),
+      API.get(userEndpoint).catch(() => ({ data: null })),
+      API.get(companionsEndpoint).catch(() => ({ data: { sent: [], received: [], friends: [] } })),
+      API.get(tripsEndpoint).catch(() => ({ data: [] }))
     ])
-      .then(([meRes, userRes, placesRes, tripsRes, companionsRes]) => {
-        if (!userRes || !userRes.data) {
+      .then(([meRes, userRes, companionsRes, tripsRes]) => {
+        const me = meRes.data;
+        const profileUser = userRes.data;
+
+        if (!profileUser) {
           setUser(null);
-          setLoading(false);
           return;
         }
 
-        setUser(userRes.data);
-        setPlaces(placesRes.data || []);
-        setCompanions(companionsRes.data || []);
+        setUser(profileUser);
+        setcompanions({
+          sent: companionsRes.data.sent || [],
+          received: companionsRes.data.received || [],
+          friends: companionsRes.data.friends || []
+        });
 
-        // 🚀 SINCRONIZACIÓN DE PRIVACIDAD CON EL BACKEND
-        setIsProfilePrivate(userRes.data.is_private || false);
+        const filteredTrips = (tripsRes.data || []).filter(
+          (t) => t.owner?.id === profileUser.id
+        );
+        setTrips(filteredTrips);
 
-        if (tripsRes && Array.isArray(tripsRes.data)) {
-          setTrips(tripsRes.data);
-        } else if (tripsRes && Array.isArray(tripsRes.data?.results)) {
-          setTrips(tripsRes.data.results);
-        } else {
-          setTrips([]);
-        }
-
-        if (meRes.data?.id && meRes.data.id === userRes.data.id) {
-          setIsMe(true);
-        }
-
-        if (userRes.data.is_friend) {
-          setIsCompanion(true);
-        }
+        setIsMe(me.id === profileUser.id);
+        setIsProfilePrivate(profileUser.is_private || false);
       })
-      .catch((err) => console.error("Critical Profile Error:", err))
+      .catch((err) => {
+        console.error("Error connecting passport profiles channels:", err);
+      })
       .finally(() => setLoading(false));
-
   }, [id]);
 
-  const handleInvite = async () => {
-    if (!user?.id) return;
-    try {
-      await API.post(`/companions/invite/${user.id}/`);
-      setInviteSent(true);
-    } catch (err) {
-      console.error("Error al enviar invitación:", err.response?.data || err);
+  const handleOpenCompanionsModal = async () => {
+    if (companions.friends.length === 0) return;
+
+    if (isMe) {
+      try {
+        const res = await API.get("companions/");
+        setFriendsProfiles(res.data || []);
+      } catch (err) {
+        console.error("Error cargando perfiles de amigos:", err);
+      }
+    } else {
+      const rawFriends = companions.friends.map(c => {
+        const friendObj = c.user?.id === user.id ? c.companion : c.user;
+        return {
+          id: friendObj?.id,
+          username: friendObj?.username || "Viajero",
+          avatar: friendObj?.avatar || friendObj?.profile?.avatar || null
+        };
+      });
+      setFriendsProfiles(rawFriends);
     }
+    setShowCompanionsModal(true);
+  };
+
+  const handleAddCompanion = async () => {
+    try {
+      await API.post(`companions/invite/${user.id}/`);
+      const res = await API.get("companions/hub/");
+      setcompanions({
+        sent: res.data.sent || [],
+        received: res.data.received || [],
+        friends: res.data.friends || []
+      });
+      showToast("Solicitud enviada 🤝");
+    } catch (err) {
+      showToast("Error enviando solicitud ❌");
+      console.error(err);
+    }
+  };
+
+  const handleAccept = async () => {
+    try {
+      const req = companions.received.find(c => c.user?.id === user.id);
+      if (!req) return;
+      await API.post(`companions/accept/${req.id}/`);
+      const res = await API.get("companions/hub/");
+      setcompanions({
+        sent: res.data.sent || [],
+        received: res.data.received || [],
+        friends: res.data.friends || []
+      });
+      showToast("Solicitud aceptada ✔️");
+    } catch (err) {
+      showToast("Error al aceptar ❌");
+      console.error(err);
+    }
+  };
+
+  const handleCancelRequest = async () => {
+    try {
+      const req = companions.sent.find(c => c.companion?.id === user.id);
+      if (!req) return;
+
+      await API.post(`companions/cancel/${req.id}/`);
+      const res = await API.get("companions/hub/");
+      setcompanions({
+        sent: res.data.sent || [],
+        received: res.data.received || [],
+        friends: res.data.friends || []
+      });
+      showToast("Solicitud cancelada ❌");
+    } catch (err) {
+      showToast("Error al cancelar ❌");
+      console.error(err);
+    }
+  };
+
+  const getcompanionstatus = () => {
+    const sent = companions.sent?.find(c => c.companion?.id === user.id);
+    if (sent) return "PENDING_SENT";
+    const received = companions.received?.find(c => c.user?.id === user.id);
+    if (received) return "PENDING_RECEIVED";
+    const friend = companions.friends?.find(
+      c => c.user?.id === user.id || c.companion?.id === user.id
+    );
+    if (friend) return "ACCEPTED";
+    return null;
   };
 
   const getMediaUrl = (path, fallback = "/default-avatar.png") => {
     if (!path) return fallback;
-    return path.startsWith("http") ? path : `http://127.0.0.1:8000${path}`;
+    if (path.startsWith("http")) return path;
+    return `http://127.0.0.1:8000${path}`;
   };
 
-  if (loading) return <p className="loading">Cargando pasaporte digital...</p>;
-
-  if (!user) {
+  if (loading) {
     return (
-      <div className="passport-profile passport-error-view">
-        <h2>🔒 Acceso Restringido o Perfil Inexistente</h2>
-        <p>No tienes permisos para ver el pasaporte de este viajero.</p>
-        <button className="logout-desktop spacing-top-btn" onClick={() => navigate("/")}>
-          Volver al Inicio
-        </button>
+      <div className="profile-loading">
+        <div className="spinner" />
+        <p>Cargando pasaporte digital...</p>
       </div>
     );
   }
 
-  const myPlaces = places.filter(place => place.created_by === user.id);
-  const myLikes = places.filter(place => place.likes?.includes(user.id));
-  
-  const myTrips = trips
-    .filter(trip => trip.owner === user.id)
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-  const totalAcceptedCompanions = companions.length;
+  if (!user) {
+    return (
+      <div className="passport-profile passport-error-view">
+        <h2>🔒 Perfil no disponible</h2>
+        <button type="button" className="btn-primary" onClick={() => navigate("/")}>Volver</button>
+      </div>
+    );
+  }
 
   return (
     <div className="passport-profile">
 
-      {/* TARJETA PASAPORTE PRINCIPAL */}
+      {toastMessage && (
+        <div className="td-toast-notification">
+          {toastMessage}
+        </div>
+      )}
+
+      {/* ================= HEADER PASSPORT ================= */}
       <div className="passport-card">
         <div className="passport-topbar">
           <span>🪪 PASAPORTE DIGITAL</span>
-          <span className="passport-status">ACTIVO</span>
+          <span className="passport-status">ACTIVE</span>
         </div>
 
         <div className="passport-main">
           <div className="profile-avatar">
-            {user.avatar ? <img src={getMediaUrl(user.avatar)} alt="avatar" /> : "👤"}
+            <img src={getMediaUrl(user.avatar)} alt="avatar" />
           </div>
 
           <div className="passport-info">
-            <h1>{user.username}</h1>
+            <h1>@{user.username}</h1>
+            <p className="passport-bio">{user.bio || "Explorer without limits"}</p>
 
-            {!isMe && (
-              <button
-                className="add-btn"
-                onClick={handleInvite}
-                disabled={inviteSent || isCompanion}
+            {isMe && (
+              <button 
+                className="btn-primary"
+                onClick={() => navigate("/profile/edit")}
               >
-                {isCompanion ? "Ya son compañeros ✓" : inviteSent ? "Solicitud enviada ✓" : "Agregar compañero"}
+                ✏️ Editar perfil
               </button>
             )}
 
-            <p className="passport-email">{user.email}</p>
-            <p className="passport-bio">{user.bio || "Explorer without limits"}</p>
+            <div className="passport-actions-deck">
+              {!isMe && (
+                <>
+                  {(() => {
+                    const status = getcompanionstatus();
 
-            {/* =========================================================================
-               🚀 INTERRUPTOR RECONFIGURADO: CHECKBOX DE PRIVACIDAD INVERTIDO REACTIVO
-               ========================================================================= */}
-            {isMe && (
-              <div className="profile-privacy-toggle-zone">
-                <label className="checkbox-container">
-                  <input
-                    type="checkbox"
-                    checked={isProfilePrivate}
-                    onChange={async (e) => {
-                      const valorFuturo = e.target.checked;
-                      setIsProfilePrivate(valorFuturo);
-                      
+                    if (status === "PENDING_SENT") {
+                      return (
+                        <button
+                          type="button"
+                          className="btn-pending"
+                          onClick={handleCancelRequest}
+                        >
+                          ❌ Cancelar solicitud
+                        </button>
+                      );
+                    }
+
+                    if (status === "PENDING_RECEIVED") {
+                      return (
+                        <button
+                          type="button"
+                          className="btn-primary"
+                          onClick={handleAccept}
+                        >
+                          ✔️ Aceptar solicitud
+                        </button>
+                      );
+                    }
+
+                    if (status === "ACCEPTED") {
+                      return (
+                        <button type="button" className="btn-friend" disabled>
+                          🤝 Ya son compañeros
+                        </button>
+                      );
+                    }
+
+                    return (
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={handleAddCompanion}
+                      >
+                        🤝 Agregar compañero
+                      </button>
+                    );
+                  })()}
+
+                  {/* 🔥 BOTÓN DE MENSAJE CORRECTO */}
+                  <button
+                    type="button"
+                    className="btn-secondary btn-chat-action-trigger"
+                    onClick={async () => {
                       try {
-                        await API.patch("/me/", { is_private: valorFuturo });
+                        const res = await API.post(`/chats/start/${user.id}/`);
+                        navigate(`/chats/${res.data.room_id}`);
                       } catch (err) {
-                        console.error("Error al guardar la privacidad:", err);
-                        setIsProfilePrivate(!valorFuturo); // Fallback reversión instantánea
+                        if (err.response?.status === 403) {
+                          showToast("Debes ser compañero para enviar mensajes 🤝");
+                          return;
+                        }
+                        console.error("Error launching conversation thread room:", err);
                       }
                     }}
-                  />
-                  <span className="checkbox-text">
-                    {isProfilePrivate 
-                      ? "🔒 Perfil Privado (Solo compañeros aceptados ven tus bitácoras)" 
-                      : "🪪 Hacer mi perfil Privado"}
-                  </span>
-                </label>
-              </div>
+                  >
+                    💬 Mensaje
+                  </button>
+                </>
+              )}
+            </div>
+
+            {isMe && (
+              <label className="toggle-privacy">
+                <input
+                  type="checkbox"
+                  checked={isProfilePrivate}
+                  onChange={async (e) => {
+                    const value = e.target.checked;
+                    setIsProfilePrivate(value);
+                    await API.put("users/me/", { is_private: value });
+                  }}
+                />
+                <span>{isProfilePrivate ? "🔒 Perfil privado activado" : "🌍 Hacer perfil privado"}</span>
+              </label>
             )}
 
             <div className="passport-meta">
               <div>
-                <span>ESTADO</span>
-                <strong>{isMe ? "Propietario" : "Viajero"}</strong>
+                <span>STATUS</span>
+                <strong>{isMe ? "OWNER" : "TRAVELER"}</strong>
               </div>
               <div>
                 <span>ID</span>
@@ -179,79 +313,91 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="passport-chip">
-          <span>PASSPORT ID</span>
-          <strong>TRVL-{user.id}</strong>
-        </div>
+        <div className="passport-chip">TRVL-{user.id}</div>
       </div>
 
-      {/* REJILLA DE ESTADÍSTICAS (WIDGETS INTERACTIVOS) */}
+      {/* ================= STATS ================= */}
       <div className="passport-stats">
-        <div className="passport-widget" onClick={() => navigate("/trips")}>
-          <h2>{myTrips.length}</h2>
-          <p>✈️ Viajes</p>
+        <div className="passport-widget widget-interactive" onClick={() => navigate("/trips")}>
+          <h2>{trips.length}</h2>
+          <p>✈️ Trips</p>
+        </div>
+
+        <div className="passport-widget widget-interactive" onClick={handleOpenCompanionsModal}>
+          <h2>{companions.friends?.length || 0}</h2>
+          <p>🤝 Companions</p>
         </div>
 
         <div className="passport-widget">
-          <h2>{myPlaces.length}</h2>
-          <p>📍 Lugares</p>
-        </div>
-
-        <div className="passport-widget">
-          <h2>{myLikes.length}</h2>
-          <p>❤️ Likes</p>
-        </div>
-
-        {/* 🚀 WIDGET INTERACTIVO EXCLUSIVO DEL DUEÑO HACIA EL HUB */}
-        <div 
-          className={`passport-widget ${isMe ? "widget-interactive" : ""}`}
-          onClick={() => isMe && navigate("/companions-hub")}
-        >
-          <h2>{totalAcceptedCompanions}</h2>
-          <p>{isMe ? "🤝 Gestionar Círculo" : "🤝 Compañeros"}</p>
+          <h2>0</h2>
+          <p>📍 Places</p>
         </div>
       </div>
 
-      {/* SELLOS DE VIAJE / INSIGNIAS */}
-      <div className="passport-card">
-        <h3>🛂 Insignias de viaje</h3>
-        <div className="travel-stamps">
-          {myPlaces.length > 0 ? (
-            myPlaces.slice(0, 6).map(place => (
-              <div key={place.id} className="travel-stamp">
-                {place.country}
-              </div>
-            ))
-          ) : (
-            <p className="empty-stamps-text">Sin sellos de viaje de momento</p>
-          )}
-        </div>
-      </div>
-
-      {/* VIAJES RECIENTES */}
+      {/* ================= RECENT TRIPS ================= */}
       <div className="passport-card">
         <div className="passport-header">
-          <h3>✈️ Viajes Recientes</h3>
+          <h3>✈️ Recent Trips</h3>
           {isMe && (
-            <button className="profile-add-trip-btn" onClick={() => navigate("/trips/create")}>
-              Añadir viaje
+            <button type="button" className="btn-secondary" onClick={() => navigate("/trips/create")}>
+              + Add trip
             </button>
           )}
         </div>
 
         <div className="profile-grid">
-          {myTrips.length > 0 ? (
-            myTrips.map(trip => (
-              <div key={trip.id} className="profile-place" onClick={() => navigate(`/trips/${trip.id}`)}>
-                <p className="profile-trip-title">{trip.title}</p>
-                <small className="profile-trip-meta">{trip.destination || "Destino libre"}</small>
+          {trips.length > 0 ? (
+            trips.map((trip) => (
+              <div key={trip.id} className="trip-mini-card" onClick={() => navigate(`/trips/${trip.id}`)}>
+                <h4 className="profile-trip-title">{trip.title}</h4>
+                <p className="profile-trip-meta">{trip.destination || "No destination yet"}</p>
               </div>
             ))
           ) : (
-            <p className="empty-stamps-text">No has registrado itinerarios recientes.</p>
+            <div className="empty-state">
+              <p>No trips yet 🧳</p>
+            </div>
           )}
         </div>
       </div>
+
+      {/* ================= MODAL COMPAÑEROS ================= */}
+      {showCompanionsModal && (
+        <div className="td-modal-overlay" onClick={() => setShowCompanionsModal(false)}>
+          <div className="td-modal-card companions-modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="companions-modal-header">
+              <h3>👥 Compañeros de {user.username}</h3>
+              <button type="button" className="companions-modal-close" onClick={() => setShowCompanionsModal(false)}>✕</button>
+            </div>
+            
+            <div className="companions-modal-body">
+              {friendsProfiles.length === 0 ? (
+                <p className="td-empty-gallery-msg">Aún no hay compañeros confirmados en esta bitácora.</p>
+              ) : (
+                <div className="companions-modal-list">
+                  {friendsProfiles.map((friend) => (
+                    <div 
+                      key={friend.id} 
+                      className="companions-modal-item"
+                      onClick={() => {
+                        setShowCompanionsModal(false);
+                        navigate(`/users/${friend.id}`);
+                      }}
+                    >
+                      <img 
+                        src={getMediaUrl(friend.avatar)} 
+                        alt="avatar" 
+                        className="companion-item-avatar"
+                      />
+                      <span className="companion-item-name">@{friend.username}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

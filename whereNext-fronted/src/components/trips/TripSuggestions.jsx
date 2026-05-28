@@ -1,87 +1,107 @@
 import { useEffect, useState } from "react";
 import API from "../../services/api";
+import "../../styles/tripsuggestion.css";
 
-export default function TripSuggestions({ tripId, onSelectDestination }) {
+// ⭐ MISMA FUNCIÓN QUE EN EXPLORE (FUNCIONA)
+const getMediaUrl = (path) => {
+  if (!path) return "/default-place.jpg";
+
+  // Si ya es absoluta → no tocar
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+
+  // Asegurar que empieza con "/"
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+
+  // Construir URL final
+  return `http://127.0.0.1:8000${cleanPath}`;
+};
+
+export default function TripSuggestions({ mood, onSelectDestination }) {
   const [suggestions, setSuggestions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!tripId || tripId === "undefined") {
-      setLoading(false);
-      return;
-    }
+    if (!mood) return;
 
-    API.get(`/trips/${tripId}/suggestions/`)
-      .then(res => {
-        const placesList = res.data?.suggested_places || (Array.isArray(res.data) ? res.data : []);
-        setSuggestions(placesList);
-      })
-      .catch(err => console.error("Error al obtener sugerencias:", err))
-      .finally(() => setLoading(false));
-  }, [tripId]);
+    const fetchSuggestions = async () => {
+      setLoading(true);
 
-  if (loading) return <p style={{ opacity: 0.5, fontSize: "14px" }}>⏳ Buscando lugares relajantes compatibles...</p>;
+      try {
+        const category = mood;
+
+        const res = await API.get("/places/", {
+          params: { category }
+        });
+
+        const clean = Array.isArray(res.data)
+          ? res.data
+          : res.data.results || [];
+
+        setSuggestions(clean.slice(0, 6));
+
+      } catch (err) {
+        console.error("Error cargando sugerencias:", err);
+        setSuggestions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSuggestions();
+  }, [mood]);
 
   return (
-    <div className="trip-suggestions-box" style={{ marginTop: "24px" }}>
-      <h3 style={{ fontSize: "1.3rem", fontWeight: "700", color: "#38bdf8", marginBottom: "4px" }}>
-        🌿 Lugares tranquilos recomendados para tu viaje
-      </h3>
-      <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)", margin: "0 0 16px 0" }}>
-        💡 Haz clic sobre cualquier fila para establecerla como destino de tu itinerario automáticamente.
-      </p>
+    <div className="trip-suggestions-container">
 
-      {suggestions.length === 0 ? (
-        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "14px", fontStyle: "italic" }}>
-          No hay sugerencias automáticas de momento. Asegúrate de tener lugares subidos en Explore que coincidan con el mood de tu viaje.
+      <h3 className="ts-title">
+        ✨ Sugerencias para tu aventura
+      </h3>
+
+      {loading && (
+        <p className="ts-loading">
+          Buscando lugares mágicos...
         </p>
-      ) : (
-        <ul className="suggestions-list" style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
-          {suggestions.map((place) => (
-            <li 
-              key={place.id} 
-              // 🚀 CAPTURA DEL EVENTO CLIC: Llama al callback del componente padre deteniendo la propagación nativa
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onSelectDestination) {
-                  onSelectDestination(place.name);
-                }
-              }}
-              style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.06)",
-                padding: "14px 18px",
-                borderRadius: "14px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                cursor: "pointer", /* 👈 Fuerza el cursor interactivo */
-                transition: "all 0.2s ease",
-                pointerEvents: "auto" /* Asegura que la fila reciba impactos del mouse */
-              }}
-              // Micro-animación interactiva en caliente para acompañar tus estilos oscuros
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = "#38bdf8";
-                e.currentTarget.style.background = "rgba(56, 189, 248, 0.05)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)";
-                e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
-              }}
-            >
-              {/* 🔒 Protegemos las etiquetas interiores para que no intercepten el clic del contenedor padre */}
-              <div style={{ pointerEvents: "none" }}>
-                <span style={{ fontWeight: "700", color: "#ffffff", display: "block", fontSize: "15px" }}>📍 {place.name}</span>
-                {place.country && <small style={{ color: "rgba(255,255,255,0.5)" }}>{place.country}</small>}
-              </div>
-              
-              <span className="badge" style={{ background: "rgba(52, 211, 153, 0.12)", color: "#34d399", padding: "6px 12px", borderRadius: "8px", fontSize: "12px", fontWeight: "600", pointerEvents: "none" }}>
-                Paz Score: {place.quiet_score || "Tranquilo"}
-              </span>
-            </li>
-          ))}
-        </ul>
       )}
+
+      {!loading && suggestions.length === 0 && (
+        <p className="ts-empty">
+          No hay sugerencias para este mood todavía.
+        </p>
+      )}
+
+      <div className="ts-grid">
+
+  {suggestions.map((place) => (
+    <div
+      key={place.id}
+      className="ts-card"
+      onClick={() =>
+        onSelectDestination(
+          place.name,
+          getMediaUrl(place.image_url || place.image)
+        )
+      }
+    >
+
+      <img
+        src={getMediaUrl(place.image_url || place.image)}
+        onError={(e) => (e.currentTarget.src = "/default-place.jpg")}
+        alt={place.name}
+        className="ts-image"
+      />
+
+      <div className="ts-info">
+        <h4>{place.name}</h4>
+        <p>{place.category}</p>
+      </div>
+
+    </div>
+  ))}
+
+</div>
+
     </div>
   );
 }
