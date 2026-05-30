@@ -423,6 +423,27 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 /* =========================================================================
+   📸 FIX — PREVIEW IMAGE (NO MÁS DEFORMACIONES)
+   ========================================================================= */
+
+.td-preview-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.td-preview-image {
+  width: 100%;
+  max-width: 420px;
+  height: auto;              
+  border-radius: 16px;
+  object-fit: cover;         
+  display: block;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+
+/* =========================================================================
    📱 ADAPTACIÓN SMARTPHONE
    ========================================================================= */
 @media (max-width: 768px) {

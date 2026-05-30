@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import API from "../services/api";
 import TripPhotoUpload from "../components/trips/TripPhotoUpload";
 import TripSuggestions from "../components/trips/TripSuggestions";
-import "/src/styles/TripDetails.css"; 
+import "/src/styles/TripDetails.css";
 
 export default function TripDetails() {
   const { id } = useParams();
@@ -18,7 +18,7 @@ export default function TripDetails() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // ESTADOS DEL FORMULARIO DE EDICIÓN
+  // FORM STATES
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editDestination, setEditDestination] = useState("");
@@ -26,8 +26,8 @@ export default function TripDetails() {
   const [editStartDate, setEditStartDate] = useState("");
   const [editEndDate, setEditEndDate] = useState("");
   const [editIsPublic, setEditIsPublic] = useState(false);
-  
-  // ESTADOS SOCIALES DE AMIGOS ADAPTADOS
+
+  // SOCIAL STATES
   const [tripType, setTripType] = useState("solo");
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [friends, setFriends] = useState([]);
@@ -40,11 +40,10 @@ export default function TripDetails() {
   };
 
   // =========================================================
-  // CARGA DE DATOS UNIFICADA (ITINERARIO + HUB DE AMIGOS)
+  // LOAD TRIP DATA
   // =========================================================
   const loadTripData = async () => {
     try {
-      // 1. Solicitamos los metadatos de la bitácora actual
       const res = await API.get(`/trips/${id}/`);
       const data = res.data;
 
@@ -59,13 +58,12 @@ export default function TripDetails() {
       setTripType(data.trip_type || "solo");
       setSelectedFriend(data.co_traveler || null);
 
-      // 2. Solicitamos tu lista de amigos desde el endpoint real
       const friendsRes = await API.get("companions/");
       setFriends(friendsRes.data || []);
 
       setError(false);
     } catch (err) {
-      console.error("Error cargando el pasaporte del viaje:", err);
+      console.error("Error cargando viaje:", err);
       setTrip(null);
       setError(true);
     } finally {
@@ -87,14 +85,14 @@ export default function TripDetails() {
       await API.patch(`/trips/${id}/`, { destination: newDestination });
       setTrip((prev) => ({ ...prev, destination: newDestination }));
       setEditDestination(newDestination);
-      showToast("📍 Destino fijado con éxito");
+      showToast("📍 Destino actualizado");
     } catch (err) {
       console.error(err);
     }
   };
 
   // =========================================================
-  // ACCIÓN CRUD: GUARDAR CAMBIOS DE EDICIÓN
+  // SAVE EDITS
   // =========================================================
   const handleSaveChanges = async () => {
     try {
@@ -114,14 +112,14 @@ export default function TripDetails() {
       setTrip(res.data);
       setIsEditing(false);
       loadTripData();
-      showToast("💾 Cambios guardados correctamente");
+      showToast("💾 Cambios guardados");
     } catch (err) {
       console.error(err);
     }
   };
 
   // =========================================================
-  // ACCIÓN CRUD: ELIMINAR ITINERARIO PERMANENTE
+  // DELETE TRIP
   // =========================================================
   const handleConfirmDelete = async () => {
     setIsDeleting(true);
@@ -134,14 +132,14 @@ export default function TripDetails() {
     }
   };
 
-  if (loading) return <p className="td-loading-state">⏳ Cargando pasaporte digital...</p>;
+  if (loading) return <p className="td-loading-state">⏳ Cargando viaje...</p>;
 
   if (error || !trip) {
     return (
       <div className="td-error-view">
         <h2>✈️ Viaje no encontrado</h2>
         <button className="td-back-btn" onClick={() => navigate("/trips")}>
-          Volver a mis viajes
+          Volver
         </button>
       </div>
     );
@@ -150,28 +148,23 @@ export default function TripDetails() {
   return (
     <div className="trip-details-view">
 
-      {/* TOAST FLOTANTE INYECTADO */}
-      {toastMessage && (
-        <div className="td-toast-notification">
-          {toastMessage}
-        </div>
-      )}
+      {toastMessage && <div className="td-toast-notification">{toastMessage}</div>}
 
       <button className="td-back-btn" onClick={() => navigate("/trips")}>
         ← Volver
       </button>
 
-      {/* CABECERA PRINCIPAL */}
+      {/* HEADER */}
       <div className="td-header">
         {isEditing ? (
           <div className="td-edit-input-group">
-            <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="td-edit-input" placeholder="Título" />
-            <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="td-edit-input" placeholder="Descripción" />
+            <input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="td-edit-input" />
+            <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="td-edit-input" />
           </div>
         ) : (
           <div className="header-info">
             <h1>{trip.title}</h1>
-            <p className="td-description">{trip.description || "Sin descripción disponible."}</p>
+            <p className="td-description">{trip.description || "Sin descripción."}</p>
           </div>
         )}
 
@@ -183,30 +176,32 @@ export default function TripDetails() {
             </>
           ) : (
             <>
-              <button type="button" className="td-upload-trigger-btn btn-edit-variant" onClick={() => setIsEditing(true)}>✏️ Editar</button>
+              <button className="td-upload-trigger-btn btn-edit-variant" onClick={() => setIsEditing(true)}>✏️ Editar</button>
               <button className="td-back-btn td-delete-btn" onClick={() => setShowDeleteModal(true)}>🗑️ Eliminar</button>
             </>
           )}
         </div>
       </div>
 
-      {/* TARJETA PASAPORTE DE METADATOS COMPACTA */}
+      {/* META CARD */}
       <div className="td-meta-card">
+        {/* DESTINATION */}
         <div className="td-meta-item">
-          <label>DESTINO FIJADO</label>
+          <label>DESTINO</label>
           {isEditing ? (
-            <input className="td-edit-input" value={editDestination} onChange={(e) => setEditDestination(e.target.value)} placeholder="Ej: Seúl" />
+            <input className="td-edit-input" value={editDestination} onChange={(e) => setEditDestination(e.target.value)} />
           ) : (
             <strong className="td-destination-highlight">
-              {trip.destination ? `📍 ${trip.destination}` : "🚫 Ninguno seleccionado. ¡Elige una sugerencia abajo!"}
+              {trip.destination ? `📍 ${trip.destination}` : "🚫 Ninguno seleccionado"}
             </strong>
           )}
         </div>
 
+        {/* MOOD */}
         <div className="td-meta-item">
-          <label>MOOD DEL VIAJE</label>
+          <label>MOOD</label>
           {isEditing ? (
-            <select className="td-edit-input select-mood-variant" value={editMood} onChange={(e) => setEditMood(e.target.value)}>
+            <select className="td-edit-input" value={editMood} onChange={(e) => setEditMood(e.target.value)}>
               <option value="CITY">🏙️ Ciudad</option>
               <option value="NATURE">🌿 Naturaleza</option>
               <option value="BEACH">🏖️ Playa</option>
@@ -214,88 +209,50 @@ export default function TripDetails() {
               <option value="FOOD">🍜 Gastronomía</option>
             </select>
           ) : (
-            <strong className="td-mood-highlight">{trip.mood || "No definido"}</strong>
+            <strong className="td-mood-highlight">{trip.mood}</strong>
           )}
         </div>
 
-        {/* SELECTOR: TIPO DE VIAJE */}
+        {/* TYPE */}
         <div className="td-meta-item">
-          <label>TIPO DE VIAJE</label>
+          <label>TIPO</label>
           {isEditing ? (
-            <select className="td-edit-input select-mood-variant" value={tripType} onChange={(e) => setTripType(e.target.value)}>
-              <option value="solo">🌙 Viaje sola</option>
-              <option value="couple">💞 Viaje para dos</option>
-              <option value="group">👥 Viaje en grupo</option>
+            <select className="td-edit-input" value={tripType} onChange={(e) => setTripType(e.target.value)}>
+              <option value="solo">🌙 Sola</option>
+              <option value="couple">💞 Pareja</option>
+              <option value="group">👥 Grupo</option>
             </select>
           ) : (
             <strong className="td-mood-highlight">
-              {tripType === "solo" && "🌙 Viaje sola"}
-              {tripType === "couple" && "💞 En pareja"}
-              {tripType === "group" && "👥 En grupo"}
+              {tripType === "solo" && "🌙 Sola"}
+              {tripType === "couple" && "💞 Pareja"}
+              {tripType === "group" && "👥 Grupo"}
             </strong>
           )}
         </div>
 
-        {/* CHIPS DE COMPAÑEROS ACTIVOS */}
-        {tripType === "couple" && (
-          <div className="td-meta-item">
-            <label>COMPAÑERO DE AVENTURA</label>
-            {isEditing ? (
-              <div className="td-couple-chips-container">
-                {friends.length === 0 ? (
-                  <p className="td-empty-gallery-msg">Necesitas compañeros aceptados en tu hub para seleccionarlos.</p>
-                ) : (
-                  friends.map((f) => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      className={selectedFriend === f.id ? "td-friend-chip active" : "td-friend-chip"}
-                      onClick={() => setSelectedFriend(f.id)}
-                    >
-                      @{f.username}
-                    </button>
-                  ))
-                )}
-              </div>
-            ) : (
-              <strong className="td-destination-highlight">
-                {trip?.co_traveler_username ? `✉️ Conectado con @${trip.co_traveler_username}` : "💞 Buscando acompañante... (Pulsa Editar para fijarlo)"}
-              </strong>
-            )}
-          </div>
-        )}
-                {/* REJILLA DE FECHAS */}
+        {/* DATES */}
         <div className="td-dates-row">
           <div className="td-meta-item">
-            <label>FECHA INICIO</label>
+            <label>INICIO</label>
             {isEditing ? (
-              <input 
-                type="date" 
-                className="td-edit-input" 
-                value={editStartDate} 
-                onChange={(e) => setEditStartDate(e.target.value)} 
-              />
+              <input type="date" className="td-edit-input" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} />
             ) : (
               <span className="td-date-val">{trip.start_date || "No definido"}</span>
             )}
           </div>
 
           <div className="td-meta-item">
-            <label>FECHA FIN</label>
+            <label>FIN</label>
             {isEditing ? (
-              <input 
-                type="date" 
-                className="td-edit-input" 
-                value={editEndDate} 
-                onChange={(e) => setEditEndDate(e.target.value)} 
-              />
+              <input type="date" className="td-edit-input" value={editEndDate} onChange={(e) => setEditEndDate(e.target.value)} />
             ) : (
               <span className="td-date-val">{trip.end_date || "No definido"}</span>
             )}
           </div>
         </div>
 
-        {/* PRIVACIDAD */}
+        {/* PRIVACY */}
         <div className="td-visibility-row">
           <label className="checkbox-container">
             <input
@@ -307,104 +264,116 @@ export default function TripDetails() {
                   await API.patch(`/trips/${id}/`, { is_public: value });
                   setTrip((prev) => ({ ...prev, is_public: value }));
                   setEditIsPublic(value);
-                  showToast(value ? "🌍 Itinerario configurado como Público" : "🔒 Itinerario configurado como Privado");
+                  showToast(value ? "🌍 Público" : "🔒 Privado");
                 } catch (err) {
                   console.error(err);
                 }
               }}
             />
             <span className="checkbox-text">
-              {editIsPublic ? "🌍 Público para la comunidad" : "🔒 Privado (solo tú y amigos)"}
+              {editIsPublic ? "🌍 Público" : "🔒 Privado"}
             </span>
           </label>
         </div>
-
-        {/* BOTÓN PUBLICAR AVENTURA */}
-        {!isEditing && !trip.is_published && (
-          <div className="td-publish-wrapper">
-            <button
-              type="button"
-              className="td-publish-btn"
-              onClick={async () => {
-                try {
-                  await API.patch(`/trips/${id}/`, { is_published: true });
-                  setTrip((prev) => ({ ...prev, is_published: true }));
-                  showToast("🚀 Aventura publicada en el feed");
-                  setTimeout(() => navigate("/"), 800);
-                } catch (err) {
-                  console.error(err);
-                }
-              }}
-            >
-              🚀 Publicar Aventura
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* =========================================================================
-         🚀 CONDITIONAL TRIGGER: Only show suggestions when editing OR when destination is empty
-         ========================================================================= */}
-       {(isEditing || !trip.destination) && trip.id && (
-  <TripSuggestions 
-    mood={isEditing ? editMood : trip.mood}
-    onSelectDestination={(name /*, image */) => {
-      // 1) Actualizamos solo el formulario
-      setEditDestination(name);
-
-      // 2) Si NO estás editando, sincronizamos backend con el nuevo destino
-      if (!isEditing) {
-        handleUpdateDestination(name);
-      }
-
-      // 3) No tocamos trip.photos en ningún caso
-      showToast("📍 Destino actualizado");
-    }}
-  />
+          {/* BOTÓN PUBLICAR AVENTURA */}
+{!isEditing && !trip.is_published && (
+  <div className="td-publish-wrapper">
+    <button
+      type="button"
+      className="td-publish-btn"
+      onClick={async () => {
+        try {
+          await API.patch(`/trips/${id}/`, { is_published: true });
+          setTrip((prev) => ({ ...prev, is_published: true }));
+          showToast("🚀 Aventura publicada en el feed");
+          setTimeout(() => navigate("/"), 800);
+        } catch (err) {
+          console.error(err);
+        }
+      }}
+    >
+      🚀 Publicar Aventura
+    </button>
+  </div>
 )}
 
 
-      {/* GALERÍA MULTIMEDIA */}
-      <div className="td-gallery-section">
-        <h3>📷 Galería multimedia</h3>
-        <div className="td-photo-grid">
-          {trip.photos?.length ? (
-            trip.photos.map((p) => (
-              <img
-                key={p.id}
-                src={p.image.startsWith("http") ? p.image : `http://127.0.0.1:8000${p.image}`}
-                className="td-gallery-image"
-                alt="Recuerdo"
-              />
-            ))
-          ) : (
-            <p className="td-empty-gallery-msg">Una vez allí no olvides inmortalizar este destino.</p>
-          )}
-        </div>
-        <button type="button" className="td-upload-trigger-btn" onClick={() => setShowUpload(true)}>
-          📸 Subir foto de recuerdo
-        </button>
       </div>
 
-      {showUpload && trip.id && (
-        <TripPhotoUpload 
-          tripId={trip.id} 
-          onUploaded={() => { loadTripData(); setShowUpload(false); }} 
+      {/* SUGGESTIONS */}
+      {(isEditing || !trip.destination) && trip.id && (
+        <TripSuggestions
+          mood={isEditing ? editMood : trip.mood}
+          onSelectDestination={(name) => {
+            setEditDestination(name);
+            if (!isEditing) handleUpdateDestination(name);
+            showToast("📍 Destino actualizado");
+          }}
         />
       )}
 
-      {/* MODAL ELIMINAR */}
+      {/* GALLERY */}
+      <div className="td-gallery-section">
+        <h3>📷 Galería multimedia</h3>
+
+        <div className="td-photo-grid">
+          {trip.photos?.length ? (
+            trip.photos
+              .filter((p) => p && p.image)
+              .map((p) => (
+                <img
+                  key={p.id}
+                  src={p.image.startsWith("http") ? p.image : `http://127.0.0.1:8000${p.image}`}
+                  className="td-gallery-image"
+                  alt="Recuerdo"
+                />
+              ))
+          ) : (
+            <p className="td-empty-gallery-msg">Aún no hay fotos.</p>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="td-upload-trigger-btn"
+          onClick={() => {
+            if (!trip || !trip.id) {
+              showToast("⏳ Cargando viaje...");
+              return;
+            }
+            setShowUpload(true);
+          }}
+        >
+          📸 Subir foto
+        </button>
+      </div>
+
+      {/* UPLOAD MODAL */}
+      {showUpload && trip && trip.id && (
+        <TripPhotoUpload
+          tripId={trip.id}
+          onUploaded={(newPhoto) => {
+            setTrip((prev) => ({
+              ...prev,
+              photos: [...(prev.photos || []), newPhoto].filter(Boolean)
+            }));
+            setShowUpload(false);
+          }}
+        />
+      )}
+
+      {/* DELETE MODAL */}
       {showDeleteModal && (
         <div className="td-modal-overlay">
           <div className="td-modal-card">
-            <h3>⚠️ ¿Archivar aventura?</h3>
-            <p className="td-modal-text">Estás a punto de borrar tu pasaporte de viaje de forma permanente. Esta acción no se puede deshacer.</p>
+            <h3>⚠️ ¿Eliminar aventura?</h3>
+            <p>Esta acción no se puede deshacer.</p>
             <div className="td-modal-actions">
-              <button type="button" className="td-modal-btn-confirm" onClick={handleConfirmDelete} disabled={isDeleting}>
-                {isDeleting ? "Archivando..." : "Sí, eliminar"}
+              <button className="td-modal-btn-confirm" onClick={handleConfirmDelete} disabled={isDeleting}>
+                {isDeleting ? "Eliminando..." : "Sí, eliminar"}
               </button>
-              <button type="button" className="td-modal-btn-cancel" onClick={() => setShowDeleteModal(false)}>
-                Volver atrás
+              <button className="td-modal-btn-cancel" onClick={() => setShowDeleteModal(false)}>
+                Cancelar
               </button>
             </div>
           </div>

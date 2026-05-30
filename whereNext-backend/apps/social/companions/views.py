@@ -16,6 +16,10 @@ from .serializers import CompanionSerializer
 from apps.trips.models import Trip
 from apps.trips.serializers import TripSerializer
 
+# Notifications
+from apps.social.notifications.models import Notification
+from django.contrib.contenttypes.models import ContentType
+
 User = get_user_model()
 
 
@@ -32,16 +36,10 @@ class CompanionViewSet(viewsets.ModelViewSet):
             Q(user=self.request.user) | Q(companion=self.request.user)
         )
 
-    # 🚀 MASTER ROOT LIST OVERRIDE: Targets GET /api/companions/ character-for-character
+    # 🚀 MASTER ROOT LIST OVERRIDE
     def list(self, request, *args, **kwargs):
-        """
-        🛡️ IDENTITY BARRIER GATEWAY: Overrides standard outputs to return 
-        strictly and exclusively a flat array list of approved friends profiles.
-        It isolates Luz and prevents you from autoinviting yourself!
-        """
         current_user = request.user
 
-        # Fetch strictly accepted friend rows where the session traveler is a participant
         approved_friendships = Companion.objects.filter(
             Q(user=current_user) | Q(companion=current_user),
             status__iexact="ACCEPTED"
@@ -50,32 +48,34 @@ class CompanionViewSet(viewsets.ModelViewSet):
         clean_friends_payload = []
         
         for friendship in approved_friendships:
-            # 🛡️ IDENTITY DETECTOR: Determine which side of the table holds your friend's profile data
             if friendship.user == current_user:
                 friend_account = friendship.companion
             else:
                 friend_account = friendship.user
 
-            # Fallback filter check: Safeguard against broken profiles or self-referencing links
             if not friend_account or friend_account == current_user:
                 continue
 
-            # Append an explicit, flat dictionary structure directly matching your React explore loop keys
             clean_friends_payload.append({
                 "id": friend_account.id,
                 "username": friend_account.username,
-                "avatar": friend_account.profile.avatar.url if (hasattr(friend_account, "profile") and friend_account.profile.avatar) else None
+                "avatar": friend_account.profile.avatar.url 
+                    if (hasattr(friend_account, "profile") and friend_account.profile.avatar) 
+                    else None
             })
 
         return Response(clean_friends_payload, status=status.HTTP_200_OK)
 
-    # Block traditional creation calls to enforce explicit actions parameters instead
+    # Block traditional creation calls
     def create(self, request, *args, **kwargs):
         return Response(
             {"error": "Usa /invite/<user_id>/ para enviar solicitudes"},
             status=status.HTTP_400_BAD_REQUEST
         )
 
+    # ============================
+    # INVITE
+    # ============================
     @action(detail=False, methods=["post"], url_path="invite/(?P<user_id>[0-9]+)")
     def invite(self, request, user_id=None):
         target = get_object_or_404(User, id=user_id)
@@ -97,68 +97,74 @@ class CompanionViewSet(viewsets.ModelViewSet):
             status="PENDING"
         )
 
-        from apps.social.notifications.models import Notification
         Notification.objects.create(
             user=target,
             from_user=request.user,
             notification_type="FRIEND_REQUEST",
             text_preview=f"{request.user.username} te ha enviado una solicitud de compañero.",
-            request_id=instance.id  
+            content_type=ContentType.objects.get_for_model(instance),
+            object_id=instance.id
         )
 
         return Response({"status": "PENDING", "id": instance.id}, status=status.HTTP_201_CREATED)
 
+    # ============================
+    # ACCEPT
+    # ============================
     @action(detail=False, methods=["post"], url_path="accept/(?P<request_id>[0-9]+)")
     def accept(self, request, request_id=None):
         instance = get_object_or_404(Companion, id=request_id, companion=request.user)
         instance.status = "ACCEPTED"
         instance.save()
 
-        from apps.social.notifications.models import Notification
         Notification.objects.create(
             user=instance.user,
             from_user=request.user,
             notification_type="FRIEND_ACCEPTED",
             text_preview=f"{request.user.username} ha aceptado tu solicitud.",
-            request_id=instance.id
+            content_type=ContentType.objects.get_for_model(instance),
+            object_id=instance.id
         )
 
         return Response({"status": "ACCEPTED"}, status=status.HTTP_200_OK)
 
+    # ============================
+    # REJECT
+    # ============================
     @action(detail=False, methods=["post"], url_path="reject/(?P<request_id>[0-9]+)")
     def reject(self, request, request_id=None):
         instance = get_object_or_404(Companion, id=request_id, companion=request.user)
 
-        from apps.social.notifications.models import Notification
         Notification.objects.create(
             user=instance.user,
             from_user=request.user,
             notification_type="FRIEND_REJECTED",
             text_preview=f"{request.user.username} ha rechazado tu solicitud.",
-            request_id=instance.id
+            content_type=ContentType.objects.get_for_model(instance),
+            object_id=instance.id
         )
 
         instance.delete()
         return Response({"status": "REMOVED"}, status=status.HTTP_200_OK)
 
+    # ============================
+    # CANCEL
+    # ============================
     @action(detail=False, methods=["post"], url_path="cancel/(?P<request_id>[0-9]+)")
     def cancel(self, request, request_id=None):
-      """
-       Permite cancelar una solicitud PENDING enviada por el usuario actual.
-       """
-      instance = get_object_or_404(
-        Companion,
-        id=request_id,
-        user=request.user,  # Solo quien envió puede cancelar
-        status="PENDING"
-    )
+        instance = get_object_or_404(
+            Companion,
+            id=request_id,
+            user=request.user,
+            status="PENDING"
+        )
 
-      instance.delete()
+        instance.delete()
+        return Response({"status": "CANCELLED"}, status=status.HTTP_200_OK)
 
-      return Response({"status": "CANCELLED"}, status=status.HTTP_200_OK)
 
 # =========================================================
-# HUB DE COMPANIONS (PENDING / RECEIVED / FRIENDS)
+# HUB DE COMPANIONS
 # =========================================================
 class companionsHubView(APIView):
     permission_classes = [IsAuthenticated]
@@ -180,7 +186,7 @@ class companionsHubView(APIView):
 
 
 # =========================================================
-# FEED DE VIAJES (AMIGOS + PÚBLICOS + PROPIOS)
+# FEED DE VIAJES
 # =========================================================
 class FeedTripsView(APIView):
     authentication_classes = [JWTAuthentication]

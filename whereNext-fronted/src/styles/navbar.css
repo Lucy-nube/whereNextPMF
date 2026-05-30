@@ -496,6 +496,30 @@
    💬 CONTADOR DE CHATS NO LEÍDOS — BURBUJA FLOTANTE NEÓN
    ========================================================================= */
 
+   .notif-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.notif-accept-btn {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.notif-reject-btn {
+  background: #e53935;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
 .sidebar-link-with-badge-wrapper {
   position: relative !important;
   display: flex !important;

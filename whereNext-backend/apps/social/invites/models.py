@@ -1,7 +1,6 @@
 from django.db import models
 from django.conf import settings
 
-
 class Invite(models.Model):
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL,

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import API from "../../services/api";
 import "../../styles/tripsuggestion.css";
 
-// ⭐ MISMA FUNCIÓN QUE EN EXPLORE (FUNCIONA)
+
 const getMediaUrl = (path) => {
   if (!path) return "/default-place.jpg";
 
@@ -11,12 +11,15 @@ const getMediaUrl = (path) => {
     return path;
   }
 
-  // Asegurar que empieza con "/"
-  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  // Asegurar que siempre incluya /media/
+  if (!path.startsWith("/media/")) {
+    path = `/media/${path.replace(/^\/+/, "")}`;
+  }
 
-  // Construir URL final
-  return `http://127.0.0.1:8000${cleanPath}`;
+  return `http://127.0.0.1:8000${path}`;
 };
+
+
 
 export default function TripSuggestions({ mood, onSelectDestination }) {
   const [suggestions, setSuggestions] = useState([]);

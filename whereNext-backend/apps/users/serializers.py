@@ -42,9 +42,18 @@ class PublicUserSerializer(serializers.ModelSerializer):
         fields = ["id", "username", "avatar", "bio"]
 
     def get_avatar(self, obj):
-        if hasattr(obj, "profile") and obj.profile.avatar:
-            return obj.profile.avatar.url
-        return None
+     # Avatar en User
+     if getattr(obj, "avatar", None):
+        return obj.avatar.url
+
+     # Avatar en Profile
+     if hasattr(obj, "profile") and obj.profile.avatar:
+        return obj.profile.avatar.url
+
+     return None
+
+
+
 
     def get_bio(self, obj):
         if hasattr(obj, "profile"):

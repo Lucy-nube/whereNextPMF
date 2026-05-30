@@ -3,9 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import placeService from "../services/placeService";
 import tripService from "../services/tripService";
 import { useAuth } from "../context/AuthContext";
-import API from "../services/api"; // Para llamadas directas si tus servicios no cubren likes/comments
+import API from "../services/api";
 import Loading from "../components/common/Loading";
-import "../styles/PlaceDetails.css"; 
+import "../styles/PlaceDetails.css";
 
 export default function PlaceDetails() {
   const { id } = useParams();
@@ -16,13 +16,12 @@ export default function PlaceDetails() {
   const [loading, setLoading] = useState(true);
   const [added, setAdded] = useState(false);
 
-  // ESTADOS DEL APARTADO INTERACTIVO
   const [likesCount, setLikesCount] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
-  
+
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  
+
   const [rating, setRating] = useState(0);
   const [userRating, setUserRating] = useState(0);
 
@@ -37,8 +36,7 @@ export default function PlaceDetails() {
       try {
         const data = await placeService.getById(id);
         setPlace(data);
-        
-        // Inicializamos los contadores basados en tu JSON del backend
+
         setLikesCount(data.likes?.length || 0);
         setHasLiked(data.likes?.includes(currentUser?.id) || false);
         setComments(data.comments || []);
@@ -54,22 +52,16 @@ export default function PlaceDetails() {
     if (id) fetchPlaceData();
   }, [id, currentUser?.id]);
 
-  // =========================================================
-  // INTERACCIÓN: DAR/QUITAR ME GUSTA (LIKE SYSTEM)
-  // =========================================================
   const handleToggleLike = async () => {
     try {
       await API.post(`places/${id}/like/`);
       setHasLiked(!hasLiked);
-      setLikesCount(prev => hasLiked ? prev - 1 : prev + 1);
+      setLikesCount(prev => (hasLiked ? prev - 1 : prev + 1));
     } catch (error) {
       console.error("Error al conmutar el me gusta:", error);
     }
   };
 
-  // =========================================================
-  // INTERACCIÓN: REGISTRAR CALIFICACIÓN (RATING SYSTEM)
-  // =========================================================
   const handleRatePlace = async (stars) => {
     try {
       const res = await API.post(`places/${id}/rate/`, { rating: stars });
@@ -82,26 +74,19 @@ export default function PlaceDetails() {
     }
   };
 
-  // =========================================================
-  // INTERACCIÓN: PUBLICAR COMENTARIO (COMMENTS ENGINE)
-  // =========================================================
   const handlePostComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
     try {
       const res = await API.post(`places/${id}/comments/`, { text: newComment });
-      
-      // Inyectamos el comentario al vuelo en la lista para UX instantánea
+
       const freshlyCreatedComment = {
         id: res.data?.id || Date.now(),
         text: newComment,
         created_at: new Date().toISOString(),
-        user: {
-          id: currentUser?.id,
-          username: currentUser?.username || "Tú",
-          avatar: currentUser?.avatar || null
-        }
+        user_username: currentUser?.username,
+        user_avatar: currentUser?.avatar
       };
 
       setComments(prev => [freshlyCreatedComment, ...prev]);
@@ -127,7 +112,7 @@ export default function PlaceDetails() {
     return (
       <div className="place-details-page">
         <div className="place-info-card">
-          <p className="no-comments-fallback">No se encontró este lugar en el catálogo de WhereNext.</p>
+          <p className="no-comments-fallback">No se encontró este lugar.</p>
           <button type="button" className="comment-submit-btn" onClick={() => navigate("/explore")}>
             Volver a Explorar
           </button>
@@ -138,13 +123,12 @@ export default function PlaceDetails() {
 
   return (
     <div className="place-details-page">
-      
-      {/* PANORAMICA BANNER HERO */}
+
       <div className="place-header">
-        <img 
-          src={getMediaUrl(place.image || place.image_url, "/default-place.jpg")} 
-          alt={place.name} 
-          className="place-header-image" 
+        <img
+          src={getMediaUrl(place.image || place.image_url, "/default-place.jpg")}
+          alt={place.name}
+          className="place-header-image"
         />
         <div className="place-header-overlay">
           <h1>{place.name}</h1>
@@ -154,10 +138,9 @@ export default function PlaceDetails() {
         </div>
       </div>
 
-      {/* METADATOS Y ACCIONES PRINCIPALES */}
       <div className="place-info-card">
         <p className="place-description-text">{place.description}</p>
-        
+
         <div className="place-tags-deck">
           <span className="place-badge-category">Multitud: {place.crowd_level || "Baja"}</span>
           {place.category && (
@@ -166,26 +149,24 @@ export default function PlaceDetails() {
           <span className="place-badge-category">⭐ Promedio: {Number(rating).toFixed(1)} / 5</span>
         </div>
 
-        {/* REJILLA DE ENLACES INTERACTIVOS (LIKES & RATINGS) */}
         <div className="comment-form-container">
-          <button 
-            type="button" 
+          <button
+            type="button"
             className={`comment-submit-btn ${hasLiked ? "btn-friend" : ""}`}
             onClick={handleToggleLike}
           >
             {hasLiked ? "❤️ Te gusta" : "🤍 Dar Me Gusta"} ({likesCount})
           </button>
 
-          <button 
-            type="button" 
-            className="comment-submit-btn" 
+          <button
+            type="button"
+            className="comment-submit-btn"
             onClick={handleAddToTrip}
           >
             {added ? "Añadido ✓" : "✈️ Añadir a mi viaje"}
           </button>
         </div>
 
-        {/* SELECTOR DE ESTRELLAS DE CALIFICACIÓN */}
         <div className="comment-user-meta">
           <span className="comment-author-name">Tu calificación:</span>
           <div className="place-tags-deck">
@@ -203,17 +184,15 @@ export default function PlaceDetails() {
         </div>
       </div>
 
-      {/* BLOQUE DE CRÍTICAS Y COMENTARIOS */}
       <div className="comments-section">
         <h3>💬 Conversación y Consejos de Viajeros</h3>
 
-        {/* FORMULARIO DE ENVÍO */}
         <form onSubmit={handlePostComment} className="comment-form-container">
           <textarea
             className="comment-input-field"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Comparte un consejo sobre este destino, transporte, mejor hora para ir..."
+            placeholder="Comparte un consejo..."
             required
           />
           <button type="submit" className="comment-submit-btn">
@@ -221,29 +200,29 @@ export default function PlaceDetails() {
           </button>
         </form>
 
-        {/* LISTADO DE TARJETAS DE COMENTARIOS */}
         <div className="comments-list">
           {comments.length === 0 ? (
-            <p className="no-comments-fallback">Aún no hay consejos para este rincón. ¡Sé el primero en escribir!</p>
+            <p className="no-comments-fallback">Aún no hay consejos. ¡Sé el primero!</p>
           ) : (
             comments.map((comment) => {
-              const author = comment.user || {};
-              const authorName = author.username || "Viajero";
-              const avatar = author.avatar || author.profile?.avatar;
+              const authorName = comment.user_username || "Viajero";
+              const avatar = comment.user_avatar;
 
               return (
                 <div key={comment.id} className="comment-card">
                   <div className="comment-avatar-wrapper">
-                    <img 
-                      src={getMediaUrl(avatar, "/default-avatar.png")} 
-                      alt="avatar" 
+                    <img
+                      src={getMediaUrl(avatar, "/default-avatar.png")}
+                      alt="avatar"
                     />
                   </div>
                   <div className="comment-content-block">
                     <div className="comment-user-meta">
                       <span className="comment-author-name">@{authorName}</span>
                       <span className="comment-date-subtext">
-                        {comment.created_at ? new Date(comment.created_at).toLocaleDateString() : "Reciente"}
+                        {comment.created_at
+                          ? new Date(comment.created_at).toLocaleDateString()
+                          : "Reciente"}
                       </span>
                     </div>
                     <p className="comment-body-text">{comment.text}</p>

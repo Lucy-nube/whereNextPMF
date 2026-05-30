@@ -17,7 +17,6 @@ export default function TripCreate() {
   const [description, setDescription] = useState("");
   const [destination, setDestination] = useState("");
 
-
   const [mood, setMood] = useState("CITY");
 
   const [startDate, setStartDate] = useState("");
@@ -29,10 +28,17 @@ export default function TripCreate() {
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
 
   // =========================================================
+  // FIX: Convertir URL absoluta → ruta relativa
+  // =========================================================
+  const toRelativePath = (url) => {
+    if (!url) return null;
+    return url.replace("http://127.0.0.1:8000", "");
+  };
+
+  // =========================================================
   // CARGAR VIAJE EN MODO EDICIÓN
   // =========================================================
   useEffect(() => {
-
     if (!isEditing) return;
 
     API.get(`/trips/${id}/`)
@@ -62,7 +68,6 @@ export default function TripCreate() {
     setDestination(placeName);
     setSelectedImageUrl(placeImage);
   };
-  
 
   // =========================================================
   // SUBMIT
@@ -89,7 +94,7 @@ export default function TripCreate() {
         photos: selectedImageUrl
           ? [
               {
-                image: selectedImageUrl,
+                image: toRelativePath(selectedImageUrl), // ⭐ FIX APLICADO
                 caption: `Recuerdo en ${destination}`,
               },
             ]
@@ -103,7 +108,6 @@ export default function TripCreate() {
       }
 
       navigate("/trips");
-
     } catch (err) {
       console.error("Error al guardar viaje:", err);
     } finally {
@@ -111,17 +115,13 @@ export default function TripCreate() {
     }
   };
 
-  
   // =========================================================
   // MEDIA FORMATTER
   // =========================================================
   const getMediaUrl = (path) => {
     if (!path) return "/default-place.jpg";
 
-    if (
-      path.startsWith("http://") ||
-      path.startsWith("https://")
-    ) {
+    if (path.startsWith("http://") || path.startsWith("https://")) {
       return path;
     }
 
@@ -134,16 +134,13 @@ export default function TripCreate() {
       <div className="td-header">
         <div className="header-info">
           <h1>
-            {isEditing
-              ? "Editar Aventura"
-              : "Planificar Nueva Aventura"}
+            {isEditing ? "Editar Aventura" : "Planificar Nueva Aventura"}
           </h1>
 
           <p className="td-description">
             {isEditing
               ? "Actualiza tu ruta, portada o detalles del viaje."
-              : "Inmortaliza tu próxima ruta o borrador en el pasaporte digital WhereNext."
-            }
+              : "Inmortaliza tu próxima ruta o borrador en el pasaporte digital WhereNext."}
           </p>
         </div>
       </div>
@@ -153,7 +150,6 @@ export default function TripCreate() {
         {/* TÍTULO */}
         <div className="td-meta-item">
           <label>TÍTULO DE LA AVENTURA</label>
-
           <input
             type="text"
             className="td-edit-input"
@@ -166,7 +162,6 @@ export default function TripCreate() {
         {/* DESCRIPCIÓN */}
         <div className="td-meta-item">
           <label>DESCRIPCIÓN</label>
-
           <textarea
             className="td-edit-input"
             value={description}
@@ -177,7 +172,6 @@ export default function TripCreate() {
         {/* DESTINO */}
         <div className="td-meta-item">
           <label>DESTINO</label>
-
           <input
             type="text"
             className="td-edit-input"
@@ -189,7 +183,6 @@ export default function TripCreate() {
         {/* MOOD */}
         <div className="td-meta-item">
           <label>MOOD DEL VIAJE</label>
-
           <select
             className="td-edit-input select-mood-variant"
             value={mood}

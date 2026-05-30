@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework.views import APIView
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -8,26 +9,15 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
 from .models import Place
-from .serializers import PlaceSerializer
 
 from rest_framework import viewsets, filters, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Place
-from .serializers import PlaceSerializer
+from rest_framework.views import APIView
+from rest_framework import status
+from .serializers import PlaceSerializer, PlaceCommentSerializer
 
 
-from rest_framework import viewsets, filters, status
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from django_filters.rest_framework import DjangoFilterBackend
-
-from .models import Place
-from .serializers import PlaceSerializer
 
 
 class PlaceViewSet(viewsets.ModelViewSet):
@@ -105,3 +95,49 @@ class PlaceViewSet(viewsets.ModelViewSet):
             print(f"🔬 Relational blending alert (Handled safely): {e}")
 
         return Response(data, status=status.HTTP_200_OK)
+
+class PlaceCommentCreateView(APIView):
+    def post(self, request, place_id):
+        try:
+            place = Place.objects.get(id=place_id)
+        except Place.DoesNotExist:
+            return Response({"detail": "Place not found"}, status=404)
+
+        serializer = PlaceCommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(place=place, user=request.user)
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
+
+class PlaceLikeToggleView(APIView):
+    def post(self, request, place_id):
+        try:
+            place = Place.objects.get(id=place_id)
+        except Place.DoesNotExist:
+            return Response({"detail": "Place not found"}, status=404)
+
+        user = request.user
+
+        if user in place.likes.all():
+            place.likes.remove(user)
+            return Response({"liked": False}, status=200)
+        else:
+            place.likes.add(user)
+            return Response({"liked": True}, status=200)
+
+class PlaceRateView(APIView):
+    def post(self, request, place_id):
+        try:
+            place = Place.objects.get(id=place_id)
+        except Place.DoesNotExist:
+            return Response({"detail": "Place not found"}, status=404)
+
+        rating = request.data.get("rating")
+
+        if rating is None:
+            return Response({"detail": "Rating required"}, status=400)
+
+        # Aquí luego puedes guardar rating en un modelo real
+        return Response({"message": "Rating received", "rating": rating}, status=201)
+

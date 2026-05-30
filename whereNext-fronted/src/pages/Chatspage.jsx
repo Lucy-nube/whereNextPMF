@@ -31,10 +31,7 @@ export default function ChatPage() {
         const rooms = res.data || [];
         setChatRooms(rooms);
 
-        // Detectar receptor REAL
-        const activeRoom = chatRooms.find(r => String(r.room) === String(roomId));
-
-
+        const activeRoom = rooms.find(r => String(r.room) === String(roomId));
         if (activeRoom) {
           setReceiverId(activeRoom.friend.id);
         }
@@ -49,14 +46,10 @@ export default function ChatPage() {
   }, [roomId]);
 
   // =========================================================
-  // 2. CARGAR HISTORIAL DE MENSAJES
+  // 2. CARGAR HISTORIAL DE MENSAJES (SIN WEBSOCKET)
   // =========================================================
   useEffect(() => {
-    if (!roomId) {
-      setMessages([]);
-      setLoadingMessages(false);
-      return;
-    }
+    if (!roomId) return;
 
     const loadMessagesHistory = async () => {
       setLoadingMessages(true);
@@ -77,14 +70,13 @@ export default function ChatPage() {
   }, [roomId]);
 
   // =========================================================
-  // 3. WEBSOCKET ESTABLE
+  // 3. WEBSOCKET ESTABLE (ÚNICO)
   // =========================================================
   useEffect(() => {
-    if (!roomId) return;
+    if (!roomId || !receiverId || loadingRooms || loadingMessages) return;
 
     const token = localStorage.getItem("access");
 
-    // Cerrar socket previo si existe
     if (socketRef.current) {
       socketRef.current.close();
     }
@@ -120,7 +112,7 @@ export default function ChatPage() {
         socketRef.current = null;
       }
     };
-  }, [roomId]);
+  }, [roomId, receiverId, loadingRooms, loadingMessages]);
 
   // =========================================================
   // AUTO SCROLL

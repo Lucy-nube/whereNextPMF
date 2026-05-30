@@ -99,6 +99,24 @@ function Navbar() {
       console.error(err);
     }
   };
+  const acceptNotification = async (notifId) => {
+  try {
+    await API.patch(`social/notifications/${notifId}/`, { action: "accept" });
+    setNotifications(prev => prev.filter(n => n.id !== notifId));
+  } catch (err) {
+    console.error("Error aceptando:", err);
+  }
+};
+
+const rejectNotification = async (notifId) => {
+  try {
+    await API.patch(`social/notifications/${notifId}/`, { action: "reject" });
+    setNotifications(prev => prev.filter(n => n.id !== notifId));
+  } catch (err) {
+    console.error("Error rechazando:", err);
+  }
+};
+
 
   const getMediaUrl = (path, fallback = "/default-avatar.png") => {
     if (!path) return fallback;
@@ -146,28 +164,44 @@ function Navbar() {
                   notifications.map((notif) => {
                     const currentType = String(notif.notification_type || "").toUpperCase();
                     return (
-                      <div key={notif.id} className="notif-item" onClick={() => handleInteractAlert(notif.id, notif.trip_id)}>
-                        <span>
-                          {currentType === "FRIEND_REQUEST" && (
-                            <>🤝 <strong>@{notif.from_user}</strong> te envió una solicitud de compañero</>
-                          )}
-                          {currentType === "FRIEND_ACCEPTED" && (
-                            <>🎉 <strong>@{notif.from_user}</strong> aceptó tu solicitud</>
-                          )}
-                          {currentType === "FRIEND_REJECTED" && (
-                            <>💔 <strong>@{notif.from_user}</strong> rechazó tu solicitud</>
-                          )}
-                          {currentType === "LIKE" && (
-                            <>❤️ <strong>@{notif.from_user}</strong> le dio me gusta a tu viaje</>
-                          )}
-                          {currentType === "COMMENT" && (
-                            <>💬 <strong>@{notif.from_user}</strong> comentó: "{notif.text_preview || 'Nueva respuesta'}"</>
-                          )}
-                          {!["FRIEND_REQUEST", "FRIEND_ACCEPTED", "FRIEND_REJECTED", "LIKE", "COMMENT"].includes(currentType) && (
-                            <>🔔 Nueva alerta de @{notif.from_user}</>
-                          )}
-                        </span>
-                      </div>
+                      <div key={notif.id} className="notif-item">
+  <span>
+    {currentType === "FRIEND_REQUEST" && (
+      <>🤝 <strong>@{notif.from_user?.username}</strong> quiere ser tu compañero</>
+    )}
+
+    {currentType === "INVITE" && (
+      <>✈️ <strong>@{notif.from_user?.username}</strong> te invitó a un viaje</>
+    )}
+
+    {currentType === "LIKE" && (
+      <>❤️ <strong>@{notif.from_user?.username}</strong> le dio me gusta a tu viaje</>
+    )}
+
+    {currentType === "COMMENT" && (
+      <>💬 <strong>@{notif.from_user?.username}</strong> comentó: "{notif.text_preview}"</>
+    )}
+  </span>
+
+  {(currentType === "FRIEND_REQUEST") && (
+    <div className="notif-actions">
+      <button 
+        className="notif-accept-btn"
+        onClick={() => acceptNotification(notif.id)}
+      >
+        Aceptar
+      </button>
+
+      <button 
+        className="notif-reject-btn"
+        onClick={() => rejectNotification(notif.id)}
+      >
+        Rechazar
+      </button>
+    </div>
+  )}
+</div>
+
                     );
                   })
                 )}

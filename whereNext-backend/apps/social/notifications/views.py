@@ -2,94 +2,59 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.shortcuts import get_object_or_404
 
-from .models import Notification
-from .serializers import NotificationSerializer
+from apps.social.notifications.models import Notification
+from apps.social.companions.models import Companion
+from apps.users.models import TripInvite  
+from apps.social.notifications.serializers import NotificationSerializer
 
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .models import Notification
 
 class NotificationListView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        """
-        🚀 TARGET ENDPOINT: GET /api/social/notifications/
-        Ultra-Hardened Core: Completely insulated to eliminate the 500 error permanently.
-        """
-        user = request.user
-        data = []
+        notifications = Notification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).order_by("-created_at")
 
-        try:
-            # 🛡️ DYNAMIC FIELD INSPECTOR: Read column properties directly from your SQLite schema
-            model_fields = [f.name for f in Notification._meta.get_fields()]
+        serializer = NotificationSerializer(notifications, many=True)
+        return Response(serializer.data)
 
-            # Build a resilient query filtering only unread rows assigned to you
-            # Handles alternative name assignments safely if your table uses 'recipient' or 'to_user'
-            filter_kwargs = {}
-            if "user" in model_fields:
-                filter_kwargs["user"] = user
-            elif "recipient" in model_fields:
-                filter_kwargs["recipient"] = user
-            elif "to_user" in model_fields:
-                filter_kwargs["to_user"] = user
 
-            # Check if your schema tracks read statuses via 'is_read' or 'read'
-            if "is_read" in model_fields:
-                filter_kwargs["is_read"] = False
-            elif "read" in model_fields:
-                filter_kwargs["read"] = False
 
-            # Execute query and prefetch relational authors safely to stop N+1 slowdown leaks
-            notifications_query = Notification.objects.filter(**filter_kwargs)
-            if "from_user" in model_fields:
-                notifications_query = notifications_query.select_related("from_user")
-            elif "sender" in model_fields:
-                notifications_query = notifications_query.select_related("sender")
+class NotificationDetailView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
-            # Determine chronological sorting boundaries dynamically
-            if "created_at" in model_fields:
-                notifications_query = notifications_query.order_by("-created_at")
-            elif "timestamp" in model_fields:
-                notifications_query = notifications_query.order_by("-timestamp")
+    def patch(self, request, pk):
+        notif = get_object_or_404(Notification, id=pk, user=request.user)
 
-            # Limit query return scope array for safety
-            active_notifications = notifications_query[:50]
+        # marcar como leída
+        notif.is_read = True
+        notif.save()
 
-            for notif in active_notifications:
-                # 🛡️ Safe fallback extraction block pass loops for author fields
-                sender_obj = getattr(notif, "from_user", None) or getattr(notif, "sender", None)
-                sender_username = sender_obj.username if sender_obj else "Usuario"
+        # ============================
+        # ACCIONES SEGÚN EL TIPO
+        # ============================
 
-                # Safe fallback for type string tokens
-                notif_type = getattr(notif, "notification_type", None) or getattr(notif, "type", "ALERT")
-                
-                # Safe fallback for numerical relations variables
-                trip_link = getattr(notif, "trip_id", None) or getattr(notif, "trip", None)
-                real_trip_id = trip_link.id if hasattr(trip_link, "id") else trip_link
+        # 1. Solicitud de compañero
+        if notif.notification_type == "FRIEND_REQUEST":
+            companion = get_object_or_404(Companion, id=notif.object_id)
+            companion.status = "ACCEPTED"
+            companion.save()
+            return Response({"status": "friend_accepted"})
 
-                req_link = getattr(notif, "request_id", None) or getattr(notif, "request", None)
-                real_req_id = req_link.id if hasattr(req_link, "id") else req_link
+        # 2. Invitación a viaje (TripInvite real)
+        if notif.notification_type == "INVITE":
+            invite = get_object_or_404(TripInvite, id=notif.object_id)
+            invite.status = "ACCEPTED"
+            invite.save()
+            return Response({"status": "trip_invite_accepted"})
 
-                data.append({
-                    "id": notif.id,
-                    "from_user": sender_username,
-                    "notification_type": str(notif_type).upper(),
-                    "text_preview": getattr(notif, "text_preview", None) or getattr(notif, "message", "Nueva alerta"),
-                    "trip_id": real_trip_id,
-                    "request_id": real_req_id
-                })
-
-        except Exception as master_alert_err:
-            # 🚀 PROTECTION SHIELD: Intercepts and logs any database conflicts without killing the network thread
-            print(f"⚠️ Safety exception intercepted in NotificationListView: {master_alert_err}")
-
-        # Returns salvaged tracks (or a clean empty fallback list array) with a successful status 200 OK
-        return Response(data, status=status.HTTP_200_OK)
+        # 3. Solo marcar como leída
+        return Response({"status": "read"})

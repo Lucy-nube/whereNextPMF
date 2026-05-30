@@ -105,9 +105,6 @@ class ChatMessagesView(APIView):
 
 
 
-# Open apps/chats/views.py and update the ChatListView class entirely
-
-# Replace the ChatListView class completely inside apps/social/chats/views.py
 
 class ChatListView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -116,32 +113,28 @@ class ChatListView(APIView):
     def get(self, request):
         user = request.user
 
-        # Obtener todos los mensajes donde participa el usuario
-        messages = Message.objects.filter(
-            Q(sender=user) | Q(room__users=user)
-        ).select_related("sender", "room").order_by("-created_at")
+        # Todas las salas donde participa el usuario
+        rooms = ChatRoom.objects.filter(users=user)
 
-        chat_map = {}
+        chat_list = []
 
-        for msg in messages:
-            # El amigo es cualquier otro usuario en la sala
-            participants = msg.room.users.exclude(id=user.id)
-            if not participants.exists():
-                continue
+        for room in rooms:
+            # El amigo es el otro usuario de la sala
+            friend = room.users.exclude(id=user.id).first()
 
-            friend = participants.first()
-            friend_id = friend.id
+            # Último mensaje (si existe)
+            last_msg = room.messages.order_by("-created_at").first()
 
-            if friend_id not in chat_map:
-                chat_map[friend_id] = {
-                    "room": msg.room.id,
-                    "friend": PublicUserSerializer(friend).data,
-                    "last_message": msg.text,
-                    "timestamp": msg.created_at.isoformat(),
-                    "unread": not msg.is_read and msg.sender != user,
-                }
+            chat_list.append({
+                "room": room.id,
+                "friend": PublicUserSerializer(friend).data,
+                "last_message": last_msg.text if last_msg else None,
+                "timestamp": last_msg.created_at.isoformat() if last_msg else None,
+                "unread": last_msg and not last_msg.is_read and last_msg.sender != user
+            })
 
-        return Response(list(chat_map.values()))
+        return Response(chat_list)
+
 
 
 

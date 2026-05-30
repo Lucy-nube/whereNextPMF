@@ -4,73 +4,144 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
-
-from .models import TripInvite
-from .serializers import TripInviteSerializer
-from apps.social.notifications.models import Notification
 from rest_framework.decorators import action
+from django.contrib.contenttypes.models import ContentType
+
+from .models import Companion
+from .serializers import CompanionSerializer
+from apps.social.notifications.models import Notification
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
-
-class TripInviteViewSet(viewsets.ModelViewSet):
-    serializer_class = TripInviteSerializer
+class CompanionViewSet(viewsets.ModelViewSet):
+    serializer_class = CompanionSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user = self.request.user
-        return TripInvite.objects.filter(
-            Q(from_user=user) | Q(to_user=user)
-        ).select_related("from_user", "to_user", "place")
-
-    # ============================
-    # CREATE INVITE
-    # ============================
-    def perform_create(self, serializer):
-        invite = serializer.save(from_user=self.request.user)
-
-        # Crear notificación
-        Notification.objects.create(
-            user=invite.to_user,
-            sender=self.request.user,
-            type="INVITE",
-            text=f"{self.request.user.username} te invitó a un viaje a {invite.place.name}"
+        return Companion.objects.filter(
+            Q(user=self.request.user) | Q(companion=self.request.user)
         )
 
     # ============================
-    # ACCEPT INVITE
+    # LISTA DE AMIGOS LIMPIA
     # ============================
-    @action(detail=True, methods=["post"])
-    def accept(self, request, pk=None):
-        invite = self.get_object()
+    def list(self, request, *args, **kwargs):
+        current_user = request.user
 
-        if invite.to_user != request.user:
-            return Response({"error": "No autorizado"}, status=403)
+        friendships = Companion.objects.filter(
+            Q(user=current_user) | Q(companion=current_user),
+            status="ACCEPTED"
+        ).select_related("user", "companion", "user__profile", "companion__profile")
 
-        invite.status = "ACCEPTED"
-        invite.save()
+        clean = []
+        for f in friendships:
+            friend = f.companion if f.user == current_user else f.user
 
-        # Notificación
-        Notification.objects.create(
-            user=invite.from_user,
-            sender=request.user,
-            type="INVITE_ACCEPTED",
-            text=f"{request.user.username} aceptó tu invitación"
+            clean.append({
+                "id": friend.id,
+                "username": friend.username,
+                "avatar": friend.profile.avatar.url if hasattr(friend, "profile") and friend.profile.avatar else None
+            })
+
+        return Response(clean, status=200)
+
+    # ============================
+    # BLOQUEAR CREATE DIRECTO
+    # ============================
+    def create(self, request, *args, **kwargs):
+        return Response(
+            {"error": "Usa /invite/<user_id>/ para enviar solicitudes"},
+            status=400
         )
 
-        return Response({"status": "ACCEPTED"})
+    # ============================
+    # INVITE (NORMALIZADO)
+    # ============================
+    @action(detail=False, methods=["post"], url_path="invite/(?P<user_id>[0-9]+)")
+    def invite(self, request, user_id=None):
+        target = get_object_or_404(User, id=user_id)
+
+        if target == request.user:
+            return Response({"error": "No puedes agregarte a ti misma"}, status=400)
+
+        # NORMALIZAR ORDEN
+        u1 = min(request.user.id, target.id)
+        u2 = max(request.user.id, target.id)
+
+        # BUSCAR O CREAR RELACIÓN ÚNICA
+        instance, created = Companion.objects.get_or_create(
+            user_id=u1,
+            companion_id=u2,
+            defaults={"status": "PENDING"}
+        )
+
+        # SI YA EXISTE → DEVOLVER ESTADO
+        if not created:
+            return Response({"status": instance.status}, status=200)
+
+        # CREAR NOTIFICACIÓN
+        Notification.objects.create(
+            user=target,
+            from_user=request.user,
+            notification_type="FRIEND_REQUEST",
+            text_preview=f"{request.user.username} te ha enviado una solicitud de compañero.",
+            content_type=ContentType.objects.get_for_model(instance),
+            object_id=instance.id
+        )
+
+        return Response({"status": "PENDING", "id": instance.id}, status=201)
 
     # ============================
-    # DECLINE INVITE
+    # ACCEPT
     # ============================
-    @action(detail=True, methods=["post"])
-    def decline(self, request, pk=None):
-        invite = self.get_object()
+    @action(detail=False, methods=["post"], url_path="accept/(?P<request_id>[0-9]+)")
+    def accept(self, request, request_id=None):
+        instance = get_object_or_404(Companion, id=request_id)
 
-        if invite.to_user != request.user:
+        # VALIDAR QUE EL QUE ACEPTA SEA EL DESTINATARIO REAL
+        if request.user.id not in [instance.user_id, instance.companion_id]:
             return Response({"error": "No autorizado"}, status=403)
 
-        invite.status = "DECLINED"
-        invite.save()
+        instance.status = "ACCEPTED"
+        instance.save()
 
-        return Response({"status": "DECLINED"})
+        # NOTIFICAR AL OTRO USUARIO
+        other = instance.user if instance.companion == request.user else instance.companion
+
+        Notification.objects.create(
+            user=other,
+            from_user=request.user,
+            notification_type="FRIEND_ACCEPTED",
+            text_preview=f"{request.user.username} ha aceptado tu solicitud.",
+            content_type=ContentType.objects.get_for_model(instance),
+            object_id=instance.id
+        )
+
+        return Response({"status": "ACCEPTED"}, status=200)
+
+    # ============================
+    # REJECT
+    # ============================
+    @action(detail=False, methods=["post"], url_path="reject/(?P<request_id>[0-9]+)")
+    def reject(self, request, request_id=None):
+        instance = get_object_or_404(Companion, id=request_id)
+
+        if request.user.id not in [instance.user_id, instance.companion_id]:
+            return Response({"error": "No autorizado"}, status=403)
+
+        other = instance.user if instance.companion == request.user else instance.companion
+
+        Notification.objects.create(
+            user=other,
+            from_user=request.user,
+            notification_type="FRIEND_REJECTED",
+            text_preview=f"{request.user.username} ha rechazado tu solicitud.",
+            content_type=ContentType.objects.get_for_model(instance),
+            object_id=instance.id
+        )
+
+        instance.delete()
+        return Response({"status": "REMOVED"}, status=200)

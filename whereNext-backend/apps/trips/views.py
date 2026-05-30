@@ -133,6 +133,36 @@ class TripViewSet(viewsets.ModelViewSet):
             }
             for u in liking_users
         ], status=status.HTTP_200_OK)
+    
+
+    # ============================================================
+    # 👍 LIKE / UNLIKE VIAJE
+    # ============================================================
+    @action(detail=True, methods=["post"])
+    def like(self, request, pk=None):
+     trip = self.get_object()
+     user = request.user
+
+     # Alternar like
+     if user in trip.likes.all():
+        trip.likes.remove(user)
+        liked = False
+     else:
+        trip.likes.add(user)
+        liked = True
+      
+        # ⭐ Crear notificación
+        if trip.owner != user:
+            Notification.objects.create(
+                user=trip.owner,
+                from_user=user,
+                notification_type="LIKE",
+                text_preview=f"{user.username} le dio like a tu viaje")
+            
+     return Response({
+        "liked": liked,
+        "total_likes": trip.likes.count()
+     }, status=status.HTTP_200_OK)
 
     # ============================================================
     # 💬 COMENTAR VIAJE
