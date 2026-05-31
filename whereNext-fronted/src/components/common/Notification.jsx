@@ -8,7 +8,7 @@ export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🚀 HOOK LINKAGE: Injects your premium glassmorphic alert manager natively
+  // 🚀 Injects  premium glassmorphic alert 
   const { modalConfig, openModal, closeModal } = useModal();
 
   const loadNotifications = async () => {
@@ -24,16 +24,16 @@ export default function Notifications() {
 
   const markAsRead = async (id) => {
     try {
-      // Aligns character-for-character with your backend single PATCH read handler
+      // character-for-character with my backend single PATCH read handler
       await API.patch(`social/notifications/${id}/`);
-      // Update state locally inside the array without triggering a heavy fetch request reload loop
+      // state locally inside the array without triggering a heavy fetch request reload loop
       setNotifications((prev) => prev.filter((n) => n.id !== id));
     } catch (err) {
       console.error("Error marcando como leída:", err);
     }
   };
 
-  // 🚀 TRIGGER PREMIUM ALERT: Replaces native confirmators with your custom layout node
+  // 🚀 Replaces native confirmators with my custom layout node
   const handleMarkAllConfirm = () => {
     openModal({
       title: "🔔 ¿Marcar todo como leído?",
@@ -41,7 +41,7 @@ export default function Notifications() {
       confirmText: "Sí, marcar todas",
       onConfirm: async () => {
         try {
-          // Hits your database clear-all endpoint rules safely
+          // Hits my database clear-all endpoint rules safely
           await API.post("social/notifications/read_all/");
           setNotifications([]);
           closeModal(); // Collapses custom modal layout smoothly upon success
@@ -80,13 +80,13 @@ export default function Notifications() {
       ) : (
         <div className="notif-list">
           {notifications.map((n) => {
-            const currentType = String(n.type || "").toUpperCase();
+            const currentType = String(n.notification_type || "").toUpperCase();
 
             return (
               <div key={n.id} className="notif-item">
                 <div className="notif-info">
                   
-                  {/* METADATA RENDER ENGINE CONDITIONALS MATCHING YOUR NAVBAR LOOKUPS */}
+                  {/* METADATA RENDER ENGINE CONDITIONALS MATCHING MY NAVBAR LOOKUPS */}
                   {currentType === "LIKE" && (
                     <p>❤️ <strong>@{n.from_user}</strong> le dio me gusta a tu viaje <em>"{n.trip_title}"</em></p>
                   )}
@@ -100,7 +100,7 @@ export default function Notifications() {
                   )}
 
                   {!["LIKE", "COMMENT", "COMPANION"].includes(currentType) && (
-                    <p>🔔 {n.text || "Nueva alerta recibida"}</p>
+                    <p>🔔 {n.text_preview || "Nueva alerta recibida"}</p>
                   )}
 
                   <small className="notif-time-stamp">

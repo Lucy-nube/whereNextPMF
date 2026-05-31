@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import "/src/styles/companionsHub.css";
 
-export default function companionsHub() {
+export default function CompanionsHub() {
   const navigate = useNavigate();
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,10 +21,10 @@ export default function companionsHub() {
     try {
       setLoading(true);
 
-      // 🔥 RUTA CORRECTA
       const res = await API.get("companions/hub/");
+       console.log("DATA HUB:", res.data);
 
-      setFriends(res.data || []);
+       setFriends(res.data.friends || []);
     } catch (err) {
       console.error("Error al cargar el directorio social:", err);
     } finally {
@@ -107,6 +107,8 @@ export default function companionsHub() {
       </div>
     );
   }
+  
+ 
 
   return (
     <div className="hub-layout-view">

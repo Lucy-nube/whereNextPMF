@@ -1,406 +1,237 @@
 /* =========================================================================
-   🪪 WHERENEXT DIGITALE PASSPORT SYSTEM — PROFILE ARCHITECTURE DEFINITIONS
+   🌿 WHERENEXT PRESTIGE GLASSMORPHISM — PASSPORT PROFILE & SOCIAL HUB
    ========================================================================= */
 
 .passport-profile {
-  max-width: 1050px;
-  margin: 120px auto 60px auto;
-  padding: 0 24px;
-  box-sizing: border-box;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #f1f5f9;
+  max-width: 840px !important;
+  margin: 110px auto 60px auto !important;
+  padding: 0 24px !important;
+  box-sizing: border-box !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  color: #f1f5f9 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 28px !important;
 }
 
 /* =========================================================================
-   ⏳ AMBIENT STRUCTURAL LOADING SPINNER
-   ========================================================================= */
-
-.profile-loading {
-  min-height: 65vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255, 255, 255, 0.65);
-  gap: 16px;
-  font-size: 14.5px;
-}
-
-.spinner {
-  width: 44px;
-  height: 44px;
-  border: 3px solid rgba(56, 189, 248, 0.1);
-  border-top-color: #38bdf8;
-  border-radius: 50%;
-  animation: profileSpin 0.85s linear infinite;
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
-}
-
-@keyframes profileSpin {
-  to { transform: rotate(360deg); }
-}
-
-/* =========================================================================
-   🛂 HIGH-END PASSPORT CORE WORKSPACE CARDS
+   🎫 PASSPORT CORE CONTAINER (THE DIGITAL PASSPORT GRID)
    ========================================================================= */
 
 .passport-card {
-  position: relative;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 28px;
-  padding: 32px;
-  margin-bottom: 28px;
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-  box-sizing: border-box;
-  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02) !important;
+  backdrop-filter: blur(25px) !important;
+  -webkit-backdrop-filter: blur(25px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  border-radius: 28px !important;
+  padding: 32px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35) !important;
+  box-sizing: border-box !important;
 }
 
-/* Ambient subtle background glow inside the primary passport token sheet */
+/* Subtle background accent glow behind the passport details card */
 .passport-card::before {
-  content: "";
-  position: absolute;
-  top: -100px;
-  left: -100px;
-  width: 250px;
-  height: 250px;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.08), transparent 70%);
-  pointer-events: none;
-  z-index: 0;
+  content: "" !important;
+  position: absolute !important;
+  top: -100px !important;
+  right: -100px !important;
+  width: 250px !important;
+  height: 250px !important;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, transparent 70%) !important;
+  pointer-events: none !important;
 }
 
-/* Top Branding Metadata Bar */
 .passport-topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.35);
-  text-transform: uppercase;
-  margin-bottom: 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  padding-bottom: 12px;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+  padding-bottom: 14px !important;
+  margin-bottom: 24px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 1.5px !important;
+  color: rgba(255, 255, 255, 0.4) !important;
 }
 
 .passport-status {
-  background: rgba(56, 189, 248, 0.1);
-  color: #38bdf8;
-  padding: 3px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(56, 189, 248, 0.2);
-  box-shadow: 0 0 10px rgba(56, 189, 248, 0.1);
+  color: #34d399 !important; /* Premium active green look code track */
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.3) !important;
 }
 
-/* Passport Identity Body Layout */
+/* Main inner split layout */
 .passport-main {
-  display: flex;
-  align-items: flex-start;
-  gap: 32px;
-  position: relative;
-  z-index: 1;
+  display: flex !important;
+  gap: 32px !important;
+  align-items: flex-start !important;
 }
+
+/* =========================================================================
+   📸 PHOTO AVATAR MATRICES
+   ========================================================================= */
 
 .profile-avatar {
-  flex-shrink: 0;
+  position: relative !important;
+  width: 130px !important;
+  height: 130px !important;
+  flex-shrink: 0 !important;
 }
 
 .profile-avatar img {
-  width: 110px;
-  height: 110px;
-  border-radius: 32px; /* Smooth rounded micro-squircle shape style look */
-  object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 24px !important; 
+  border: 2px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4) !important;
+  transition: border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.profile-avatar img:hover {
-  transform: scale(1.04) rotate(-1deg);
-  border-color: #38bdf8;
+.passport-profile:hover .profile-avatar img {
+  border-color: rgba(56, 189, 248, 0.4) !important;
 }
 
-/* Information Node Block */
+/* =========================================================================
+   📝 PASSPORT METADATA AND DESCRIPTION BLOCKS
+   ========================================================================= */
+
 .passport-info {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
+  flex-grow: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
 }
 
 .passport-info h1 {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: -0.5px;
+  font-size: 2.2rem !important;
+  font-weight: 900 !important;
+  color: #ffffff !important;
+  margin: 0 !important;
+  letter-spacing: -0.8px !important;
 }
 
 .passport-bio {
-  font-size: 15px;
-  line-height: 1.6;
-  color: rgba(241, 245, 249, 0.7);
-  margin: 10px 0 20px 0;
+  font-size: 14.5px !important;
+  line-height: 1.6 !important;
+  color: rgba(241, 245, 249, 0.7) !important;
+  margin: 0 !important;
 }
 
-/* Secondary Passport Chip Indicator Decorator */
-.passport-chip {
-  margin-top: 24px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #38bdf8;
-  letter-spacing: 0.5px;
-  width: fit-content;
-}
-
-/* Passport Owner Account Role Meta Elements */
 .passport-meta {
-  display: flex;
-  gap: 28px;
-  margin-top: 4px;
+  display: flex !important;
+  gap: 24px !important;
+  margin-top: 14px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+  padding-top: 14px !important;
 }
 
 .passport-meta div {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
 }
 
 .passport-meta span {
-  font-size: 10px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.35);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.8px !important;
+  color: rgba(255, 255, 255, 0.35) !important;
 }
 
 .passport-meta strong {
-  font-size: 14.5px;
-  color: #ffffff;
-  font-weight: 600;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+/* Absolute aligned vector watermark seal stamp text on the bottom right */
+.passport-chip {
+  position: absolute !important;
+  bottom: 24px !important;
+  right: 32px !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.2px !important;
+  color: rgba(255, 255, 255, 0.08) !important;
+  font-family: monospace !important;
+  user-select: none !important;
 }
 
 /* =========================================================================
-   🎯 INTERACTIVE METRICS WIDGET DECK GRID
-   ========================================================================= */
-
-.passport-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* Fits your quad counters dynamically */
-  gap: 16px;
-  margin: 12px 0 28px 0;
-  box-sizing: border-box;
-}
-
-.passport-widget {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 20px 16px;
-  border-radius: 18px;
-  text-align: center;
-  box-sizing: border-box;
-  backdrop-filter: blur(10px);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.passport-widget h2 {
-  margin: 0 0 4px 0;
-  font-size: 1.85rem;
-  font-weight: 900;
-  color: #ffffff;
-  letter-spacing: -0.5px;
-}
-
-.passport-widget p {
-  margin: 0;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: rgba(241, 245, 249, 0.45);
-}
-
-/* User Interactive State Mixin Filter for Circle Controller Block */
-.widget-interactive {
-  cursor: pointer;
-}
-
-.widget-interactive:hover {
-  background: rgba(56, 189, 248, 0.06);
-  border-color: #38bdf8;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(56, 189, 248, 0.1);
-}
-
-.widget-interactive:hover h2 {
-  color: #38bdf8;
-}
-
-/* =========================================================================
-   💼 FLUID MULTIMEDIA VIAJES ITINERARY RECORDS LIST
-   ========================================================================= */
-
-.profile-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  margin-top: 18px;
-}
-
-.trip-mini-card {
-  padding: 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 16px;
-  cursor: pointer;
-  box-sizing: border-box;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  flex-direction: column;
-}
-
-.trip-mini-card:hover {
-  transform: translateY(-4px);
-  background: rgba(56, 189, 248, 0.05);
-  border-color: rgba(56, 189, 248, 0.3);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
-}
-
-.profile-trip-title {
-  margin: 0 0 6px 0;
-  font-size: 16px;
-  font-weight: 800;
-  color: #ffffff;
-  line-height: 1.3;
-}
-
-.profile-trip-meta {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: #38bdf8;
-}
-
-/* =========================================================================
-   ⚡ CONTROL DECK MATRIX BUTTON ELEMENT BAR CONTROLLERS
-   ========================================================================= */
-
-/* Action Header Module Button Injection Class overrides */
-.profile-add-trip-btn {
-  background: #38bdf8;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 10px;
-  color: #10172a;
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.profile-add-trip-btn:hover {
-  background: #0ea5e9;
-  transform: translateY(-1px);
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
-}
-
-/* Relationship Control Deck Base Buttons */
-.btn-primary {
-  background: #38bdf8;
-  border: 1px solid #38bdf8;
-  padding: 10px 20px;
-  border-radius: 11px;
-  color: #10172a;
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  width: fit-content;
-}
-
-.btn-primary:hover {
-  background: #0ea5e9;
-  border-color: #0ea5e9;
-  transform: translateY(-1px);
-}
-
-.btn-secondary {
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 9px 18px;
-  border-radius: 11px;
-  color: #ffffff;
-  font-size: 13.5px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-/* Social Network Connection Queue State Controls */
-.btn-pending {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #fbbf24;
-  padding: 10px 20px;
-  border-radius: 11px;
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: default;
-}
-
-.btn-friend {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
-  padding: 10px 20px;
-  border-radius: 11px;
-  font-size: 13.5px;
-  font-weight: 700;
-  cursor: default;
-}
-
-.empty-state {
-  text-align: center;
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 14px;
-  font-style: italic;
-  padding: 24px 0;
-  width: 100%;
-}
-/* =========================================================================
-   💬 ENLACE FLUIDO DE CHAT DIRECTO DESDE EL PASAPORTE DE USUARIO
+   🎛️ BUTTON DECKS AND CONNECTIVITY CONTROLS
    ========================================================================= */
 
 .passport-actions-deck {
   display: flex !important;
   align-items: center !important;
   gap: 12px !important;
-  margin-top: 16px !important;
+  margin-top: 8px !important;
+  flex-wrap: wrap !important;
 }
 
-/* Rediseño del botón secundario para que actúe como gatillo de chat */
+/* Reset primary actions buttons down to theme grids */
+.btn-primary, .btn-friend, .btn-pending {
+  height: 40px !important;
+  padding: 0 20px !important;
+  border-radius: 12px !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.btn-primary {
+  background: #38bdf8 !important;
+  border: 1px solid #38bdf8 !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25) !important;
+}
+
+.btn-primary:hover {
+  background: #0ea5e9 !important;
+  border-color: #0ea5e9 !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4) !important;
+}
+
+.btn-friend {
+  background: rgba(52, 211, 153, 0.12) !important;
+  border: 1px solid #34d399 !important;
+  color: #34d399 !important;
+}
+
+.btn-pending {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: rgba(241, 245, 249, 0.6) !important;
+}
+
+.btn-pending:hover {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
+}
+
+/* Translucent direct messenger launch trigger */
 .btn-chat-action-trigger {
+  height: 40px !important;
+  padding: 0 20px !important;
   background: rgba(255, 255, 255, 0.02) !important;
   border: 1px solid rgba(56, 189, 248, 0.3) !important;
   color: #38bdf8 !important;
-  padding: 10px 20px !important;
-  border-radius: 11px !important;
+  border-radius: 12px !important;
   font-size: 13.5px !important;
   font-weight: 700 !important;
   cursor: pointer !important;
   display: inline-flex !important;
   align-items: center !important;
+  justify-content: center !important;
   gap: 8px !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
@@ -409,17 +240,226 @@
   background: rgba(56, 189, 248, 0.08) !important;
   border-color: #38bdf8 !important;
   transform: translateY(-1px) !important;
-  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.15) !important;
+  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.2) !important;
 }
+
+/* Edit profile button configuration */
+.passport-info .btn-primary {
+  align-self: flex-start !important;
+}
+
 /* =========================================================================
-   👥 MODAL DIRECTORY DE COMPAÑEROS CONFIRMADOS (GLASS PREMIUM)
+   🔒 SECURITY DATA PRIVACY TOGGLES
    ========================================================================= */
 
+.toggle-privacy {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  padding: 4px 0 !important;
+}
+
+.toggle-privacy input[type="checkbox"] {
+  width: 16px !important;
+  height: 16px !important;
+  accent-color: #38bdf8 !important;
+  cursor: pointer !important;
+}
+
+.toggle-privacy span {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: rgba(241, 245, 249, 0.5) !important;
+  transition: color 0.2s ease !important;
+}
+
+.toggle-privacy input:checked + span {
+  color: #38bdf8 !important;
+}
+
+/* =========================================================================
+   📊 NUMERICAL WIDGETS DECK ROW (THE COUNTERS ZONE)
+   ========================================================================= */
+
+.passport-stats {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 16px !important;
+}
+
+.passport-widget {
+  background: rgba(255, 255, 255, 0.01) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 20px !important;
+  padding: 18px 24px !important;
+  text-align: center !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+}
+
+.widget-interactive {
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.widget-interactive:hover {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+  transform: translateY(-2px) !important;
+}
+
+.passport-widget h2 {
+  margin: 0 !important;
+  font-size: 1.8rem !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+  letter-spacing: -0.5px !important;
+}
+
+.widget-interactive:hover h2 {
+  color: #38bdf8 !important;
+}
+
+.passport-widget p {
+  margin: 0 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: rgba(241, 245, 249, 0.45) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* =========================================================================
+   ✈️ TRIP BITÁCORAS RENDERING SECTION (THE GRID CARDS)
+   ========================================================================= */
+
+.passport-header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 8px !important;
+}
+
+.passport-header h3 {
+  margin: 0 !important;
+  font-size: 1.3rem !important;
+  font-weight: 800 !important;
+  color: #ffffff !important;
+}
+
+/* Secondary auxiliary trigger item keys button styles */
+.passport-header .btn-secondary {
+  height: 34px !important;
+  padding: 0 14px !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.passport-header .btn-secondary:hover {
+  background: rgba(56, 189, 248, 0.12) !important;
+  border-color: #38bdf8 !important;
+  color: #38bdf8 !important;
+}
+
+.profile-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)) !important;
+  gap: 16px !important;
+  margin-top: 14px !important;
+}
+
+.trip-mini-card {
+  background: rgba(255, 255, 255, 0.01) !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-radius: 16px !important;
+  padding: 18px !important;
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.trip-mini-card:hover {
+  background: rgba(255, 255, 255, 0.02) !important;
+  border-color: rgba(56, 189, 248, 0.25) !important;
+  transform: translateY(-2px) !important;
+}
+
+.profile-trip-title {
+  margin: 0 0 6px 0 !important;
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+
+.trip-mini-card:hover .profile-trip-title {
+  color: #38bdf8 !important;
+}
+
+.profile-trip-meta {
+  margin: 0 !important;
+  font-size: 12.5px !important;
+  color: rgba(241, 245, 249, 0.45) !important;
+  font-weight: 500 !important;
+}
+
+.empty-state {
+  grid-column: 1 / -1 !important;
+  text-align: center !important;
+  padding: 36px 0 !important;
+}
+
+.empty-state p {
+  font-size: 14px !important;
+  color: rgba(241, 245, 249, 0.35) !important;
+  font-style: italic !important;
+  margin: 0 !important;
+}
+
+/* =========================================================================
+   👥 MODAL DIRECTORY DIALOGUE WINDOWS OVERLAY LAYOUTS
+   ========================================================================= */
+
+.td-modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(15, 23, 42, 0.5) !important; 
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  z-index: 9999 !important; 
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
 .companions-modal-card {
-  max-width: 480px !important;
-  background: rgba(15, 23, 42, 0.75) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6) !important;
+  width: 100% !important;
+  max-width: 440px !important;
+  background: rgba(30, 41, 59, 0.7) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 24px !important;
+  padding: 24px !important;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6) !important;
+  animation: modalSlideZoom 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-sizing: border-box !important;
+}
+
+@keyframes modalSlideZoom {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .companions-modal-header {
@@ -427,8 +467,8 @@
   justify-content: space-between !important;
   align-items: center !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
-  padding-bottom: 14px !important;
-  margin-bottom: 16px !important;
+  padding-bottom: 12px !important;
+  margin-bottom: 18px !important;
 }
 
 .companions-modal-header h3 {
@@ -445,17 +485,31 @@
   font-size: 18px !important;
   cursor: pointer !important;
   transition: color 0.2s ease !important;
+  padding: 4px !important;
 }
 
 .companions-modal-close:hover {
   color: #ffffff !important;
 }
 
-/* Cuerpo con scroll elástico interno */
 .companions-modal-body {
-  max-height: 350px !important;
+  max-height: 320px !important;
   overflow-y: auto !important;
   padding-right: 4px !important;
+}
+
+/* Scroll tracks customization rules */
+.companions-modal-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.companions-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.companions-modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
 }
 
 .companions-modal-list {
@@ -464,35 +518,30 @@
   gap: 10px !important;
 }
 
-/* Fila interactiva del amigo */
 .companions-modal-item {
   display: flex !important;
   align-items: center !important;
   gap: 14px !important;
   padding: 10px 14px !important;
   background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
-  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.04) !important;
+  border-radius: 14px !important;
   cursor: pointer !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
 .companions-modal-item:hover {
   background: rgba(56, 189, 248, 0.06) !important;
-  border-color: rgba(56, 189, 248, 0.3) !important;
+  border-color: rgba(56, 189, 248, 0.25) !important;
   transform: translateX(4px) !important;
 }
 
 .companion-item-avatar {
-  width: 40px !important;
-  height: 40px !important;
-  border-radius: 12px !important;
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 10px !important;
   object-fit: cover !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-.companions-modal-item:hover .companion-item-avatar {
-  border-color: #38bdf8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .companion-item-name {
@@ -505,48 +554,98 @@
   color: #38bdf8 !important;
 }
 
-/* ============================================
-   EDIT PROFILE PAGE — GLASSMORPHISM STYLE
-   ============================================ */
+.td-empty-gallery-msg {
+  font-size: 13.5px !important;
+  color: rgba(241, 245, 249, 0.35) !important;
+  font-style: italic !important;
+  margin: 12px 0 !important;
+}
+/* =========================================================================
+   📸 MINIATURAS DE PORTADA EN TARJETAS DE VIAJES RECIENTES
+   ========================================================================= */
+
+.trip-mini-card {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+}
+
+.trip-mini-thumb {
+  width: 100% !important;
+  height: 130px !important;
+  border-radius: 14px !important; /* Bordes suaves estilo pasaporte */
+  object-fit: cover !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Efecto zoom interactivo de alta gama al pasar el ratón */
+.trip-mini-card:hover .trip-mini-thumb {
+  transform: scale(1.02) !important;
+  border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
+/* =====================================================
+   EDIT PROFILE
+   ===================================================== */
 
 .edit-profile-page {
+  width: 100%;
+  min-height: 100vh;
+
   display: flex;
   justify-content: center;
-  padding: 40px 0;
-  animation: fadeIn 0.4s ease;
+  align-items: flex-start;
+
+  padding: 120px 20px 60px;
+  box-sizing: border-box;
 }
 
 .edit-profile-card {
   width: 100%;
-  max-width: 520px;
-  padding: 32px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+  max-width: 720px;
+
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
 }
 
 .edit-profile-card h1 {
-  font-size: 1.8rem;
-  margin-bottom: 10px;
-  text-align: center;
-  color: #fff;
+  font-size: 2rem;
+  font-weight: 800;
+  color: white;
+
+  margin: 0 0 10px;
 }
 
-/* Avatar preview */
+/* =====================================================
+   AVATAR
+   ===================================================== */
+
 .avatar-preview {
-  width: 120px;
-  height: 120px;
-  border-radius: 100%;
+  width: 140px;
+  height: 140px;
+
+  margin: 10px auto 20px;
+
+  border-radius: 50%;
+
   overflow: hidden;
-  margin: 0 auto 10px auto;
-  border: 3px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+
+  position: relative;
+
+  border: 4px solid rgba(255,255,255,0.08);
+
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.35),
+    0 0 0 8px rgba(56,189,248,0.08);
+
+  transition: all .3s ease;
+}
+
+.avatar-preview:hover {
+  transform: scale(1.03);
+  border-color: rgba(56,189,248,0.4);
 }
 
 .avatar-preview img {
@@ -555,122 +654,278 @@
   object-fit: cover;
 }
 
-/* Inputs */
-.edit-profile-card input[type="file"] {
-  padding: 12px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.2);
-  color: #fff;
+/* =====================================================
+   LABELS
+   ===================================================== */
+
+.edit-profile-card label {
+  color: rgba(255,255,255,0.85);
+
+  font-size: 14px;
+  font-weight: 700;
+
+  margin-bottom: -8px;
 }
+
+/* =====================================================
+   FILE INPUT
+   ===================================================== */
+
+.edit-profile-card input[type="file"] {
+  width: 100%;
+
+  padding: 14px;
+
+  border-radius: 16px;
+
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  color: white;
+
+  cursor: pointer;
+
+  transition: .25s;
+}
+
+.edit-profile-card input[type="file"]:hover {
+  border-color: rgba(56,189,248,0.35);
+  background: rgba(255,255,255,0.06);
+}
+
+.edit-profile-card input[type="file"]::file-selector-button {
+  border: none;
+
+  background: linear-gradient(
+    135deg,
+    #38bdf8,
+    #0ea5e9
+  );
+
+  color: white;
+
+  padding: 10px 14px;
+
+  border-radius: 12px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  margin-right: 12px;
+}
+
+/* =====================================================
+   TEXTAREA
+   ===================================================== */
 
 .edit-profile-card textarea {
   width: 100%;
-  min-height: 120px;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.08);
-  color: #fff;
-  resize: none;
-  font-size: 1rem;
+  min-height: 140px;
+
+  resize: vertical;
+
+  padding: 16px;
+
+  box-sizing: border-box;
+
+  border-radius: 20px;
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  background: rgba(255,255,255,0.04);
+
+  color: white;
+
+  font-size: 15px;
+  line-height: 1.7;
+
+  transition: .25s ease;
 }
 
 .edit-profile-card textarea::placeholder {
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.35);
 }
 
-/* Buttons */
+.edit-profile-card textarea:focus {
+  outline: none;
+
+  border-color: #38bdf8;
+
+  background: rgba(15,23,42,0.65);
+
+  box-shadow:
+    0 0 0 4px rgba(56,189,248,0.12);
+}
+
+/* =====================================================
+   BUTTONS
+   ===================================================== */
+
 .edit-profile-card .btn-primary,
 .edit-profile-card .btn-secondary {
   width: 100%;
-  padding: 14px;
-  font-size: 1.1rem;
-  border-radius: 12px;
+}
+
+.edit-profile-card .btn-primary {
+  margin-top: 10px;
+}
+
+.edit-profile-card .btn-secondary {
+  margin-top: -4px;
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+  .edit-profile-page {
+    padding: 100px 16px 40px;
+  }
+
+  .edit-profile-card {
+    gap: 16px;
+  }
+
+  .edit-profile-card h1 {
+    font-size: 1.7rem;
+    text-align: center;
+  }
+
+  .avatar-preview {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+.edit-profile-card .btn-secondary {
+  width: 100%;
+
+  height: 54px;
+
+  border: 1px solid rgba(255,255,255,0.12);
+
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,255,255,0.08),
+      rgba(255,255,255,0.03)
+    );
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  color: rgba(255,255,255,0.92);
+
+  font-size: 15px;
+  font-weight: 700;
+
   cursor: pointer;
+
+  transition: all .28s cubic-bezier(.22,1,.36,1);
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.25);
+
+  margin-top: 6px;
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, #4fc3f7, #0288d1);
-  border: none;
+.edit-profile-card .btn-secondary:hover {
+  transform:
+    translateY(-3px)
+    scale(1.01);
+
+  border-color:
+    rgba(56,189,248,.35);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(56,189,248,.12),
+      rgba(255,255,255,.05)
+    );
+
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.35),
+    0 0 20px rgba(56,189,248,.12);
+
   color: white;
-  font-weight: bold;
-  transition: 0.2s ease;
 }
 
-.btn-primary:hover {
-  background: linear-gradient(135deg, #81d4fa, #039be5);
-  transform: translateY(-2px);
+.edit-profile-card .btn-secondary:active {
+  transform:
+    translateY(0)
+    scale(.99);
 }
-
-.btn-secondary {
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.25);
-  color: white;
-  transition: 0.2s ease;
-}
-
-.btn-secondary:hover {
-  background: rgba(255,255,255,0.25);
-  transform: translateY(-2px);
-}
-
-/* Fade animation */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-
 /* =========================================================================
-   📱 RESPONSIVE GRID ADAPTATION MATRIX
+   📱 RESPONSIVE SMARTPHONE SCREEN SIZE VIEWPORT ADAPTATIONS
    ========================================================================= */
 
 @media (max-width: 768px) {
   .passport-profile {
-    margin-top: 100px;
-    padding: 0 16px;
+    margin-top: 90px !important;
+    padding: 0 16px !important;
+    gap: 22px !important;
   }
 
   .passport-card {
-    padding: 20px;
-    border-radius: 22px;
+    padding: 24px !important;
+    border-radius: 20px !important;
   }
 
   .passport-main {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 20px;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 20px !important;
   }
 
-  .passport-meta {
-    justify-content: center;
+  .passport-info h1 {
+    font-size: 1.85rem !important;
   }
 
-  .passport-chip {
-    margin: 18px auto 0 auto;
-  }
-
-  .passport-stats {
-    grid-template-columns: repeat(2, 1fr); /* Rows switch to 2x2 grid configurations on mobile viewports */
-    gap: 10px;
-  }
-
-  .profile-grid {
-    grid-template-columns: 1fr;
+  .passport-info .btn-primary {
+    align-self: center !important;
   }
 
   .passport-actions-deck {
+    justify-content: center !important;
     width: 100% !important;
-    flex-direction: column !important;
+  }
+
+  .btn-primary, .btn-friend, .btn-pending, .btn-chat-action-trigger {
+    width: 100% !important;
+  }
+
+  .passport-meta {
+    justify-content: center !important;
+    gap: 32px !important;
+  }
+
+  .passport-chip {
+    display: none !important;
+  }
+
+  .passport-stats {
     gap: 10px !important;
   }
-  
-  .btn-chat-action-trigger {
-    width: 100% !important;
-    justify-content: center !important;
+
+  .passport-widget {
+    padding: 14px 10px !important;
+    border-radius: 16px !important;
+  }
+
+  .passport-widget h2 {
+    font-size: 1.4rem !important;
+  }
+
+  .profile-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
   }
 }
-
-

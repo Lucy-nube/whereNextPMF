@@ -31,8 +31,6 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.trips',
     'apps.places',
-
-    # Social main app
     'apps.social',
 
     # Sub-apps inside social
@@ -66,10 +64,8 @@ CHANNEL_LAYERS = {
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 
-    # 🔥 IMPORTANTE para static files
     'django.middleware.security.SecurityMiddleware',
 
-    # 🔥 (opcional pero recomendado si usas Channels/ASGI)
     'whitenoise.middleware.WhiteNoiseMiddleware',
 
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -150,7 +146,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# 🔥 WhiteNoise mejora entrega de archivos estáticos
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
@@ -161,3 +157,11 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
+
+
+# ==========================
+# Project Identity
+# ==========================
+PROJECT_NAME = "whereNext"
+AUTHOR = "Lucy Esther De León Córporan"
+VERSION = "1.0.0"

@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
   const login = async (username, password) => {
     const data = await authService.login(username, password);
 
-    // Guardar tokens
+    
     setToken(data.access);
     localStorage.setItem("access", data.access);
     localStorage.setItem("refresh", data.refresh);
@@ -50,10 +50,10 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        // Mantener token en localStorage
+        // Mantengo token en localStorage
         localStorage.setItem("access", token);
 
-        // RUTA CORRECTA (sin slash inicial)
+       
         const res = await API.get("users/me/");
 
         setUser(res.data);

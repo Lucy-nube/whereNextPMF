@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
-import { useAuth } from "../context/AuthContext"; // 🚀 INJECTED: Hooks into active account session indicators
+import { useAuth } from "../context/AuthContext"; 
+import "../styles/trips.css"
 
 export default function Trips() {
   const navigate = useNavigate();
@@ -12,14 +13,11 @@ export default function Trips() {
   // =========================================================
   // CARGA DEL CATÁLOGO PERSONAL (CON FILTRADO DE SEGURIDAD PROTEGIDO)
   // =========================================================
-   // =========================================================
-  // CARGA DEL CATÁLOGO PERSONAL (CORREGIDO: Sincronizado con la raíz de tu app Django)
-  // =========================================================
+
   useEffect(() => {
     const fetchUserTrips = async () => {
       if (!user?.id) return;
       try {
-        // 🚀 THE CRITICAL PATH FIX: Remeoed the redundant '-base' suffix to point to your live root router matrix
         const res = await API.get("trips/"); 
         
         // Frontend security boundary verification pass
@@ -63,7 +61,7 @@ export default function Trips() {
         <div className="td-actions-container">
           <button 
             type="button"
-            className="td-upload-trigger-btn" 
+             className="td-primary-btn"
             onClick={() => navigate("/trips/create")}
           >
             ➕ Nueva Aventura
@@ -116,7 +114,7 @@ export default function Trips() {
                   {trip.mood && <span className="td-mood-highlight">🏙️ Mood: {trip.mood}</span>}
                   {trip.trip_type && (
                     <span className="td-mood-highlight">
-                      {trip.trip_type === "solo" && "🌙 Sola"}
+                      {trip.trip_type === "solo" && "🌙 Solo"}
                       {trip.trip_type === "couple" && "💞 En pareja"}
                       {trip.trip_type === "group" && "👥 En grupo"}
                     </span>

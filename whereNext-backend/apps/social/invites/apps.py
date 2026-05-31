@@ -9,7 +9,7 @@ class InvitesConfig(AppConfig):
     """
     default_auto_field = "django.db.models.BigAutoField"
     
-    # 🚀 CORE MODULE ROUTING NAME (Points to your nested apps package directory)
+    # 🚀 CORE MODULE ROUTING NAME (Points to my nested apps package directory)
     name = "apps.social.invites"
     verbose_name = "WhereNext Trip Invites"
 
@@ -20,7 +20,7 @@ class InvitesConfig(AppConfig):
         safeguarding invitation lifecycle pipelines against unexpected transaction blocks.
         """
         try:
-            import apps.social.invites.signals  #
+            import apps.social.invites.signals  
         except ImportError:
-            # Safe boundary pass if no signals are declared inside your module yet
+            # Safe boundary pass if no signals are declared inside my module yet
             pass

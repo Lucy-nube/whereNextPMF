@@ -32,6 +32,7 @@ export default function ChatPage() {
         setChatRooms(rooms);
 
         const activeRoom = rooms.find(r => String(r.room) === String(roomId));
+
         if (activeRoom) {
           setReceiverId(activeRoom.friend.id);
         }
@@ -46,7 +47,7 @@ export default function ChatPage() {
   }, [roomId]);
 
   // =========================================================
-  // 2. CARGAR HISTORIAL DE MENSAJES (SIN WEBSOCKET)
+  // 2. CARGAR HISTORIAL DE MENSAJES
   // =========================================================
   useEffect(() => {
     if (!roomId) return;
@@ -70,7 +71,7 @@ export default function ChatPage() {
   }, [roomId]);
 
   // =========================================================
-  // 3. WEBSOCKET ESTABLE (ÚNICO)
+  // 3. WEBSOCKET ESTABLE
   // =========================================================
   useEffect(() => {
     if (!roomId || !receiverId || loadingRooms || loadingMessages) return;
@@ -85,7 +86,6 @@ export default function ChatPage() {
     socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onopen = () => {
-      console.log(`✅ Conectado a la sala: ${roomId}`);
     };
 
     socketRef.current.onmessage = (event) => {
@@ -103,7 +103,6 @@ export default function ChatPage() {
     };
 
     socketRef.current.onclose = () => {
-      console.log(`🔌 WebSocket cerrado para sala ${roomId}`);
     };
 
     return () => {
@@ -113,6 +112,7 @@ export default function ChatPage() {
       }
     };
   }, [roomId, receiverId, loadingRooms, loadingMessages]);
+
 
   // =========================================================
   // AUTO SCROLL
@@ -125,8 +125,6 @@ export default function ChatPage() {
   // ENVÍO DE MENSAJES
   // =========================================================
   const sendMessage = () => {
-    console.log("🔥 sendMessage ejecutado", { text, receiverId });
-    console.log("🔌 Estado socket:", socketRef.current?.readyState);
 
     if (!text.trim() || !socketRef.current || !receiverId) return;
 
@@ -162,6 +160,8 @@ export default function ChatPage() {
     );
   }
 
+
+
   return (
     <div className="chat-page chat-layout-workspace">
       {/* =========================================================
@@ -184,10 +184,8 @@ export default function ChatPage() {
 
               return (
                 <div
-                  key={roomItem.room}
-                  className={`room-item-row ${
-                    isSelected ? "room-item-row--active" : ""
-                  }`}
+                  key={roomItem.room}   // ← ESTE ES EL FIX
+                  className={`room-item-row ${isSelected ? "room-item-row--active" : ""}`}
                   onClick={() => navigate(`/chats/${roomItem.room}`)}
                 >
                   <img
@@ -196,7 +194,7 @@ export default function ChatPage() {
                     className="room-item-avatar"
                   />
                   <div className="room-item-meta">
-                    <strong>@{friendData.username}</strong>
+                    <strong>@{friendData.username || "Viajero"}</strong>
                     <p className="room-item-last-txt">
                       {roomItem.last_message || "Sin mensajes aún."}
                     </p>
@@ -205,6 +203,7 @@ export default function ChatPage() {
                 </div>
               );
             })
+
           )}
         </div>
       </div>
@@ -241,10 +240,8 @@ export default function ChatPage() {
 
                   return (
                     <div
-                      key={msg.id || index}
-                      className={`chat-message ${
-                        isMe ? "chat-message--me" : "chat-message--them"
-                      }`}
+                      key={msg.id || `${msg.user_id}-${index}`}   // ← FIX AQUÍ
+                      className={`chat-message ${isMe ? "chat-message--me" : "chat-message--them"}`}
                     >
                       <div className="chat-bubble">
                         <strong>@{msg.username}</strong>
@@ -253,6 +250,7 @@ export default function ChatPage() {
                     </div>
                   );
                 })
+
               )}
               <div ref={messagesEndRef} />
             </div>

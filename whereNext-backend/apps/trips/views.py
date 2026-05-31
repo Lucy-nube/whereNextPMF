@@ -10,6 +10,8 @@ from rest_framework.exceptions import PermissionDenied
 from django.db import models
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from rest_framework.viewsets import ModelViewSet
+
 
 from apps.trips.models import Trip, TripPhoto, TripComment, TripPlace
 from apps.social.companions.models import Companion
@@ -25,8 +27,38 @@ from .serializers import (
 )
 
 
+# ============================================================
+# ⭐ MOOD → STAMP
+# ============================================================
+MOOD_STAMPS = {
+    "NATURE": ("Nature Lover", "🌿"),
+    "CITY": ("Urban Explorer", "🏙"),
+    "BEACH": ("Beach Vibes", "🌊"),
+    "MUSEUM": ("Culture Seeker", "🖼"),
+    "FOOD": ("Foodie Traveler", "🍜"),
+    "ADVENTURE": ("Adventure Spirit", "🧗"),
+    "RELAX": ("Calm Soul", "🧘"),
+}
+
+from apps.social.stamps.models import TravelStamp
+
+def give_mood_stamp(user, mood):
+    if mood not in MOOD_STAMPS:
+        return
+    
+    label, icon = MOOD_STAMPS[mood]
+
+    # Evitar duplicados
+    if not TravelStamp.objects.filter(user=user, label=label).exists():
+        TravelStamp.objects.create(
+            user=user,
+            label=label,
+            icon=icon
+        )
+
+
 # =========================================================
-# TRIP VIEWSET (🚀 FULLY INTEGRATED & MATCHED ACTIONS)
+# TRIP VIEWSET 
 # =========================================================
 class TripViewSet(viewsets.ModelViewSet):
     serializer_class = TripSerializer
@@ -64,53 +96,37 @@ class TripViewSet(viewsets.ModelViewSet):
 
         return Response({
             "id": photo.id,
-            "image": photo.image.url,
+            "image": photo.image.url,   
             "caption": photo.caption,
             "created_at": photo.created_at
         }, status=status.HTTP_201_CREATED)
 
     # ============================================================
-    # 🧭 CREAR VIAJE + INVITACIONES
+    # 🧭 CREAR VIAJE + INVITACIONES + SELLOS
     # ============================================================
     def perform_create(self, serializer):
-     raw_data = self.request.data
-     trip_type = raw_data.get("trip_type", "solo")
+        raw_data = self.request.data
+        trip_type = raw_data.get("trip_type", "solo")
 
-     # ============================================================
-     # 👥 MANEJO DE CO-TRAVELER PARA TRIP TYPE "COUPLE"
-     # ============================================================
-     co_traveler_id = None
-     if trip_type == "couple":
-        invited_list = raw_data.get("invited_companions", [])
-        if isinstance(invited_list, list) and len(invited_list) > 0:
-            co_traveler_id = invited_list[0]
+        # ============================================================
+        # 👥 MANEJO DE CO-TRAVELER PARA TRIP TYPE "COUPLE"
+        # ============================================================
+        co_traveler_id = None
+        if trip_type == "couple":
+            invited_list = raw_data.get("invited_companions", [])
+            if isinstance(invited_list, list) and len(invited_list) > 0:
+                co_traveler_id = invited_list[0]
 
-     # ============================================================
-     # 🧭 CREAR EL VIAJE
-     # ============================================================
-     trip = serializer.save(
-        trip_type=trip_type,
-        co_traveler_id=co_traveler_id
-     )
+        # ============================================================
+        # 🧭 CREAR EL VIAJE
+        # ============================================================
+        trip = serializer.save(
+            trip_type=trip_type,
+            co_traveler_id=co_traveler_id
+        )
 
-     # ============================================================
-     # 📸 GUARDAR FOTOS ENVIADAS DESDE EL FRONTEND
-     # ============================================================
-     photos_data = raw_data.get("photos", [])
-
-    # El frontend envía: [{ "image": "/media/places/tokyo.jpg", "caption": "..." }]
-     if isinstance(photos_data, list):
-        for photo in photos_data:
-            image_path = photo.get("image")
-            caption = photo.get("caption", "")
-
-            if image_path:
-                TripPhoto.objects.create(
-                    trip=trip,
-                    image=image_path,   # ⭐ Acepta rutas existentes
-                    caption=caption
-                )
-
+        # ⭐ OTORGAR SELLO POR MOOD
+        give_mood_stamp(self.request.user, trip.mood)
 
 
     # ============================================================
@@ -133,36 +149,36 @@ class TripViewSet(viewsets.ModelViewSet):
             }
             for u in liking_users
         ], status=status.HTTP_200_OK)
-    
 
     # ============================================================
     # 👍 LIKE / UNLIKE VIAJE
     # ============================================================
     @action(detail=True, methods=["post"])
     def like(self, request, pk=None):
-     trip = self.get_object()
-     user = request.user
+        trip = self.get_object()
+        user = request.user
 
-     # Alternar like
-     if user in trip.likes.all():
-        trip.likes.remove(user)
-        liked = False
-     else:
-        trip.likes.add(user)
-        liked = True
-      
-        # ⭐ Crear notificación
-        if trip.owner != user:
-            Notification.objects.create(
-                user=trip.owner,
-                from_user=user,
-                notification_type="LIKE",
-                text_preview=f"{user.username} le dio like a tu viaje")
-            
-     return Response({
-        "liked": liked,
-        "total_likes": trip.likes.count()
-     }, status=status.HTTP_200_OK)
+        # Alternar like
+        if user in trip.likes.all():
+            trip.likes.remove(user)
+            liked = False
+        else:
+            trip.likes.add(user)
+            liked = True
+        
+            # ⭐ Crear notificación
+            if trip.owner != user:
+                Notification.objects.create(
+                    user=trip.owner,
+                    from_user=user,
+                    notification_type="LIKE",
+                    text_preview=f"{user.username} le dio like a tu viaje"
+                )
+                
+        return Response({
+            "liked": liked,
+            "total_likes": trip.likes.count()
+        }, status=status.HTTP_200_OK)
 
     # ============================================================
     # 💬 COMENTAR VIAJE
@@ -428,7 +444,6 @@ class TripDetailPublicView(APIView):
         }, status=status.HTTP_200_OK)
     
 
-# Añade esto al final absoluto de apps/trips/views.py
 
 # =========================================================
 # 📷 TRIP PHOTO UPLOAD VIEW (Restaurado y Optimizado)
@@ -437,11 +452,11 @@ class TripPhotoUploadView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     
-    # Inyectamos los parsers estándar de Django para procesar flujos de archivos binarios (Multipart)
+    # Inyecto los parsers estándar de Django para procesar flujos de archivos binarios (Multipart)
     parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, trip_id):
-        # Localizamos el itinerario correspondiente
+        # Localizo el itinerario correspondiente
         trip = get_object_or_404(Trip, id=trip_id)
 
         # Filtro de seguridad perimetral de autoría
@@ -454,7 +469,7 @@ class TripPhotoUploadView(APIView):
         if not image_file:
             return Response({"error": "No se proporcionó ninguna imagen válida o archivo binario"}, status=400)
 
-        # Creamos el registro en la base de datos SQLite mapeado con tu modelo real
+        # Creo el registro en la base de datos SQLite mapeado con mi modelo real
         photo = TripPhoto.objects.create(
             trip=trip,
             image=image_file,
@@ -468,7 +483,8 @@ class TripPhotoUploadView(APIView):
             "created_at": photo.created_at
         }, status=status.HTTP_201_CREATED)
 
-# Añade este bloque al final absoluto de apps/trips/views.py
+
+
 
 # =========================================================
 # 🧭 TRIP SUGGESTIONS VIEW (Recomendaciones Inteligentes)
@@ -515,3 +531,16 @@ class TripSuggestionsView(APIView):
 
             for p in final_suggestions
         ], status=status.HTTP_200_OK)
+
+
+
+
+class TripPhotoViewSet(ModelViewSet):
+    queryset = TripPhoto.objects.all()
+    serializer_class = TripPhotoSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def perform_destroy(self, instance):
+        # Esto dispara mi signal y borra el archivo físico
+        instance.delete()

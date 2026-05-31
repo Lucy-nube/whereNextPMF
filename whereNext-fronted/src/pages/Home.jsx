@@ -21,6 +21,7 @@ export default function Home() {
 
   // MODAL DE REACCIONES (LIKES DIRECTORY)
   const [likesModal, setLikesModal] = useState({ open: false, users: [] });
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   // =========================================================
   // CARGA DEL FEED CRONOLÓGICO DE BITÁCORAS
@@ -33,6 +34,7 @@ export default function Home() {
       console.error("Error cargando el feed de bitácoras:", err);
     } finally {
       setLoading(false);
+      setIsInitialLoading(false);
     }
   };
 
@@ -53,9 +55,16 @@ export default function Home() {
 
     const delay = setTimeout(async () => {
       try {
-        const res = await API.get(`/users/search/?search=${searchQuery}`);
+        const token = localStorage.getItem("access");
+
+        const res = await API.get(
+          `/users/search/?search=${searchQuery}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
         setSearchResults(res.data || []);
         setShowDropdown(res.data && res.data.length > 0);
+
       } catch (err) {
         console.error("Error ejecutando búsqueda en backend:", err);
         setSearchResults([]);
@@ -66,6 +75,7 @@ export default function Home() {
     return () => clearTimeout(delay);
   }, [searchQuery]);
 
+
   // =========================================================
   // MATRIZ SOCIAL: ENVÍO DE RESEÑAS / COMENTARIOS
   // =========================================================
@@ -75,16 +85,16 @@ export default function Home() {
     if (!text.trim()) return;
 
     try {
-      // Sincronizado con tu acción de ViewSet: POST /api/trips/<id>/comment/
+      // Sincronizado con mi acción de ViewSet: POST /api/trips/<id>/comment/
       const res = await API.post(`trips/${tripId}/comment/`, { text });
 
       setFeedTrips((prev) =>
         prev.map((trip) =>
           trip.id === tripId
             ? {
-                ...trip,
-                comments_list: [...(trip.comments_list || []), res.data],
-              }
+              ...trip,
+              comments_list: [...(trip.comments_list || []), res.data],
+            }
             : trip
         )
       );
@@ -100,17 +110,17 @@ export default function Home() {
   // =========================================================
   const handleLike = async (tripId) => {
     try {
-      // Sincronizado con tu acción de ViewSet: POST /api/trips/<id>/like/
+      // Sincronizado con mi acción de ViewSet: POST /api/trips/<id>/like/
       const res = await API.post(`trips/${tripId}/like/`);
 
       setFeedTrips((prev) =>
         prev.map((trip) =>
           trip.id === tripId
             ? {
-                ...trip,
-                liked_by_me: res.data.liked,
-                likes_count: res.data.total_likes,
-              }
+              ...trip,
+              liked_by_me: res.data.liked,
+              likes_count: res.data.total_likes,
+            }
             : trip
         )
       );
@@ -124,7 +134,7 @@ export default function Home() {
   // =========================================================
   const openLikesModal = async (tripId) => {
     try {
-      // Sincronizado con tu acción de ViewSet: GET /api/trips/<id>/likes/
+      // Sincronizado con mi acción de ViewSet: GET /api/trips/<id>/likes/
       const res = await API.get(`trips/${tripId}/likes/`);
       setLikesModal({ open: true, users: res.data || [] });
     } catch (err) {
@@ -144,6 +154,23 @@ export default function Home() {
     return `http://127.0.0.1:8000${cleanPath}`;
   };
 
+
+  if (isInitialLoading) {
+    return (
+      <div className="home">
+        <div className="home-feed">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="card feed-trip-card skeleton-card">
+              <div className="skeleton-header"></div>
+              <div className="skeleton-title"></div>
+              <div className="skeleton-text"></div>
+              <div className="skeleton-image"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (loading) {
     return (
       <div className="loading">
@@ -154,7 +181,7 @@ export default function Home() {
 
   return (
     <div className="home">
-      
+
       {/* CABECERA + CAJA DE BÚSQUEDA */}
       <div className="home-header">
         <h1>🌿 Muro de Aventuras</h1>
@@ -165,13 +192,11 @@ export default function Home() {
             className="social-search-input"
             type="text"
             value={searchQuery}
-            onChange={(e) => {
-              const value = e.target.value;
-              setSearchQuery(value);
-              setShowDropdown(value.trim().length > 0);
-            }}
+            onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => {
-              if (searchQuery.trim()) setShowDropdown(true);
+              if (searchQuery.trim() && searchResults.length > 0) {
+                setShowDropdown(true);
+              }
             }}
             onBlur={() => {
               setTimeout(() => setShowDropdown(false), 250);
@@ -179,6 +204,8 @@ export default function Home() {
             autoComplete="off"
             placeholder="🔍 Buscar amigos por nombre de usuario..."
           />
+
+
 
           {/* DESPLEGABLE TRANSLÚCIDO DE LA BÚSQUEDA */}
           {showDropdown && searchResults.length > 0 && (
@@ -213,8 +240,11 @@ export default function Home() {
             </p>
           ) : (
             feedTrips.map((trip) => (
-              <div key={trip.id} className="card feed-trip-card">
-                
+              <div
+                key={trip.id}
+                className="card feed-trip-card feed-card-animate"
+              >
+
                 {/* CABECERA DE LA TARJETA */}
                 <div className="feed-card-header">
                   <img
@@ -243,19 +273,32 @@ export default function Home() {
                 </div>
 
                 {/* MOSAICO MULTIMEDIA DE RECUERDOS */}
-                {trip.photos?.length > 0 && (
-                  <div className="feed-photo-grid">
-                    {trip.photos.map((p) => (
+                {Array.isArray(trip.photos) && trip.photos.length > 0 && (
+                  trip.photos.length === 1 ? (
+                    <div className="feed-photo-single">
                       <img
-                        key={p.id}
-                        src={getMediaUrl(p.image)}
+                        src={getMediaUrl(trip.photos[0].image)}
                         className="feed-gallery-image"
-                        alt="Recuerdo"
+                        alt={`Recuerdo de ${trip.title}`}
+                        loading="lazy"
+                        decoding="async"
                       />
-                    ))}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="feed-photo-carousel">
+                      {trip.photos.map((p) => (
+                        <img
+                          key={p.id}
+                          src={getMediaUrl(p.image)}
+                          className="feed-carousel-image"
+                          alt={`Recuerdo de ${trip.title}`}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ))}
+                    </div>
+                  )
                 )}
-
                 {/* DECK DE CONTROL SOCIAL (BOTONES) */}
                 <div className="feed-social">
                   <div className="feed-social-buttons">
@@ -275,7 +318,7 @@ export default function Home() {
                       👥 Likes ({trip.likes_count || 0})
                     </button>
 
-                                      <button
+                    <button
                       type="button"
                       onClick={() =>
                         setActiveTripComments((prev) => ({
@@ -337,14 +380,14 @@ export default function Home() {
         <div className="td-modal-overlay">
           <div className="td-modal-card">
             <h3>❤️ Exploradores que reaccionaron</h3>
-            
+
             <div className="home-likes-users-list">
               {likesModal.users.length === 0 ? (
                 <p className="feed-no-comments">No hay reacciones registradas en este tramo.</p>
               ) : (
                 likesModal.users.map((u) => (
-                  <div 
-                    key={u.id} 
+                  <div
+                    key={u.id}
                     className="likes-user-row-item"
                     onClick={() => {
                       setLikesModal({ open: false, users: [] }); // Cierra el modal antes de mover la ruta
@@ -360,9 +403,9 @@ export default function Home() {
             </div>
 
             <div className="td-modal-actions">
-              <button 
-                type="button" 
-                className="td-modal-btn-cancel" 
+              <button
+                type="button"
+                className="td-modal-btn-cancel"
                 onClick={() => setLikesModal({ open: false, users: [] })}
               >
                 Cerrar Ventana

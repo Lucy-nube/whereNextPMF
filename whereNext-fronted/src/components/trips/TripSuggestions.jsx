@@ -6,7 +6,7 @@ import "../../styles/tripsuggestion.css";
 const getMediaUrl = (path) => {
   if (!path) return "/default-place.jpg";
 
-  // Si ya es absoluta → no tocar
+  
   if (path.startsWith("http://") || path.startsWith("https://")) {
     return path;
   }

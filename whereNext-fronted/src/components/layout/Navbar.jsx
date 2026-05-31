@@ -9,8 +9,11 @@ function Navbar() {
   const [notifOpen, setNotifOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // 🚀 NUEVO ESTADO: Guarda el total de chats no leídos calculados en tiempo real
+  // Guardo el total de chats no leídos calculados en tiempo real
   const [unreadChatsCount, setUnreadChatsCount] = useState(0);
+  const [unreadInvitesCount, setUnreadInvitesCount] = useState(0);
+
+
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -32,19 +35,24 @@ function Navbar() {
           return;
         }
 
-        // Lanzamos las peticiones en paralelo al feed de alertas y a la central de chats
-        const [notifRes, chatsRes] = await Promise.all([
+        // Lanzo las peticiones en paralelo al feed de alertas y a la central de chats
+        const [notifRes, chatsRes, invitesRes] = await Promise.all([
           API.get("social/notifications/").catch(() => ({ data: [] })),
-          API.get("chats/").catch(() => ({ data: [] }))
+          API.get("chats/").catch(() => ({ data: [] })),
+          API.get("trip-invites/").catch(() => ({ data: [] }))
         ]);
 
+
         if (mounted) {
-          // 1. Sincronizamos las notificaciones estándar de la campanita
+          // 1. Sincronizo las notificaciones estándar de la campanita
           setNotifications(notifRes.data || []);
 
-          // 2. 🚀 CÁLCULO DINÁMICO: Filtramos cuántos chats de la barra lateral vienen marcados con unread: true
+          // 2. 🚀 CÁLCULO DINÁMICO: Filtro cuántos chats de la barra lateral vienen marcados con unread: true
           const unreadRooms = (chatsRes.data || []).filter(room => room.unread === true);
           setUnreadChatsCount(unreadRooms.length);
+
+          const pendingInvites = (invitesRes.data || []).filter(inv => inv.status === "PENDING");
+          setUnreadInvitesCount(pendingInvites.length);
         }
       } catch (err) {
         if (err.response?.status === 401) {
@@ -99,19 +107,25 @@ function Navbar() {
       console.error(err);
     }
   };
-  const acceptNotification = async (notifId) => {
+ const acceptNotification = async (inviteId) => {
   try {
-    await API.patch(`social/notifications/${notifId}/`, { action: "accept" });
-    setNotifications(prev => prev.filter(n => n.id !== notifId));
+    // Llamo al endpoint correcto del backend
+    await API.post(`trip-invites/${inviteId}/accept/`);
+
+    // Quito la notificación del dropdown
+    setNotifications(prev => prev.filter(n => n.object_id !== inviteId));
   } catch (err) {
     console.error("Error aceptando:", err);
   }
 };
 
-const rejectNotification = async (notifId) => {
+const rejectNotification = async (inviteId) => {
   try {
-    await API.patch(`social/notifications/${notifId}/`, { action: "reject" });
-    setNotifications(prev => prev.filter(n => n.id !== notifId));
+    
+    await API.post(`trip-invites/${inviteId}/decline/`);
+
+
+    setNotifications(prev => prev.filter(n => n.object_id !== inviteId));
   } catch (err) {
     console.error("Error rechazando:", err);
   }
@@ -165,42 +179,44 @@ const rejectNotification = async (notifId) => {
                     const currentType = String(notif.notification_type || "").toUpperCase();
                     return (
                       <div key={notif.id} className="notif-item">
-  <span>
-    {currentType === "FRIEND_REQUEST" && (
-      <>🤝 <strong>@{notif.from_user?.username}</strong> quiere ser tu compañero</>
-    )}
+                        <span>
+                          {currentType === "FRIEND_REQUEST" && (
+                            <>🤝 <strong>@{notif.from_user?.username}</strong> quiere ser tu compañero</>
+                          )}
 
-    {currentType === "INVITE" && (
-      <>✈️ <strong>@{notif.from_user?.username}</strong> te invitó a un viaje</>
-    )}
+                          {currentType === "TRIP_INVITE" && (
+                            <>✈️ <strong>@{notif.from_user?.username}</strong> te invitó a un viaje</>
+                          )}
 
-    {currentType === "LIKE" && (
-      <>❤️ <strong>@{notif.from_user?.username}</strong> le dio me gusta a tu viaje</>
-    )}
 
-    {currentType === "COMMENT" && (
-      <>💬 <strong>@{notif.from_user?.username}</strong> comentó: "{notif.text_preview}"</>
-    )}
-  </span>
+                          {currentType === "LIKE" && (
+                            <>❤️ <strong>@{notif.from_user?.username}</strong> le dio me gusta a tu viaje</>
+                          )}
 
-  {(currentType === "FRIEND_REQUEST") && (
-    <div className="notif-actions">
-      <button 
-        className="notif-accept-btn"
-        onClick={() => acceptNotification(notif.id)}
-      >
-        Aceptar
-      </button>
+                          {currentType === "COMMENT" && (
+                            <>💬 <strong>@{notif.from_user?.username}</strong> comentó: "{notif.text_preview}"</>
+                          )}
+                        </span>
 
-      <button 
-        className="notif-reject-btn"
-        onClick={() => rejectNotification(notif.id)}
-      >
-        Rechazar
-      </button>
-    </div>
-  )}
-</div>
+                        {(currentType === "FRIEND_REQUEST") && (
+                          <div className="notif-actions">
+                            <button
+                              className="notif-accept-btn"
+                              onClick={() => acceptNotification(notif.object_id)}
+
+                            >
+                              Aceptar
+                            </button>
+
+                            <button
+                              className="notif-reject-btn"
+                              onClick={() => rejectNotification(notif.object_id)}
+                            >
+                              Rechazar
+                            </button>
+                          </div>
+                        )}
+                      </div>
 
                     );
                   })
@@ -224,10 +240,10 @@ const rejectNotification = async (notifId) => {
       {/* SIDEBAR INMERSIVO */}
       <aside className={`navigation-sidebar ${sidebarOpen ? "sidebar--open" : "sidebar--closed"}`}>
         <div className="sidebar-header-zone">
-          <img 
-            src={avatarUrl} 
-            alt="passport" 
-            className="sidebar-passport-pic sidebar-avatar-interactive" 
+          <img
+            src={avatarUrl}
+            alt="passport"
+            className="sidebar-passport-pic sidebar-avatar-interactive"
             onClick={() => { navigate("/profile"); closePanels(); }}
           />
           <h3>@{user?.username || "Explorer"}</h3>
@@ -238,7 +254,7 @@ const rejectNotification = async (notifId) => {
           <NavLink to="/" end onClick={closePanels}>🗺️ Inicio</NavLink>
           <NavLink to="/trips" onClick={closePanels}>✈️ Tus Viajes</NavLink>
           <NavLink to="/explore" onClick={closePanels}>🌍 Explorar</NavLink>
-          
+
           {/* 🚀 RESPUESTA ESTRATÉGICA: Pestaña de chats modificada con contenedor de badge relativo */}
           <NavLink to="/chats" onClick={closePanels} className="sidebar-link-with-badge-wrapper">
             💬 Chats
@@ -246,6 +262,15 @@ const rejectNotification = async (notifId) => {
               <span className="sidebar-chats-notif-counter-badge">{unreadChatsCount}</span>
             )}
           </NavLink>
+          <NavLink to="trip-invites/" className="sidebar-link-with-badge-wrapper">
+            📨 Invitaciones
+            {unreadInvitesCount > 0 && (
+              <span className="sidebar-chats-notif-counter-badge">
+                {unreadInvitesCount}
+              </span>
+            )}
+          </NavLink>
+
 
           <NavLink to="/profile" onClick={closePanels}>👤 Perfil</NavLink>
         </div>

@@ -91,14 +91,9 @@ export default function TripCreate() {
         trip_type: tripType,
         invited_companions: selectedFriends,
 
-        photos: selectedImageUrl
-          ? [
-              {
-                image: toRelativePath(selectedImageUrl), // ⭐ FIX APLICADO
-                caption: `Recuerdo en ${destination}`,
-              },
-            ]
-          : [],
+        photos: [],
+
+
       };
 
       if (isEditing) {
@@ -121,55 +116,66 @@ export default function TripCreate() {
   const getMediaUrl = (path) => {
     if (!path) return "/default-place.jpg";
 
+    // Si ya es absoluta → no tocar
     if (path.startsWith("http://") || path.startsWith("https://")) {
       return path;
     }
 
-    return `http://127.0.0.1:8000${path}`;
+    // Normalizar: quitar slashes iniciales
+    let clean = path.replace(/^\/+/, "");
+
+    // Arreglar duplicados tipo media/media/
+    clean = clean.replace(/^media\/media\//, "media/");
+
+    return `http://127.0.0.1:8000/${clean}`;
   };
 
   return (
     <div className="trip-details-view">
 
+      {/* HEADER */}
       <div className="td-header">
         <div className="header-info">
           <h1>
-            {isEditing ? "Editar Aventura" : "Planificar Nueva Aventura"}
+            {isEditing ? "✏️ Editar Aventura" : "🚀 Planificar Aventura"}
           </h1>
 
           <p className="td-description">
             {isEditing
-              ? "Actualiza tu ruta, portada o detalles del viaje."
-              : "Inmortaliza tu próxima ruta o borrador en el pasaporte digital WhereNext."}
+              ? "Refina tu historia de viaje."
+              : "Crea tu próxima experiencia y guárdala en tu pasaporte digital."}
           </p>
         </div>
       </div>
 
+      {/* FORM CARD */}
       <form onSubmit={handleSubmit} className="td-meta-card">
 
-        {/* TÍTULO */}
+        {/* TITLE */}
         <div className="td-meta-item">
-          <label>TÍTULO DE LA AVENTURA</label>
+          <label>TÍTULO</label>
           <input
             type="text"
             className="td-edit-input"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder="Ej: Summer in Bali"
             required
           />
         </div>
 
-        {/* DESCRIPCIÓN */}
+        {/* DESCRIPTION */}
         <div className="td-meta-item">
           <label>DESCRIPCIÓN</label>
           <textarea
             className="td-edit-input"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            placeholder="Cuenta tu historia..."
           />
         </div>
 
-        {/* DESTINO */}
+        {/* DESTINATION */}
         <div className="td-meta-item">
           <label>DESTINO</label>
           <input
@@ -177,12 +183,28 @@ export default function TripCreate() {
             className="td-edit-input"
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
+            placeholder="París, Tokio..."
           />
         </div>
 
+        <div className="td-meta-item">
+          <label>¿Hacer público?</label>
+          <label className="checkbox-container">
+            <input
+              type="checkbox"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+            />
+            <span className="checkbox-text">
+              {isPublic ? "🌍 Público" : "🔒 Privado"}
+            </span>
+          </label>
+        </div>
+
+
         {/* MOOD */}
         <div className="td-meta-item">
-          <label>MOOD DEL VIAJE</label>
+          <label>MOOD</label>
           <select
             className="td-edit-input select-mood-variant"
             value={mood}
@@ -196,7 +218,7 @@ export default function TripCreate() {
           </select>
         </div>
 
-        {/* PREVIEW */}
+        {/* 🖼️ PREVIEW DE IMAGEN (CORRECTO AQUÍ) */}
         {selectedImageUrl && (
           <div className="td-preview-wrapper">
             <img
@@ -207,7 +229,13 @@ export default function TripCreate() {
           </div>
         )}
 
-        {/* BOTÓN */}
+        {/* 🌍 SUGGESTIONS (FUERA DEL SUBMIT, UX CORRECTO) */}
+        <TripSuggestions
+          mood={mood}
+          onSelectDestination={handleSelectSuggestion}
+        />
+
+        {/* 🚀 SUBMIT */}
         <div className="td-publish-wrapper">
           <button
             type="submit"
@@ -217,19 +245,12 @@ export default function TripCreate() {
             {loading
               ? "Guardando..."
               : isEditing
-              ? "💾 Guardar Cambios"
-              : "🚀 Crear Viaje"}
+                ? "💾 Guardar Cambios"
+                : "🚀 Crear Viaje"}
           </button>
         </div>
 
       </form>
-
-      {/* SUGERENCIAS */}
-      <TripSuggestions
-        mood={mood}
-        onSelectDestination={handleSelectSuggestion}
-      />
-
     </div>
   );
 }

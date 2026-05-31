@@ -22,6 +22,8 @@ class Trip(models.Model):
     end_date = models.DateField(blank=True, null=True)
 
     is_public = models.BooleanField(default=False)
+    is_published = models.BooleanField(default=False)
+
 
     created_at = models.DateTimeField(auto_now_add=True)
 

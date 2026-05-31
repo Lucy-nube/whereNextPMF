@@ -1,6 +1,9 @@
 from django.db import transaction
 from django.core.validators import MinValueValidator
 from rest_framework import serializers
+from rest_framework.response import Response
+from rest_framework import status
+
 
 from apps.places.models import Place
 from apps.users.serializers import UserSerializer,PublicUserSerializer
@@ -156,12 +159,17 @@ class TripPhotoSerializer(serializers.ModelSerializer):
         read_only_fields = ["trip", "created_at"]
 
 
+
+
 class TripSerializer(serializers.ModelSerializer):
     trip_places = TripPlaceSerializer(many=True, required=False)
     photos = serializers.SerializerMethodField()
+    companions = PublicUserSerializer(many=True, read_only=True)
     owner = PublicUserSerializer(read_only=True)
     likes_count = serializers.IntegerField(source="likes.count", read_only=True)
     liked_by_me = serializers.SerializerMethodField()
+    co_traveler = PublicUserSerializer(read_only=True)
+
 
     class Meta:
         model = Trip
@@ -174,8 +182,11 @@ class TripSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "is_public",
+            "is_published", 
             "trip_type",
+            "co_traveler",
             "owner",
+            "companions",
             "trip_places",
             "photos",
             "likes_count",
@@ -237,6 +248,12 @@ class TripSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+    
+    def destroy(self, request, *args, **kwargs):
+     trip = self.get_object()
+     trip.delete()
+     return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class TripCommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

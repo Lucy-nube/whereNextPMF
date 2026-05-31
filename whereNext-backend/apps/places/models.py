@@ -27,7 +27,7 @@ class Place(models.Model):
 
     image_url = models.URLField(blank=True)
 
-    # 🔥 IMPORTANTE: permitir null temporalmente para migración
+    
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,

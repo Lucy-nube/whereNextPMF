@@ -1,433 +1,130 @@
+/* =========================================================
+   🌌 TRIP CREATE V2 — GLASSMORPHISM CLEAN SYSTEM
+   ========================================================= */
+
 .trip-details-view {
-  max-width: 780px !important;
-  margin: 110px auto 60px auto !important;
-  padding: 0 20px !important;
-  box-sizing: border-box !important;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  color: #f1f5f9 !important;
+  max-width: 780px;
+  margin: 100px auto 60px;
+  padding: 24px;
+  box-sizing: border-box;
+  color: #f1f5f9;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* =========================================================================
-   ✨ FORM HEADER MODULE
-   ========================================================================= */
+/* =========================================================
+   🧭 HEADER
+   ========================================================= */
 
 .td-header {
-  margin-bottom: 36px !important;
+  text-align: center;
+  margin-bottom: 28px;
 }
 
 .td-header h1 {
-  font-size: 2.25rem !important;
-  font-weight: 900 !important;
-  letter-spacing: -0.8px !important;
-  color: #ffffff !important;
-  margin: 0 0 8px 0 !important;
+  font-size: 2rem;
+  font-weight: 900;
+  margin: 0 0 8px;
+  letter-spacing: -0.5px;
+  color: #ffffff;
 }
 
 .td-description {
-  font-size: 14.5px !important;
-  line-height: 1.6 !important;
-  color: rgba(241, 245, 249, 0.65) !important;
-  margin: 0 !important;
+  font-size: 14px;
+  color: rgba(241, 245, 249, 0.6);
+  margin: 0;
+  line-height: 1.5;
 }
 
-/* =========================================================================
-   🎫 GLASS CONTAINER CARD
-   ========================================================================= */
+/* =========================================================
+   🧱 FORM CARD
+   ========================================================= */
 
 .td-meta-card {
-  background: rgba(255, 255, 255, 0.02) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  border-radius: 24px !important;
-  padding: 32px !important;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3) !important;
-  box-sizing: border-box !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 24px !important;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
 }
 
-/* =========================================================================
-   🎛️ FORMS ENTRY ELEMENTS (INPUTS, TEXTAREAS, SELECTS)
-   ========================================================================= */
+/* =========================================================
+   🧾 INPUT BLOCKS
+   ========================================================= */
 
 .td-meta-item {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .td-meta-item label {
-  font-size: 11px !important;
-  font-weight: 800 !important;
-  letter-spacing: 1px !important;
-  color: rgba(255, 255, 255, 0.4) !important;
-  text-transform: uppercase !important;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(241, 245, 249, 0.4);
 }
+
+/* =========================================================
+   ✍️ INPUTS CLEAN SYSTEM
+   ========================================================= */
 
 .td-edit-input {
-  width: 100% !important;
-  height: 46px !important;
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 12px !important;
-  padding: 0 16px !important;
-  color: #ffffff !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  box-sizing: border-box !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-textarea.td-edit-input {
-  height: 110px !important;
-  padding: 14px 16px !important;
-  resize: vertical !important;
-  line-height: 1.5 !important;
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.6);
+  color: #ffffff;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  outline: none;
+  box-sizing: border-box;
 }
 
 .td-edit-input:focus {
-  outline: none !important;
-  background: rgba(15, 23, 42, 0.6) !important;
-  border-color: #38bdf8 !important;
-  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12), 0 8px 20px rgba(0, 0, 0, 0.3) !important;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  background: rgba(15, 23, 42, 0.85);
 }
 
-/* =========================================================================
-   🏙️ THE UNBREAKABLE BASE64 SELECT DROPDOWN ARROWS (🚀 CHEVRONS FIXED)
-   ========================================================================= */
+/* TEXTAREA */
+textarea.td-edit-input {
+  height: 100px;
+  padding: 12px 14px;
+  resize: none;
+  line-height: 1.4;
+}
+
+/* =========================================================
+   🎯 SELECT MOOD CLEAN
+   ========================================================= */
+
 .select-mood-variant {
-  width: 100% !important;
-  height: 46px !important;
-  background-color: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 12px !important;
-  color: #ffffff !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
-  box-sizing: border-box !important;
-  
-  /* Kill operating system native graphics overlays completely */
-  appearance: none !important;
-  -webkit-appearance: none !important;
-  -moz-appearance: none !important;
-  
-  /* 🚀 BASE64 RE-INJECTION MATCH: Pure white vector chevron asset running globally.
-     This completely bypasses security filters and renders natively on all devices! */
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNmZmZmZmYiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSI+PC9wb2x5bGluZT48L3N2Zy4=") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 16px center !important;
-  background-size: 16px !important;
-  padding-right: 44px !important;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image: url("data:image/svg+xml;base64,PHN2ZyBmaWxsPSJ3aGl0ZSIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0IiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxwYXRoIGQ9Ik02IDlsNiA2IDYtNiIvPjwvc3ZnPg==");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+
+  padding-right: 40px;
+  cursor: pointer;
 }
 
-.select-mood-variant option {
-  background: #1e293b !important;
-  color: #ffffff !important;
-}
-
-/* =========================================================================
-   👥 USER INVITATIONS INTERACTIVE PILL BUTTON CHIPS (🚀 NEON BRIGHT)
-   ========================================================================= */
-
-.td-couple-chips-container {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 10px !important;
-  padding: 4px 0 !important;
-}
-
-.td-friend-chip {
-  background: rgba(255, 255, 255, 0.03) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  color: rgba(241, 245, 249, 0.65) !important;
-  padding: 8px 16px !important;
-  border-radius: 999px !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  user-select: none !important;
-}
-
-.td-friend-chip:hover {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
-}
-
-/* Active Highlight Module Anchor Indicator rules with glowing cyan borders */
-.td-friend-chip.active {
-  background: rgba(56, 189, 248, 0.12) !important;
-  border-color: #38bdf8 !important;
-  color: #38bdf8 !important;
-  font-weight: 700 !important;
-  text-shadow: 0 0 8px rgba(56, 189, 248, 0.25) !important;
-  box-shadow: 0 0 14px rgba(56, 189, 248, 0.2) !important;
-  transform: scale(1.02) !important;
-}
-
-.td-empty-gallery-msg {
-  font-size: 13.5px !important;
-  color: rgba(241, 245, 249, 0.4) !important;
-  font-style: italic !important;
-  margin: 4px 0 !important;
-}
-
-/* =========================================================================
-   📅 DATE TRACKING INPUTS GRID ROW
-   ========================================================================= */
-
-.td-dates-row {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 16px !important;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1) !important;
-  cursor: pointer !important;
-}
-
-/* =========================================================================
-   🔒 SECURITY PRIVACY MODULATOR
-   ========================================================================= */
-
-.td-visibility-row {
-  padding: 4px 0 !important;
-}
-
-.checkbox-container {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  cursor: pointer !important;
-  user-select: none !important;
-}
-
-.checkbox-container input[type="checkbox"] {
-  width: 18px !important;
-  height: 18px !important;
-  accent-color: #38bdf8 !important;
-  cursor: pointer !important;
-}
-
-.checkbox-text {
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  color: rgba(241, 245, 249, 0.85) !important;
-}
-
-/* =========================================================================
-   📸 PHOTO PLACEHOLDER BUTTON DESIGN ARCHITECTURE
-   ========================================================================= */
-
-.upload-creation-box {
-  border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
-  padding-top: 20px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 10px !important;
-}
-
-.custom-file-upload-label {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px dashed rgba(56, 189, 248, 0.35) !important;
-  color: #38bdf8 !important;
-  padding: 14px 20px !important;
-  border-radius: 12px !important;
-  font-size: 13.5px !important;
-  font-weight: 700 !important;
-  cursor: pointer !important;
-  box-sizing: border-box !important;
-  transition: all 0.2s ease !important;
-}
-
-.custom-file-upload-label:hover {
-  background: rgba(56, 189, 248, 0.05) !important;
-  border-color: #38bdf8 !important;
-  border-style: solid !important;
-}
-
-.native-hidden-file-input {
-  display: none !important;
-}
-
-.fallback-photo-alert-text {
-  font-size: 12.5px !important;
-  color: #34d399 !important;
-  font-weight: 600 !important;
-  margin: 0 !important;
-  letter-spacing: 0.2px !important;
-}
-
-/* =========================================================================
-   🚀 TRANSACTION SUBMIT TRIGGER DECKS BUTTON SYSTEM
-   ========================================================================= */
-
-.td-publish-btn {
-  width: 100% !important;
-  height: 48px !important;
-  background: #38bdf8 !important;
-  border: 1px solid #38bdf8 !important;
-  color: #0f172a !important;
-  border-radius: 12px !important;
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  cursor: pointer !important;
-  box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25) !important;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.td-publish-btn:hover {
-  background: #0ea5e9 !important;
-  border-color: #0ea5e9 !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4) !important;
-}
-
-.td-publish-btn:disabled {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: rgba(255, 255, 255, 0.3) !important;
-  cursor: not-allowed !important;
-  box-shadow: none !important;
-  transform: none !important;
-}
-/* =========================================================================
-   🌿 WHERENEXT PRESTIGE GLASSMORPHISM — SMART TRIP SUGGESTIONS PANEL
-   ========================================================================= */
-
-.trip-suggestions-box {
-  margin-top: 40px !important;
-  padding-top: 30px !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
-  box-sizing: border-box !important;
-}
-
-.suggestions-header-title {
-  font-size: 1.4rem !important;
-  font-weight: 800 !important;
-  color: #38bdf8 !important;
-  margin: 0 0 6px 0 !important;
-  letter-spacing: -0.3px !important;
-  text-shadow: 0 0 10px rgba(56, 189, 248, 0.15) !important;
-}
-
-.suggestions-helper-subtitle {
-  font-size: 13px !important;
-  color: rgba(241, 245, 249, 0.45) !important;
-  margin: 0 0 20px 0 !important;
-  line-height: 1.5 !important;
-}
-
-.suggestions-loading-text,
-.suggestions-empty-notification {
-  font-size: 14px !important;
-  color: rgba(241, 245, 249, 0.4) !important;
-  font-style: italic !important;
-  padding: 16px 0 !important;
-}
-
-/* =========================================================================
-   🗂️ REJILLA DE FILAS INTERACTIVAS (SUGGESTIONS LIST)
-   ========================================================================= */
-
-.suggestions-list {
-  list-style: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 12px !important;
-}
-
-/* La Cápsula del Destino Sugerido */
-.item-interactive-row {
-  background: rgba(255, 255, 255, 0.02) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
-  border-radius: 16px !important;
-  padding: 16px 20px !important;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  cursor: pointer !important;
-  pointer-events: auto !important;
-  box-sizing: border-box !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-/* 🚀 EFECTO HOVER PURO EN CSS (Adiós a los triggers rotos de JS) */
-.item-interactive-row:hover {
-  background: rgba(56, 189, 248, 0.05) !important;
-  border-color: #38bdf8 !important;
-  transform: translateX(4px) !important;
-  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.1) !important;
-}
-
-.suggestion-meta-container {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 4px !important;
-  pointer-events: none !important; /* Evita que los textos intercepten el click */
-}
-
-.suggestion-place-name {
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  color: #ffffff !important;
-  letter-spacing: -0.1px !important;
-}
-
-.item-interactive-row:hover .suggestion-place-name {
-  color: #38bdf8 !important;
-}
-
-.suggestion-country-subtext {
-  font-size: 12px !important;
-  color: rgba(241, 245, 249, 0.45) !important;
-  font-weight: 500 !important;
-}
-
-/* Sello Verde de Paz Score / Tranquilidad */
-.suggestion-score-badge {
-  background: rgba(52, 211, 153, 0.08) !important;
-  border: 1px solid rgba(52, 211, 153, 0.2) !important;
-  color: #34d399 !important;
-  padding: 6px 14px !important;
-  border-radius: 10px !important;
-  font-size: 11.5px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.2px !important;
-  pointer-events: none !important;
-  text-transform: uppercase !important;
-}
-
-.item-interactive-row:hover .suggestion-score-badge {
-  background: rgba(52, 211, 153, 0.15) !important;
-  border-color: #34d399 !important;
-  box-shadow: 0 0 10px rgba(52, 211, 153, 0.15) !important;
-}
-.input-error {
-  border: 1px solid #ff4d4d !important;
-}
-
-.td-error-msg {
-  color: #ff4d4d;
-  font-size: 0.9rem;
-  margin-top: 6px;
-}
-
-/* =========================================================================
-   📸 FIX — PREVIEW IMAGE (NO MÁS DEFORMACIONES)
-   ========================================================================= */
+/* =========================================================
+   🖼️ PREVIEW IMAGE
+   ========================================================= */
 
 .td-preview-wrapper {
-  width: 100%;
+  margin-top: 6px;
   display: flex;
   justify-content: center;
 }
@@ -435,43 +132,62 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .td-preview-image {
   width: 100%;
   max-width: 420px;
-  height: auto;              
   border-radius: 16px;
-  object-fit: cover;         
-  display: block;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
+/* =========================================================
+   🚀 SUBMIT BUTTON
+   ========================================================= */
 
-/* =========================================================================
-   📱 ADAPTACIÓN SMARTPHONE
-   ========================================================================= */
+.td-publish-wrapper {
+  margin-top: 10px;
+}
+
+.td-publish-btn {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25);
+}
+
+.td-publish-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 35px rgba(56, 189, 248, 0.35);
+}
+
+.td-publish-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* =========================================================
+   📱 MOBILE
+   ========================================================= */
+
 @media (max-width: 768px) {
-  .item-interactive-row {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 12px !important;
-    padding: 14px 16px !important;
-  }
-  
-  .suggestion-score-badge {
-    align-self: flex-end !important;
+  .trip-details-view {
+    margin-top: 90px;
+    padding: 16px;
   }
 
-  .trip-details-view {
-    margin-top: 90px !important;
-    padding: 0 16px !important;
-  }
   .td-header h1 {
-    font-size: 1.85rem !important;
+    font-size: 1.7rem;
   }
+
   .td-meta-card {
-    padding: 20px !important;
-    border-radius: 20px !important;
-    gap: 18px !important;
-  }
-  .td-dates-row {
-    grid-template-columns: 1fr !important;
-    gap: 18px !important;
+    padding: 20px;
+    border-radius: 16px;
   }
 }

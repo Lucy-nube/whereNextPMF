@@ -7,7 +7,7 @@ User = get_user_model()
 class PublicUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "username", "avatar"]  # ajusta si tu campo avatar se llama distinto
+        fields = ["id", "username", "avatar"]  
 
 class ChatRoomSerializer(serializers.ModelSerializer):
     friend = serializers.SerializerMethodField()
@@ -36,3 +36,4 @@ class ChatRoomSerializer(serializers.ModelSerializer):
     def get_unread(self, obj):
         request_user = self.context["request"].user
         return obj.messages.filter(receiver=request_user, is_read=False).exists()
+

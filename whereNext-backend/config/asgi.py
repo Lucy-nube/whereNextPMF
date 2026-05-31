@@ -16,7 +16,7 @@ django_asgi_app = get_asgi_application()
 from apps.social.chats.routing import websocket_urlpatterns
 
 # 🛡️ THE UVICORN LOOKUP ANCHOR: This absolute top-level mapping definition parameter 
-# MUST be named exactly 'application' so your ASGI server can hook and execute it.
+# MUST be named exactly 'application' so my ASGI server can hook and execute it.
 application = ProtocolTypeRouter({
     # Conventional REST HTTP data communication passes here
     "http": django_asgi_app,

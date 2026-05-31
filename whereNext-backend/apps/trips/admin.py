@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Trip
 
-# 1. We define the admin view settings layout first without decorators
+# 1. define the admin view settings layout first without decorators
 class TripAdmin(admin.ModelAdmin):
     list_display = (
         'id', 
@@ -20,5 +20,5 @@ class TripAdmin(admin.ModelAdmin):
 if admin.site.is_registered(Trip):
     admin.site.unregister(Trip)
 
-# 3. 🚀 Apply your customized layout columns cleanly
+# 3. 🚀 Apply my customized layout columns cleanly
 admin.site.register(Trip, TripAdmin)

@@ -138,6 +138,6 @@ class PlaceRateView(APIView):
         if rating is None:
             return Response({"detail": "Rating required"}, status=400)
 
-        # Aquí luego puedes guardar rating en un modelo real
+        
         return Response({"message": "Rating received", "rating": rating}, status=201)
 

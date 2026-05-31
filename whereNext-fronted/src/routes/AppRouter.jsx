@@ -16,8 +16,10 @@ import Profile from "../pages/Profile";
 import ChatsPage from "../pages/Chatspage";
 import PlaceDetails from "../pages/PlaceDetails";
 import EditProfile from "../pages/EditProfile";
+import Invites from "../pages/Invites";
 
-import CompanionsHub from "../pages/companionsHub"; // ✅ FIX: capitalizado
+
+import CompanionsHub from "../pages/CompanionsHub"; 
 
 export default function AppRouter() {
   return (
@@ -53,6 +55,9 @@ export default function AppRouter() {
 
           {/* CHATS */}
           <Route path="/chats/:id?" element={<ChatsPage />} />
+
+          <Route path="/invites" element={<Invites />} />
+
 
         </Route>
       </Route>

@@ -1,14 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-# 🚀 IMPORT CORREGIDO: Se añaden los códigos de estado HTTP nativos de DRF
 from rest_framework import status 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
-# Asegúrate de verificar que la ruta interna de tus modelos sea la correcta
 from apps.social.chats.models import Message 
 from apps.users.serializers import PublicUserSerializer
 
@@ -17,9 +15,8 @@ from apps.social.chats.models import ChatRoom
 from apps.users.models import User
 from apps.social.companions.models import Companion
 
-# Update this class view inside apps/chats/views.py
 
-# Reemplaza completamente la clase ChatMessagesView dentro de apps/social/chats/views.py
+
 
 class ChatMessagesView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -51,13 +48,13 @@ class ChatMessagesView(APIView):
                 if fallback_field:
                     filter_kwargs[fallback_field] = room_lookup_string
                 else:
-                    # Si el modelo no guarda sala por strings, filtramos mensajes cruzados entre emisor y receptor
+                    # Si el modelo no guarda sala por strings, filtro mensajes cruzados entre emisor y receptor
                     messages = Message.objects.filter(
                         (Q(sender=request.user) & Q(receiver_id=room_id)) |
                         (Q(sender_id=room_id) & Q(receiver=request.user))
                     )
 
-            # Si se usaron criterios dinámicos, construimos el queryset base
+            # Si se usaron criterios dinámicos, construyo el queryset base
             if filter_kwargs:
                 messages = Message.objects.filter(**filter_kwargs)
 
@@ -95,9 +92,9 @@ class ChatMessagesView(APIView):
                 })
 
         except Exception as master_error:
-            # Captura y reporta cualquier fallo de base de datos o sintaxis en tu terminal
+            # Captura y reporta cualquier fallo 
             print(f"⚠️ Alerta controlada: Fallo en ChatMessagesView interceptado: {master_error}")
-            # Al no relanzar el "raise", garantizamos devolver data limpia [] con un código 200 OK seguro
+            # Al no relanzar el "raise", garantizo devolver data limpia [] con un código 200 OK seguro
 
         from rest_framework import status
         return Response(data, status=status.HTTP_200_OK)
@@ -167,7 +164,7 @@ class StartChatView(APIView):
         current_user = request.user
         target_user = get_object_or_404(User, id=user_id)
 
-        # 🚫 No puedes chatear contigo misma
+        # 🚫 No puedo chatear conmigo misma
         if target_user == current_user:
             return Response(
                 {"detail": "No puedes iniciar un chat contigo misma."},

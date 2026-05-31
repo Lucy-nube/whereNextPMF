@@ -6,28 +6,28 @@ import "../styles/explore.css";
 export default function Explore() {
   const [places, setPlaces] = useState([]);
   const [filtered, setFiltered] = useState([]);
-
-  // 🚀 ESTADO CORRECTO PARA USUARIOS ENCONTRADOS
   const [filteredUsers, setFilteredUsers] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
-  // FILTERS & SEARCH STATES
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
   const [activeFilter, setActiveFilter] = useState("ALL");
   const [sourceFilter, setSourceFilter] = useState("ALL");
 
   const navigate = useNavigate();
 
   // =========================================================
-  // FETCH PLACES FROM OPEN CATALOG
+  // FETCH PLACES
   // =========================================================
   useEffect(() => {
     const fetchPlaces = async () => {
       try {
         const res = await API.get("places/");
-        setPlaces(res.data || []);
-        setFiltered(res.data || []);
+        const data = res.data || [];
+        setPlaces(data);
+        setFiltered(data);
       } catch (err) {
         console.error("Error al cargar los lugares:", err);
       } finally {
@@ -39,69 +39,86 @@ export default function Explore() {
   }, []);
 
   // =========================================================
-  // HELPER FUNCTION: STRICT BOOLEAN SANITIZER
+  // DEBOUNCE SEARCH (UX PRO)
+  // =========================================================
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // =========================================================
+  // BOOLEAN SAFE CHECK
   // =========================================================
   const checkTrue = (value) => {
-    if (value === true || value === 1 || value === "1") return true;
-    if (typeof value === "string" && value.toLowerCase() === "true") return true;
+    if (value === true) return true;
+    if (typeof value === "string") {
+      return value.toLowerCase() === "true" || value === "1";
+    }
+    if (typeof value === "number") {
+      return value === 1;
+    }
     return false;
   };
 
   // =========================================================
-  // FILTER ENGINE + BUSCADOR DE USUARIOS
+  // MAIN FILTER ENGINE
   // =========================================================
   useEffect(() => {
-    let result = [...places];
-    const query = searchQuery.trim().toLowerCase();
+    const query = debouncedQuery.trim().toLowerCase();
 
-    // 1. TEXT SEARCH FILTER (Para lugares)
-    if (query !== "") {
-      result = result.filter(
-        (p) =>
-          p.name?.toLowerCase().includes(query) ||
-          p.description?.toLowerCase().includes(query)
-      );
-    }
+    // =========================
+    // FILTER PLACES
+    // =========================
+    const filteredPlaces = places.filter((p) => {
+      const name = p.name?.toLowerCase() || "";
+      const desc = p.description?.toLowerCase() || "";
 
-    // 2. CATEGORY MOOD FILTER
-    if (activeFilter !== "ALL") {
-      result = result.filter((p) => p.category === activeFilter);
-    }
+      const matchesText =
+        !query || name.includes(query) || desc.includes(query);
 
-    // 3. SOURCE FILTER
-    if (sourceFilter === "OFFICIAL") {
-      result = result.filter((p) => checkTrue(p.is_official));
-    } else if (sourceFilter === "TRAVELER") {
-      result = result.filter((p) => !checkTrue(p.is_official));
-    }
+      const matchesCategory =
+        activeFilter === "ALL" || p.category === activeFilter;
 
-    setFiltered(result);
+      const isOfficial = checkTrue(p.is_official);
 
-    // =========================================================
-    // 🚀 BUSCADOR DE USUARIOS BASADO EN LOS CREADORES DE LUGARES
-    // =========================================================
-    if (query !== "") {
-      const userMap = new Map();
+      const matchesSource =
+        sourceFilter === "ALL"
+          ? true
+          : sourceFilter === "OFFICIAL"
+          ? isOfficial
+          : !isOfficial;
 
-      places.forEach((p) => {
-        const creator = p.owner || p.created_by;
-        if (creator && creator.username) {
-          const usernameLower = creator.username.toLowerCase();
-          if (usernameLower.includes(query)) {
-            userMap.set(creator.id, creator);
-          }
-        }
-      });
+      return matchesText && matchesCategory && matchesSource;
+    });
 
-      setFilteredUsers(Array.from(userMap.values()));
-    } else {
+    setFiltered(filteredPlaces);
+
+  }, [places, debouncedQuery, activeFilter, sourceFilter]);
+
+  useEffect(() => {
+  const fetchUsers = async () => {
+    if (!debouncedQuery.trim()) {
       setFilteredUsers([]);
+      return;
     }
 
-  }, [places, searchQuery, activeFilter, sourceFilter]);
+    try {
+      const res = await API.get(`/users/search/?search=${debouncedQuery}`);
+      setFilteredUsers(res.data || []);
+    } catch (err) {
+      console.error("Error buscando usuarios:", err);
+    }
+  };
+
+  fetchUsers();
+}, [debouncedQuery]);
+
 
   // =========================================================
-  // MEDIA URL EXTRA-SAFE HANDLER
+  // MEDIA SAFE URL
   // =========================================================
   const getMediaUrl = (path, fallback = "/default-avatar.png") => {
     if (!path) return fallback;
@@ -112,6 +129,9 @@ export default function Explore() {
     return `http://127.0.0.1:8000${cleanPath}`;
   };
 
+  // =========================================================
+  // LOADING STATE
+  // =========================================================
   if (loading) {
     return (
       <div className="td-loading-state">
@@ -123,7 +143,7 @@ export default function Explore() {
   return (
     <div className="explore-page">
 
-      {/* HEADER WITH SEARCH INPUT BLOCK */}
+      {/* HEADER */}
       <div className="explore-header">
         <h1>Explora lugares sin multitudes</h1>
         <p>Descubre sitios tranquilos subidos por nuestra comunidad global</p>
@@ -134,7 +154,7 @@ export default function Explore() {
             className="explore-search-bar-field"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="🔍 Buscar rincones, playas o el perfil de un viajero..."
+            placeholder="🔍 Buscar lugares o viajeros..."
           />
 
           {searchQuery && (
@@ -150,50 +170,57 @@ export default function Explore() {
             </button>
           )}
 
-          {/* 🔽 DROPDOWN DE USUARIOS — AHORA SÍ DEBAJO DEL SEARCH */}
+          {/* USERS DROPDOWN */}
           {searchQuery && filteredUsers.length > 0 && (
             <div className="explore-user-dropdown">
-              {filteredUsers.map((userItem) => {
-                const avatar = userItem.avatar || userItem.profile?.avatar;
-                return (
-                  <div
-                    key={userItem.id}
-                    className="explore-user-item"
-                    onClick={() => navigate(`/users/${userItem.id}`)}
-                  >
-                    <img
-                      src={getMediaUrl(avatar, "/default-avatar.png")}
-                      alt="avatar"
-                    />
-                    <span>@{userItem.username}</span>
-                  </div>
-                );
-              })}
+              {filteredUsers.map((userItem) => (
+                <div
+                  key={userItem.id}
+                  className="explore-user-item"
+                  onClick={() => navigate(`/users/${userItem.id}`)}
+                >
+                  <img
+                    src={getMediaUrl(userItem.avatar)}
+                    alt="avatar"
+                  />
+                  <span>@{userItem.username}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {searchQuery && filteredUsers.length === 0 && (
+            <div className="explore-user-dropdown">
+              <div className="explore-user-item" style={{ opacity: 0.6 }}>
+                No se encontraron usuarios
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {/* FILTERS PANEL CONTROLS */}
+      {/* FILTERS */}
       <div className="filters-container">
         <div className="filters">
-          <button type="button" className={activeFilter === "ALL" ? "active" : ""} onClick={() => setActiveFilter("ALL")}>🌍 Todos</button>
-          <button type="button" className={activeFilter === "NATURE" ? "active" : ""} onClick={() => setActiveFilter("NATURE")}>🌿 Naturaleza</button>
-          <button type="button" className={activeFilter === "BEACH" ? "active" : ""} onClick={() => setActiveFilter("BEACH")}>🏖️ Playa</button>
-          <button type="button" className={activeFilter === "CITY" ? "active" : ""} onClick={() => setActiveFilter("CITY")}>🏙️ Ciudad</button>
+          <button className={activeFilter === "ALL" ? "active" : ""} onClick={() => setActiveFilter("ALL")}>🌍 Todos</button>
+          <button className={activeFilter === "NATURE" ? "active" : ""} onClick={() => setActiveFilter("NATURE")}>🌿 Naturaleza</button>
+          <button className={activeFilter === "BEACH" ? "active" : ""} onClick={() => setActiveFilter("BEACH")}>🏖️ Playa</button>
+          <button className={activeFilter === "CITY" ? "active" : ""} onClick={() => setActiveFilter("CITY")}>🏙️ Ciudad</button>
         </div>
 
         <div className="filters verification-filters">
-          <button type="button" className={sourceFilter === "ALL" ? "active" : ""} onClick={() => setSourceFilter("ALL")}>👥 Todo el contenido</button>
-          <button type="button" className={sourceFilter === "OFFICIAL" ? "active" : ""} onClick={() => setSourceFilter("OFFICIAL")}>⭐ Oficiales WhereNext</button>
-          <button type="button" className={sourceFilter === "TRAVELER" ? "active" : ""} onClick={() => setSourceFilter("TRAVELER")}>🎒 De viajeros</button>
+          <button className={sourceFilter === "ALL" ? "active" : ""} onClick={() => setSourceFilter("ALL")}>👥 Todo</button>
+          <button className={sourceFilter === "OFFICIAL" ? "active" : ""} onClick={() => setSourceFilter("OFFICIAL")}>⭐ Oficiales</button>
+          <button className={sourceFilter === "TRAVELER" ? "active" : ""} onClick={() => setSourceFilter("TRAVELER")}>🎒 Viajeros</button>
         </div>
       </div>
 
-      {/* CARD GRID CONTAINER */}
+      {/* GRID */}
       <div className="grid">
         {filtered.length === 0 ? (
-          <p className="td-empty-gallery-msg">No se encontraron destinos con la búsqueda o filtros seleccionados.</p>
+          <p className="td-empty-gallery-msg">
+            No se encontraron destinos con la búsqueda o filtros seleccionados.
+          </p>
         ) : (
           filtered.map((place) => {
             const isOfficial = checkTrue(place.is_official);
@@ -201,17 +228,24 @@ export default function Explore() {
             const creator = place.owner || place.created_by;
             const creatorId = creator?.id || place.owner_id;
             const creatorName = creator?.username || "Viajero";
-            const creatorAvatar = creator?.avatar || creator?.profile?.avatar || place.owner_avatar;
+            const creatorAvatar =
+              creator?.avatar || creator?.profile?.avatar || place.owner_avatar;
 
             return (
-              <div key={place.id} className="card" onClick={() => navigate(`/places/${place.id}`)}>
-
+              <div
+                key={place.id}
+                className="card"
+                onClick={() => navigate(`/places/${place.id}`)}
+              >
                 <span className={isOfficial ? "official-badge-tag variant-official" : "official-badge-tag variant-traveler"}>
                   {isOfficial ? "✓ Oficial" : "🎒 Viajero"}
                 </span>
 
                 <div className="card-image">
-                  <img src={getMediaUrl(place.image_url || place.image, "/default-place.jpg")} alt={place.name} />
+                  <img
+                    src={getMediaUrl(place.image_url || place.image, "/default-place.jpg")}
+                    alt={place.name}
+                  />
                 </div>
 
                 <div className="card-content">
@@ -235,13 +269,11 @@ export default function Explore() {
 
                   <span className="badge">{place.category}</span>
                 </div>
-
               </div>
             );
           })
         )}
       </div>
-
     </div>
   );
 }

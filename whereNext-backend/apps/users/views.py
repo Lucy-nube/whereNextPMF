@@ -97,25 +97,31 @@ class UsersearchView(APIView):
     def get(self, request):
         query = request.query_params.get('search', '').strip()
 
-        if not query:
-            return Response([])
+        # Base: solo usuarios públicos y nunca yo
+        users = User.objects.filter(
+            profile__is_private=False
+        ).exclude(id=request.user.id)
 
-        if query.lower() == "all":
-            users = User.objects.exclude(id=request.user.id)[:10]
-        else:
-            users = User.objects.filter(
-                username__icontains=query
-            ).exclude(id=request.user.id)[:10]
+        # Si hay texto, filtro
+        if query:
+            users = users.filter(username__icontains=query)
 
-        return Response([
-            {
+        users = users[:20]
+
+        result = []
+        for u in users:
+            profile = getattr(u, "profile", None)
+            avatar = profile.avatar.url if profile and profile.avatar else None
+            bio = profile.bio if profile and profile.bio else ""
+
+            result.append({
                 "id": u.id,
                 "username": u.username,
-                "avatar": u.profile.avatar.url if u.profile.avatar else None,
-                "bio": u.profile.bio or ""
-            }
-            for u in users
-        ])
+                "avatar": avatar,
+                "bio": bio
+            })
+
+        return Response(result)
 
 
 

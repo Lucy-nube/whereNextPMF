@@ -9,16 +9,16 @@ class NotificationsConfig(AppConfig):
     """
     default_auto_field = "django.db.models.BigAutoField"
     
-    # 🚀 CORE MODULE ROUTING NAME
+
     name = "apps.social.notifications"
     verbose_name = "WhereNext Notifications Hub"
 
     def ready(self):
         """
         🚀 SIGNAL INJECTION JUNCTION MASTER HOOK:
-        Crucial for your navbar alert counters! Automatically mounts signal listeners 
+        Crucial for my navbar alert counters! Automatically mounts signal listeners 
         so that liking, commenting, or inviting instantly updates database rows 
-        and triggers your frontend polling navbar indicators cleanly.
+        and triggers my frontend polling navbar indicators cleanly.
         """
         try:
             import apps.social.notifications.signals

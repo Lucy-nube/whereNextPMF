@@ -9,7 +9,7 @@ export default function Invites() {
   const loadInvites = async () => {
     try {
       // Obtener mi usuario
-      const me = await API.get("me/");
+      const me = await API.get("users/me/");
       const myId = me.data.id;
 
       // Obtener todas las invitaciones
@@ -53,7 +53,7 @@ export default function Invites() {
           <div key={inv.id} className="invite-item">
             <p>
               <strong>@{inv.from_user.username}</strong> te invitó a{" "}
-              <strong>{inv.place.name}</strong>
+              <strong>{inv.trip.title}</strong>
             </p>
 
             <div className="invite-actions">

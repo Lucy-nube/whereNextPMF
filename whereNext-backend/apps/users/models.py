@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.conf import settings
 
-
 # =========================
 # USER BASE (solo cuenta)
 # =========================
@@ -34,6 +33,7 @@ class Profile(models.Model):
 # =========================
 # TRIP INVITES (invitaciones a lugares)
 # =========================
+
 class TripInvite(models.Model):
     from_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -47,8 +47,8 @@ class TripInvite(models.Model):
         related_name="received_trip_invites"
     )
 
-    place = models.ForeignKey(
-        "places.Place",
+    trip = models.ForeignKey(
+        "trips.Trip",
         on_delete=models.CASCADE,
         related_name="trip_invites"
     )
@@ -66,7 +66,8 @@ class TripInvite(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("from_user", "to_user", "place")
+        unique_together = ("from_user", "to_user", "trip")
 
     def __str__(self):
-        return f"{self.from_user.username} → {self.to_user.username} ({self.place.name}) [{self.status}]"
+        return f"{self.from_user.username} → {self.to_user.username} ({self.trip.title}) [{self.status}]"
+

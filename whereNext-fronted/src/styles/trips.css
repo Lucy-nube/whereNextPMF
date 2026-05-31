@@ -319,6 +319,44 @@
   margin-top: 10px;
 }
 
+/* =========================================================
+   🚀 PRIMARY CTA BUTTON (GLOBAL USE)
+   ========================================================= */
+
+.td-primary-btn {
+  background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  color: #0f172a;
+
+  font-weight: 900;
+  font-size: 14px;
+
+  padding: 12px 18px;
+  border-radius: 14px;
+
+  border: none;
+  cursor: pointer;
+
+  box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25);
+
+  transition: all 0.25s ease;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Hover premium */
+.td-primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(56, 189, 248, 0.35);
+  filter: brightness(1.05);
+}
+
+/* Click feedback */
+.td-primary-btn:active {
+  transform: scale(0.98);
+}
+
 /* =========================================================================
    EMPTY STATE
    ========================================================================= */

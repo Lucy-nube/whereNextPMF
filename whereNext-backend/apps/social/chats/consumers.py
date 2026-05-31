@@ -114,10 +114,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_message_to_db(self, sender, receiver, text):
+     # Intentar obtener la sala por ID de la URL
+     try:
         room = ChatRoom.objects.get(id=self.room_id)
-        return Message.objects.create(
-            room=room,
-            sender=sender,
-            receiver=receiver,
-            text=text
-        )
+     except ChatRoom.DoesNotExist:
+        #  DEBO ACORDARME Si no existe, crear una nueva sala y añadir a ambos usuarios
+        room = ChatRoom.objects.create()
+        room.users.add(sender, receiver)
+        room.save()
+
+     # Crear el mensaje
+     return Message.objects.create(
+        room=room,
+        sender=sender,
+        receiver=receiver,
+        text=text
+    )
+
