@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { getMediaUrl } from "../utils/media";
+import { useAuth } from "../context/AuthContext";
 import "/src/styles/companionsHub.css";
 
 export default function CompanionsHub() {
@@ -8,6 +10,8 @@ export default function CompanionsHub() {
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
+  const { user: currentUser } = useAuth();
+
 
   // 🚀 ESTADO DEL MODAL DE AVISOS PREMIUM
   const [modalConfig, setModalConfig] = useState({
@@ -22,9 +26,8 @@ export default function CompanionsHub() {
       setLoading(true);
 
       const res = await API.get("companions/hub/");
-       console.log("DATA HUB:", res.data);
 
-       setFriends(res.data.friends || []);
+      setFriends(res.data.friends || []);
     } catch (err) {
       console.error("Error al cargar el directorio social:", err);
     } finally {
@@ -50,16 +53,16 @@ export default function CompanionsHub() {
     setActionId(rowId);
     closeCustomModal();
     try {
-      // 🔥 RUTA CORRECTA
-      await API.delete(`companions/hub/${rowId}/`);
+      await API.delete(`companions/${rowId}/remove/`);
 
-      setFriends((prev) => prev.filter((f) => f.companion_row_id !== rowId));
+      setFriends((prev) => prev.filter((f) => f.id !== rowId));
     } catch (err) {
       console.error("Error al eliminar fila:", err);
     } finally {
       setActionId(null);
     }
   };
+
 
   // 🚫 DISPARADOR CRUD BLOCK
   const openBlockModal = (rowId, username) => {
@@ -75,7 +78,7 @@ export default function CompanionsHub() {
     setActionId(rowId);
     closeCustomModal();
     try {
-      // 🔥 RUTA CORRECTA
+      //   RUTA CORRECTA
       await API.patch(`companions/hub/${rowId}/`, { action: "BLOCK" });
 
       setFriends((prev) => prev.filter((f) => f.companion_row_id !== rowId));
@@ -90,14 +93,30 @@ export default function CompanionsHub() {
     setModalConfig({ isOpen: false, title: "", text: "", onConfirm: null });
   };
 
-  const handleSendMessage = (friendId) => {
-    navigate(`/chats/${friendId}`);
+  const handleSendMessage = async (friendId) => {
+    try {
+      const token = localStorage.getItem("access");
+
+      const res = await API.post(
+        `/chats/start/${friendId}/`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const roomId = res.data.room_id;
+      navigate(`/chats/${roomId}`);
+
+    } catch (err) {
+      if (err.response?.status === 403) {
+        showToast("Debes ser compañero para enviar mensajes 🤝");
+        return;
+      }
+      console.error("Error launching chat thread context:", err);
+    }
   };
 
-  const getMediaUrl = (path, fallback = "/default-avatar.png") => {
-    if (!path) return fallback;
-    return path.startsWith("http") ? path : `http://127.0.0.1:8000${path}`;
-  };
+
+
 
   if (loading) {
     return (
@@ -107,24 +126,24 @@ export default function CompanionsHub() {
       </div>
     );
   }
-  
- 
+
+
 
   return (
     <div className="hub-layout-view">
-      
+
       {/* HEADER PANEL */}
       <div className="hub-glass-card hub-header-card">
         <div className="hub-topbar-badge">
           <span>👥 CENTRAL SOCIAL</span>
           <span className="hub-status-indicator">SEGURA</span>
         </div>
-        
+
         <h1>Centro de Gestión Social</h1>
         <p className="hub-subtitle">
           Administra tus conexiones activas en WhereNext. Puedes chatear, revocar accesos de amistad o bloquear cuentas de forma permanente.
         </p>
-        
+
         <button type="button" className="hub-btn-back" onClick={() => navigate("/profile")}>
           ← Volver a mi Perfil
         </button>
@@ -146,50 +165,66 @@ export default function CompanionsHub() {
               </button>
             </div>
           ) : (
-            friends.map((f) => (
-              <div key={f.id} className="hub-user-row">
-                
-                <div className="hub-user-profile">
-                  <div className="hub-avatar-wrapper">
-                    <img src={getMediaUrl(f.avatar)} className="hub-user-avatar" alt="avatar" />
-                  </div>
-                  <div className="hub-user-metadata">
-                    <strong className="hub-user-username">@{f.username}</strong>
-                    <p className="hub-user-bio">{f.bio || "Explorador listo para conectar en WhereNext"}</p>
-                  </div>
-                </div>
 
-                <div className="hub-action-control-bar">
-                  <button 
-                    type="button" 
-                    className="hub-btn-action hub-btn-message"
-                    disabled={actionId === f.companion_row_id} 
-                    onClick={() => handleSendMessage(f.id)}
-                  >
-                    💬 Mensaje
-                  </button>
-                  
-                  <button 
-                    type="button" 
-                    className="hub-btn-action hub-btn-delete"
-                    disabled={actionId === f.companion_row_id} 
-                    onClick={() => openDeleteModal(f.companion_row_id, f.username)}
-                  >
-                    🗑️ Eliminar
-                  </button>
-                  
-                  <button 
-                    type="button" 
-                    className="hub-btn-action hub-btn-block"
-                    disabled={actionId === f.companion_row_id} 
-                    onClick={() => openBlockModal(f.companion_row_id, f.username)}
-                  >
-                    🚫 Bloquear
-                  </button>
-                </div>
 
-              </div>
-            ))
+
+            friends.map((f) => {
+              const friendObj =
+                f.user?.id === currentUser.id ? f.companion : f.user;
+
+              return (
+                <div key={f.id} className="hub-user-row">
+
+                  <div className="hub-user-profile">
+                    <div className="hub-avatar-wrapper">
+                      <img
+                        src={getMediaUrl(friendObj.avatar)}
+                        className="hub-user-avatar"
+                        alt="avatar"
+                      />
+                    </div>
+
+                    <div className="hub-user-metadata">
+                      <strong className="hub-user-username">@{friendObj.username}</strong>
+                      <p className="hub-user-bio">
+                        {friendObj.bio || "Explorador listo para conectar en WhereNext"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="hub-action-control-bar">
+                    <button
+                      type="button"
+                      className="hub-btn-action hub-btn-message"
+                      disabled={actionId === f.id}
+                      onClick={() => handleSendMessage(friendObj.id)}
+                    >
+                      💬 Mensaje
+                    </button>
+
+                    <button
+                      type="button"
+                      className="hub-btn-action hub-btn-delete"
+                      disabled={actionId === f.id}
+                      onClick={() => openDeleteModal(f.id, friendObj.username)}
+                    >
+                      🗑️ Eliminar
+                    </button>
+
+                    <button
+                      type="button"
+                      className="hub-btn-action hub-btn-block"
+                      disabled={actionId === f.companion_row_id}
+                      onClick={() => openBlockModal(f.companion_row_id, friendObj.username)}
+                    >
+                      🚫 Bloquear
+                    </button>
+                  </div>
+
+                </div>
+              );
+            })
+
           )}
         </div>
       </div>

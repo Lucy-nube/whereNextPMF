@@ -24,7 +24,6 @@ class Trip(models.Model):
     is_public = models.BooleanField(default=False)
     is_published = models.BooleanField(default=False)
 
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     likes = models.ManyToManyField(
@@ -43,8 +42,16 @@ class Trip(models.Model):
         related_name="co_adventures"
     )
 
+    # ⭐ AÑADIR ESTO
+    companions = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name="trips_as_companion",
+        blank=True
+    )
+
     def __str__(self):
         return self.title
+
 
 
 class TripComment(models.Model):
@@ -124,13 +131,13 @@ class TripPhoto(models.Model):
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
-# 🔥 Cuando se borra una foto → borrar archivo físico
+#   Cuando se borra una foto → borrar archivo físico
 @receiver(post_delete, sender=TripPhoto)
 def delete_photo_file(sender, instance, **kwargs):
     if instance.image:
         instance.image.delete(False)
 
-# 🔥 Cuando se borra un viaje → borrar TODAS sus fotos del disco
+#   Cuando se borra un viaje → borrar TODAS sus fotos del disco
 @receiver(post_delete, sender=Trip)
 def delete_trip_photos(sender, instance, **kwargs):
     for photo in instance.photos.all():

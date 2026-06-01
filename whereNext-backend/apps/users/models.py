@@ -35,6 +35,14 @@ class Profile(models.Model):
 # =========================
 
 class TripInvite(models.Model):
+
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("ACCEPTED", "Accepted"),
+        ("DECLINED", "Declined"),
+        ("CANCELLED", "Cancelled"),  
+    ]
+
     from_user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -55,11 +63,7 @@ class TripInvite(models.Model):
 
     status = models.CharField(
         max_length=20,
-        choices=[
-            ("PENDING", "Pending"),
-            ("ACCEPTED", "Accepted"),
-            ("DECLINED", "Declined"),
-        ],
+        choices=STATUS_CHOICES,
         default="PENDING"
     )
 
@@ -70,4 +74,3 @@ class TripInvite(models.Model):
 
     def __str__(self):
         return f"{self.from_user.username} → {self.to_user.username} ({self.trip.title}) [{self.status}]"
-

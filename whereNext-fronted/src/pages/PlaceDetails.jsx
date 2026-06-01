@@ -5,6 +5,7 @@ import tripService from "../services/tripService";
 import { useAuth } from "../context/AuthContext";
 import API from "../services/api";
 import Loading from "../components/common/Loading";
+import { getMediaUrl } from "../utils/media";
 import "../styles/PlaceDetails.css";
 
 export default function PlaceDetails() {
@@ -25,11 +26,6 @@ export default function PlaceDetails() {
   const [rating, setRating] = useState(0);
   const [userRating, setUserRating] = useState(0);
 
-  const getMediaUrl = (path, fallback = "/default-avatar.png") => {
-    if (!path) return fallback;
-    if (path.startsWith("http")) return path;
-    return `http://127.0.0.1:8000${path}`;
-  };
 
   useEffect(() => {
     async function fetchPlaceData() {

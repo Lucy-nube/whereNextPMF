@@ -15,13 +15,13 @@ class NotificationsConfig(AppConfig):
 
     def ready(self):
         """
-        🚀 SIGNAL INJECTION JUNCTION MASTER HOOK:
+        SIGNAL INJECTION JUNCTION MASTER HOOK:
         Crucial for my navbar alert counters! Automatically mounts signal listeners 
         so that liking, commenting, or inviting instantly updates database rows 
         and triggers my frontend polling navbar indicators cleanly.
         """
         try:
             import apps.social.notifications.signals
-            print("🚀 System Notifications database signals mounted successfully.")
+            print("System Notifications database signals mounted successfully.")
         except ImportError as signal_err:
-            print(f"🔬 Notifications lifecycle trace info: {signal_err}")
+            print(f"Notifications lifecycle trace info: {signal_err}")

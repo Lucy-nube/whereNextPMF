@@ -28,6 +28,7 @@ class NotificationSerializer(serializers.ModelSerializer):
             "notification_type",
             "text_preview",
             "from_user",
+            "object_id", 
             "trip_id",
             "created_at",
             "is_read",

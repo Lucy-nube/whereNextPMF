@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../services/api";
+import { getMediaUrl } from "../utils/media";
 import "../styles/Profile.css";
 
 export default function Profile() {
@@ -32,15 +33,29 @@ export default function Profile() {
     const tripsEndpoint = "trips/";
     const companionsEndpoint = "companions/hub/";
 
+    const safeGet = async (url, fallback) => {
+      try {
+        const res = await API.get(url);
+        return res;
+      } catch {
+        return { data: fallback };
+      }
+    };
+
     Promise.all([
-      API.get("users/me/").catch(() => ({ data: {} })),
-      API.get(userEndpoint).catch(() => ({ data: null })),
-      API.get(companionsEndpoint).catch(() => ({ data: { sent: [], received: [], friends: [] } })),
-      API.get(tripsEndpoint).catch(() => ({ data: [] }))
+      safeGet("users/me/", {}),
+      safeGet(userEndpoint, null),
+      safeGet(companionsEndpoint, { sent: [], received: [], friends: [] }),
+      safeGet(tripsEndpoint, [])
     ])
+
       .then(([meRes, userRes, companionsRes, tripsRes]) => {
         const me = meRes.data;
         const profileUser = userRes.data;
+
+        setIsMe(me.id === profileUser.id);
+        setUser(profileUser);
+
 
         if (!profileUser) {
           setUser(null);
@@ -72,10 +87,12 @@ export default function Profile() {
 
   useEffect(() => {
     const loadStamps = async () => {
+
       try {
         const token = localStorage.getItem("access");
         const res = await API.get("stamps/", {
           headers: { Authorization: `Bearer ${token}` },
+
         });
         setStamps(res.data);
       } catch (err) {
@@ -84,6 +101,7 @@ export default function Profile() {
     };
 
     loadStamps();
+
   }, []);
 
   const handleAddCompanion = async () => {
@@ -164,11 +182,6 @@ export default function Profile() {
     return null;
   };
 
-  const getMediaUrl = (path, fallback = "/default-avatar.png") => {
-    if (!path) return fallback;
-    if (path.startsWith("http")) return path;
-    return `http://127.0.0.1:8000${path}`;
-  };
 
   const handleOpenCompanionsModal = async () => {
     if (companions.friends.length === 0) return;
@@ -381,8 +394,9 @@ export default function Profile() {
 
         <div className="passport-widget">
           <h2>{stamps.length}</h2>
-          <p>📍 Places</p>
+          <p>🏅 Travel Stamps</p>
         </div>
+
       </div>
 
       {/* ================= RECENT TRIPS TRACKS (🚀 PORTADAS RESTAURADAS) ================= */}
@@ -405,11 +419,16 @@ export default function Profile() {
                 onClick={() => navigate(`/trips/${trip.id}`)}
               >
                 {/* 🚀 foto de perfil*/}
-                <img
-                  src={getMediaUrl(trip.cover_photo || trip.photos?.[0]?.image)}
-                  alt={trip.title}
-                  className="trip-mini-thumb"
-                />
+                {trip.cover_photo || trip.photos?.[0]?.image ? (
+                  <img
+                    src={getMediaUrl(trip.cover_photo || trip.photos?.[0]?.image)}
+                    alt={trip.title || ""}
+                    className="trip-mini-thumb"
+                  />
+                ) : (
+                  <div className="trip-mini-thumb empty-thumb"></div>
+                )}
+
 
                 <h4 className="profile-trip-title">{trip.title}</h4>
                 <p className="profile-trip-meta">{trip.destination || "No destination yet"}</p>
@@ -422,6 +441,29 @@ export default function Profile() {
           )}
         </div>
       </div>
+
+      {/* ================= TRAVEL STAMPS (🏅 DECORATIVO) ================= */}
+      <div className="passport-card">
+        <div className="passport-header">
+          <h3>🏅 Travel Stamps</h3>
+        </div>
+
+        <div className="stamps-grid">
+          {stamps.length > 0 ? (
+            stamps.map((stamp) => (
+              <div key={stamp.id} className="stamp-card">
+                <span className="stamp-icon">{stamp.icon}</span>
+                <p className="stamp-label">{stamp.label}</p>
+              </div>
+            ))
+          ) : (
+            <div className="empty-state">
+              <p>No stamps yet ✨</p>
+            </div>
+          )}
+        </div>
+      </div>
+
 
       {/* =========================================================
          🚀 COMPANIONS MODAL DIRECTORY LINK (GLASSMORPHISM OVERLAY)

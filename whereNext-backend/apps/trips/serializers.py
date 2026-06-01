@@ -193,7 +193,19 @@ class TripSerializer(serializers.ModelSerializer):
             "liked_by_me"
         ]
         read_only_fields = ["id"]
+     
+    def validate(self, data):
+     start_date = data.get("start_date")
+     end_date = data.get("end_date")
 
+     if start_date and end_date:
+        if end_date < start_date:
+            raise serializers.ValidationError({
+                "end_date": "La fecha de fin no puede ser anterior a la de inicio."
+            })
+
+     return data
+     
     # ⭐ DEVOLVER FOTOS REALES
     def get_photos(self, obj):
         return [
@@ -253,7 +265,7 @@ class TripSerializer(serializers.ModelSerializer):
      trip = self.get_object()
      trip.delete()
      return Response(status=status.HTTP_204_NO_CONTENT)
-
+    
 
 class TripCommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

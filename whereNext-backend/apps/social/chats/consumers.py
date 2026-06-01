@@ -130,4 +130,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
         receiver=receiver,
         text=text
     )
-

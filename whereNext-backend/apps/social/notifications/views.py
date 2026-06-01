@@ -34,27 +34,20 @@ class NotificationDetailView(APIView):
     def patch(self, request, pk):
         notif = get_object_or_404(Notification, id=pk, user=request.user)
 
-        # marcar como leída
         notif.is_read = True
         notif.save()
 
-        # ============================
-        # ACCIONES SEGÚN EL TIPO
-        # ============================
-
-        # 1. Solicitud de compañero
-        if notif.notification_type == "FRIEND_REQUEST":
-            companion = get_object_or_404(Companion, id=notif.object_id)
-            companion.status = "ACCEPTED"
-            companion.save()
-            return Response({"status": "friend_accepted"})
-
-        # 2. Invitación a viaje (TripInvite real)
-        if notif.notification_type == "INVITE":
-            invite = get_object_or_404(TripInvite, id=notif.object_id)
-            invite.status = "ACCEPTED"
-            invite.save()
-            return Response({"status": "trip_invite_accepted"})
-
-        # 3. Solo marcar como leída
         return Response({"status": "read"})
+
+class NotificationMarkAllReadView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        Notification.objects.filter(
+            user=request.user,
+            is_read=False
+        ).update(is_read=True)
+
+        return Response({"status": "all_read"})
+

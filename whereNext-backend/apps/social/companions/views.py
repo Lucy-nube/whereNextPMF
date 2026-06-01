@@ -162,6 +162,20 @@ class CompanionViewSet(viewsets.ModelViewSet):
         instance.delete()
         return Response({"status": "CANCELLED"}, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["delete"], url_path="remove")
+    def remove(self, request, pk=None):
+     instance = get_object_or_404(
+         Companion,
+         id=pk,
+         status="ACCEPTED"
+     )
+
+     # Solo pueden borrar quienes forman parte de la relación
+     if instance.user != request.user and instance.companion != request.user:
+         return Response({"error": "No autorizado"}, status=403)
+
+     instance.delete()
+     return Response({"status": "REMOVED"}, status=200)
 
 # =========================================================
 # HUB DE COMPANIONS

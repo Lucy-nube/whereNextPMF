@@ -154,7 +154,7 @@ class RegisterView(APIView):
                 password=make_password(password)
             )
 
-            # 🔥 CREA EL PROFILE AUTOMÁTICAMENTE
+            #   CREA EL PROFILE AUTOMÁTICAMENTE
             Profile.objects.create(
                 user=new_user,
                 bio="¡Nuevo explorador de WhereNext!"

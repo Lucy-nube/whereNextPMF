@@ -1,24 +1,21 @@
 import { useEffect, useState } from "react";
 import API from "../services/api";
+import { useNavigate } from "react-router-dom";
 import "../styles/invites.css";
 
 export default function Invites() {
   const [invites, setInvites] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const navigate = useNavigate();
+  // =========================
+  // CARGAR INVITACIONES
+  // =========================
   const loadInvites = async () => {
     try {
-      // Obtener mi usuario
-      const me = await API.get("users/me/");
-      const myId = me.data.id;
+      const res = await API.get("invites/trip-invites/");
 
-      // Obtener todas las invitaciones
-      const res = await API.get("trip-invites/");
-
-      // Filtrar solo las invitaciones recibidas
-      const received = res.data.filter((i) => i.to_user.id === myId);
-
-      setInvites(received);
+      // ✔ backend ya filtra por usuario (to_user)
+      setInvites(res.data);
     } catch (err) {
       console.error("Error cargando invites:", err);
     } finally {
@@ -26,20 +23,47 @@ export default function Invites() {
     }
   };
 
-  const acceptInvite = async (id) => {
-    await API.post(`trip-invites/${id}/accept/`);
-    loadInvites();
+  // =========================
+  // ACEPTAR INVITACIÓN
+  // =========================
+  const acceptInvite = async (invite) => {
+    try {
+      await API.post(`invites/trip-invites/${invite.id}/accept/`);
+
+      navigate(`/trips/${invite.trip.id}`);
+
+    } catch (err) {
+      console.error("Error aceptando invitación:", err);
+    }
   };
 
+  // =========================
+  // RECHAZAR INVITACIÓN
+  // =========================
   const declineInvite = async (id) => {
-    await API.post(`trip-invites/${id}/decline/`);
-    loadInvites();
+    try {
+      await API.post(`invites/trip-invites/${id}/decline/`);
+
+      // refrescar lista
+      loadInvites();
+
+      // (opcional) refrescar notificaciones globales
+      // await fetchNotifications();
+    } catch (err) {
+      console.error("Error rechazando invitación:", err);
+    }
   };
 
+  // =========================
+  // INIT
+  // =========================
   useEffect(() => {
     loadInvites();
   }, []);
 
+  // =========================
+  // UI
+  // =========================
   if (loading) return <p>Cargando invitaciones...</p>;
 
   return (
@@ -57,10 +81,17 @@ export default function Invites() {
             </p>
 
             <div className="invite-actions">
-              <button onClick={() => acceptInvite(inv.id)} className="invite-accept">
+              <button
+                onClick={() => acceptInvite(inv)}
+                className="invite-accept"
+              >
                 Aceptar
               </button>
-              <button onClick={() => declineInvite(inv.id)} className="invite-decline">
+
+              <button
+                onClick={() => declineInvite(inv.id)}
+                className="invite-decline"
+              >
                 Rechazar
               </button>
             </div>

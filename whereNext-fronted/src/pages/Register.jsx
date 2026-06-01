@@ -11,7 +11,7 @@ export default function Register() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // 🔥 CARRUSEL ANIMADO
+  //   CARRUSEL ANIMADO
   useEffect(() => {
     const images = document.querySelectorAll(".auth-bg-image");
     let index = 0;

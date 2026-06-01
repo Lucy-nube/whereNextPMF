@@ -30,6 +30,8 @@ export default function TripDetails() {
   const [editIsPublic, setEditIsPublic] = useState(false);
   const [photoToDelete, setPhotoToDelete] = useState(null);
 
+  const [selectedImage, setSelectedImage] = useState(null);
+
   // SOCIAL STATES
   const [editTripType, setEditTripType] = useState("solo");
   const [selectedFriend, setSelectedFriend] = useState(null);
@@ -37,11 +39,18 @@ export default function TripDetails() {
   const [showCompanionsModal, setShowCompanionsModal] = useState(false);
   const [sentInvites, setSentInvites] = useState([]);
 
+
   const [toastMessage, setToastMessage] = useState("");
 
   const showToast = (message) => {
     setToastMessage(message);
     setTimeout(() => setToastMessage(""), 2500);
+  };
+
+
+  const fetchInvites = async () => {
+    const res = await API.get("/invites/trip-invites/");
+    setSentInvites(res.data || []);
   };
 
   const getInviteForUser = (userId) => {
@@ -92,17 +101,8 @@ export default function TripDetails() {
 
 
   useEffect(() => {
-    const fetchInvites = async () => {
-      try {
-        const res = await API.get(`/trip-invites/?trip=${trip.id}`);
-        setSentInvites(res.data);
-      } catch (err) {
-        console.error("Error cargando invitaciones:", err);
-      }
-    };
-
     if (trip?.id) fetchInvites();
-  }, [trip]);
+  }, [trip?.id]);
 
   // =========================================================
   // SAVE EDITS
@@ -155,10 +155,12 @@ export default function TripDetails() {
   // =========================================================
   const sendInvite = async (userId) => {
     try {
-      const res = await API.post("/trip-invites/", {
+      const res = await API.post("/invites/trip-invites/", {
         trip: trip.id,
         to_user: userId,
       });
+
+      setSentInvites((prev) => [...prev, res.data]); // 🔥 INMEDIATO
 
       return res.data;
     } catch (err) {
@@ -167,10 +169,14 @@ export default function TripDetails() {
     }
   };
 
+
   const cancelInvite = async (inviteId) => {
     try {
-      await API.delete(`/trip-invites/${inviteId}/`);
-      setSentInvites((prev) => prev.filter((inv) => inv.id !== inviteId));
+      await API.delete(`/invites/trip-invites/${inviteId}/`);
+
+      setSentInvites((prev) =>
+        prev.filter((inv) => inv.id !== inviteId)
+      );
     } catch (err) {
       console.error("Error cancelando invitación:", err);
     }
@@ -203,6 +209,7 @@ export default function TripDetails() {
     );
   }
 
+
   return (
     <div className="trip-details-view">
       {toastMessage && (
@@ -220,12 +227,12 @@ export default function TripDetails() {
           {isEditing ? (
             <div className="td-edit-input-group">
               <input
-                value={editTitle}
+                value={editDescription || ""}
                 onChange={(e) => setEditTitle(e.target.value)}
                 className="td-edit-input"
               />
               <textarea
-                value={editDescription}
+                value={editDescription || ""}
                 onChange={(e) => setEditDescription(e.target.value)}
                 className="td-edit-input"
               />
@@ -286,7 +293,7 @@ export default function TripDetails() {
             {isEditing ? (
               <input
                 className="td-edit-input"
-                value={editDestination}
+                value={editDestination || ""}
                 onChange={(e) => setEditDestination(e.target.value)}
               />
             ) : (
@@ -359,10 +366,41 @@ export default function TripDetails() {
                   <>
                     {selectedFriend ? (
                       <div className="td-selected-friend">
-                        <span>@{selectedFriend.username}</span>
-                        <span className="invite-status">
-                          📨 Solicitud enviada
+
+                        <span>
+                          @{selectedFriend.username}
                         </span>
+
+                        {getInviteForUser(selectedFriend.id) ? (
+                          <button
+                            type="button"
+                            className="invite-btn sent"
+                            onClick={() =>
+                              cancelInvite(
+                                getInviteForUser(selectedFriend.id).id
+                              )
+                            }
+                          >
+                            ✓ Invitación enviada (Cancelar)
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="invite-btn"
+                            onClick={() => sendInvite(selectedFriend.id)}
+                          >
+                            Enviar invitación
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          className="td-remove-friend-btn"
+                          onClick={() => setSelectedFriend(null)}
+                        >
+                          Quitar
+                        </button>
+
                       </div>
                     ) : (
                       <button
@@ -404,7 +442,10 @@ export default function TripDetails() {
                         <button
                           type="button"
                           className="invite-btn"
-                          onClick={() => sendInvite(u.id)}
+                          onClick={async () => {
+                            await sendInvite(u.id);
+                            await fetchInvites();
+                          }}
                         >
                           Enviar invitación
                         </button>
@@ -412,11 +453,15 @@ export default function TripDetails() {
                         <button
                           type="button"
                           className="invite-btn sent"
-                          onClick={() => cancelInvite(invite.id)}
+                          onClick={async () => {
+                            await cancelInvite(invite.id);
+                            await fetchInvites();
+                          }}
                         >
                           ✓ Invitación enviada (Cancelar)
                         </button>
                       )}
+
                     </div>
                   );
                 })}
@@ -434,7 +479,14 @@ export default function TripDetails() {
                   type="date"
                   className="td-edit-input"
                   value={editStartDate}
-                  onChange={(e) => setEditStartDate(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setEditStartDate(value);
+
+                    if (editEndDate && value > editEndDate) {
+                      showToast("⚠️ La fecha de inicio no puede ser mayor que la de fin");
+                    }
+                  }}
                 />
               ) : (
                 <span className="td-date-val">
@@ -450,7 +502,14 @@ export default function TripDetails() {
                   type="date"
                   className="td-edit-input"
                   value={editEndDate}
-                  onChange={(e) => setEditEndDate(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setEditEndDate(value);
+
+                    if (editStartDate && value < editStartDate) {
+                      showToast("⚠️ La fecha de fin no puede ser anterior a la de inicio");
+                    }
+                  }}
                 />
               ) : (
                 <span className="td-date-val">
@@ -486,14 +545,17 @@ export default function TripDetails() {
         </div>
 
         {/* SUGERENCIAS */}
-        {trip?.id && isEditing && !trip.destination && (
+        {trip?.id && isEditing && (
           <TripSuggestions
-            mood={isEditing ? editMood : trip.mood}
-            onSelectDestination={(name) => {
-              setEditDestination(name);
+            mood={editMood}
+            onSelectDestination={(place) => {
+              setEditDestination(place.destination);
+              setSelectedImage(place.image);
+              setTrip((prev) => ({ ...prev, destination: place.destination }));
               showToast("📍 Destino actualizado");
             }}
           />
+
         )}
       </form>
 
@@ -575,12 +637,10 @@ export default function TripDetails() {
 
               setSelectedFriend(f);
 
-              setSentInvites((prev) => [
-                ...prev,
-                invite,
-              ]);
+              setSentInvites((prev) => [...prev, invite]); // 🔥 CLAVE
 
               showToast(`📨 Invitación enviada a @${f.username}`);
+
               setShowCompanionsModal(false);
             } catch (err) {
               console.error(err);

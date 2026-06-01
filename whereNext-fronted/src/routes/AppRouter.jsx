@@ -56,7 +56,7 @@ export default function AppRouter() {
           {/* CHATS */}
           <Route path="/chats/:id?" element={<ChatsPage />} />
 
-          <Route path="/invites" element={<Invites />} />
+          <Route path="/trip-invites" element={<Invites />} />
 
 
         </Route>

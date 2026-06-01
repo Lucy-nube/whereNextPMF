@@ -23,13 +23,16 @@ class TripInviteViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     # ============================
-    # SOLO VER MIS INVITACIONES
+    # LISTAR INVITACIONES
     # ============================
     def list(self, request, *args, **kwargs):
-        invites = TripInvite.objects.filter(to_user=request.user)
-        serializer = TripInviteSerializer(invites, many=True)
-        return Response(serializer.data)
+     invites = TripInvite.objects.filter(
+         to_user=request.user,
+         status="PENDING"
+     )
 
+     serializer = TripInviteSerializer(invites, many=True)
+     return Response(serializer.data)
     # ============================
     # CREAR INVITACIÓN
     # ============================
@@ -40,12 +43,17 @@ class TripInviteViewSet(viewsets.ModelViewSet):
         trip = get_object_or_404(Trip, id=trip_id)
         to_user = get_object_or_404(User, id=to_user_id)
 
-        # No invitarse a mi misma :)
         if to_user == request.user:
-            return Response({"error": "No puedes invitarte a ti misma"}, status=400)
+            return Response(
+                {"error": "No puedes invitarte a ti misma"},
+                status=400
+            )
 
-        # No duplicar invitaciones
-        existing = TripInvite.objects.filter(trip=trip, to_user=to_user).first()
+        existing = TripInvite.objects.filter(
+            trip=trip,
+            to_user=to_user
+        ).first()
+
         if existing:
             return Response({"status": existing.status}, status=200)
 
@@ -56,97 +64,86 @@ class TripInviteViewSet(viewsets.ModelViewSet):
             status="PENDING"
         )
 
-        # Crear notificación
-        Notification.objects.create(
-            user=to_user,
-            from_user=request.user,
-            notification_type="TRIP_INVITE",
-            text_preview=f"{request.user.username} te invitó a un viaje.",
-            content_type=ContentType.objects.get_for_model(invite),
-            object_id=invite.id
-        )
+        Notification.objects.filter(
+        content_type=ContentType.objects.get_for_model(invite),
+        object_id=invite.id,
+        user=invite.to_user,
+        notification_type="TRIP_INVITE"
+        ).update(is_read=True)
 
-        return Response(TripInviteSerializer(invite).data, status=201)
+        return Response(
+            TripInviteSerializer(invite).data,
+            status=201
+        )
 
     # ============================
     # ACEPTAR INVITACIÓN
     # ============================
     @action(detail=True, methods=["post"])
     def accept(self, request, pk=None):
-     invite = get_object_or_404(TripInvite, id=pk)
+        invite = get_object_or_404(TripInvite, id=pk)
 
-     if invite.to_user != request.user:
-        return Response({"error": "No autorizado"}, status=403)
+        if invite.to_user != request.user:
+            return Response({"error": "No autorizado"}, status=403)
 
-    # 1) Cambiar estado
-     invite.status = "ACCEPTED"
-     invite.save()
+        invite.status = "ACCEPTED"
+        invite.save()
 
-     # 2) Agregar al usuario al viaje
-     trip = invite.trip
-     trip.companions.add(invite.to_user)
-     trip.save()
+        trip = invite.trip
+        trip.companions.add(invite.to_user)
+        trip.save()
 
-    # 3) Notificar al creador del viaje
-     Notification.objects.create(
-        user=invite.from_user,
-        from_user=request.user,
-        notification_type="INVITE_ACCEPTED",
-        text_preview=f"{request.user.username} aceptó tu invitación.",
+        Notification.objects.filter(
         content_type=ContentType.objects.get_for_model(invite),
-        object_id=invite.id
-    )
+        object_id=invite.id,
+        user=invite.to_user,
+        notification_type="TRIP_INVITE"
+        ).update(is_read=True)
 
-     return Response({"status": "ACCEPTED"}, status=200)
-
+        return Response({"status": "ACCEPTED"}, status=200)
 
     # ============================
     # RECHAZAR INVITACIÓN
     # ============================
     @action(detail=True, methods=["post"])
     def decline(self, request, pk=None):
-     invite = get_object_or_404(TripInvite, id=pk)
+        invite = get_object_or_404(TripInvite, id=pk)
 
-     if invite.to_user != request.user:
-        return Response({"error": "No autorizado"}, status=403)
+        if invite.to_user != request.user:
+            return Response({"error": "No autorizado"}, status=403)
 
-     # 1) Cambiar estado
-     invite.status = "DECLINED"
-     invite.save()
+        invite.status = "DECLINED"
+        invite.save()
 
-     # 2) Notificar al creador del viaje
-     Notification.objects.create(
-        user=invite.from_user,              # dueño del viaje
-        from_user=request.user,             # quien rechazó
-        notification_type="INVITE_DECLINED",
-        text_preview=f"{request.user.username} rechazó tu invitación.",
+        Notification.objects.filter(
         content_type=ContentType.objects.get_for_model(invite),
-        object_id=invite.id
-     )
+        object_id=invite.id,
+        user=invite.to_user,
+        notification_type="TRIP_INVITE"
+       ).delete()
 
-     return Response({"status": "DECLINED"}, status=200)
- 
+        return Response({"status": "DECLINED"}, status=200)
+
+    # ============================
+    # CANCELAR INVITACIÓN
+    # ============================
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
      invite = get_object_or_404(TripInvite, id=pk)
 
-     # Solo el creador del viaje puede cancelar
+     # solo el creador puede cancelar
      if invite.from_user != request.user:
         return Response({"error": "No autorizado"}, status=403)
 
-    # 1) Cambiar estado
      invite.status = "CANCELLED"
      invite.save()
 
-    # 2) Notificar al usuario invitado
-     Notification.objects.create(
-        user=invite.to_user,
-        from_user=request.user,
-        notification_type="INVITE_CANCELLED",
-        text_preview=f"{request.user.username} canceló la invitación al viaje.",
-        content_type=ContentType.objects.get_for_model(invite),
-        object_id=invite.id
-     )
+     # 🚨 ELIMINAR NOTIFICACIÓN RELACIONADA (ESTO ES LO QUE TE FALTA)
+     Notification.objects.filter(
+         content_type=ContentType.objects.get_for_model(invite),
+         object_id=invite.id,
+         user=invite.to_user,
+         notification_type="TRIP_INVITE"
+      ).delete()
 
      return Response({"status": "CANCELLED"}, status=200)
-

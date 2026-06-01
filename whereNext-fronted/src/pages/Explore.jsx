@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { getMediaUrl } from "../utils/media";
 import "../styles/explore.css";
 
 export default function Explore() {
@@ -88,8 +89,8 @@ export default function Explore() {
         sourceFilter === "ALL"
           ? true
           : sourceFilter === "OFFICIAL"
-          ? isOfficial
-          : !isOfficial;
+            ? isOfficial
+            : !isOfficial;
 
       return matchesText && matchesCategory && matchesSource;
     });
@@ -99,35 +100,24 @@ export default function Explore() {
   }, [places, debouncedQuery, activeFilter, sourceFilter]);
 
   useEffect(() => {
-  const fetchUsers = async () => {
-    if (!debouncedQuery.trim()) {
-      setFilteredUsers([]);
-      return;
-    }
+    const fetchUsers = async () => {
+      if (!debouncedQuery.trim()) {
+        setFilteredUsers([]);
+        return;
+      }
 
-    try {
-      const res = await API.get(`/users/search/?search=${debouncedQuery}`);
-      setFilteredUsers(res.data || []);
-    } catch (err) {
-      console.error("Error buscando usuarios:", err);
-    }
-  };
+      try {
+        const res = await API.get(`/users/search/?search=${debouncedQuery}`);
+        setFilteredUsers(res.data || []);
+      } catch (err) {
+        console.error("Error buscando usuarios:", err);
+      }
+    };
 
-  fetchUsers();
-}, [debouncedQuery]);
+    fetchUsers();
+  }, [debouncedQuery]);
 
 
-  // =========================================================
-  // MEDIA SAFE URL
-  // =========================================================
-  const getMediaUrl = (path, fallback = "/default-avatar.png") => {
-    if (!path) return fallback;
-    if (path.startsWith("http://") || path.startsWith("https://")) {
-      return path;
-    }
-    const cleanPath = path.startsWith("/") ? path : `/${path}`;
-    return `http://127.0.0.1:8000${cleanPath}`;
-  };
 
   // =========================================================
   // LOADING STATE
@@ -180,9 +170,13 @@ export default function Explore() {
                   onClick={() => navigate(`/users/${userItem.id}`)}
                 >
                   <img
-                    src={getMediaUrl(userItem.avatar)}
+                    src={getMediaUrl(
+                      userItem.avatar || userItem.profile?.avatar,
+                      "/default-avatar.png"
+                    )}
                     alt="avatar"
                   />
+
                   <span>@{userItem.username}</span>
                 </div>
               ))}

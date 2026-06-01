@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { getMediaUrl } from "../utils/media";
 import "../styles/chats.css";
 
 export default function ChatPage() {
@@ -143,12 +144,7 @@ export default function ChatPage() {
     if (e.key === "Enter") sendMessage();
   };
 
-  const getMediaUrl = (path, fallback = "/default-avatar.png") => {
-    if (!path) return fallback;
-    if (path.startsWith("http")) return path;
-    return `http://127.0.0.1:8000${path}`;
-  };
-
+ 
   // =========================================================
   // RENDER
   // =========================================================

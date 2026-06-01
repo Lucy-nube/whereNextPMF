@@ -1,23 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../../services/api";
+import { getMediaUrl } from "../../utils/media";
 import "../../styles/tripsuggestion.css";
-
-
-const getMediaUrl = (path) => {
-  if (!path) return "/default-place.jpg";
-
-  
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    return path;
-  }
-
-  // Asegurar que siempre incluya /media/
-  if (!path.startsWith("/media/")) {
-    path = `/media/${path.replace(/^\/+/, "")}`;
-  }
-
-  return `http://127.0.0.1:8000${path}`;
-};
 
 
 
@@ -27,12 +11,19 @@ export default function TripSuggestions({ mood, onSelectDestination }) {
 
   useEffect(() => {
     if (!mood) return;
-
     const fetchSuggestions = async () => {
       setLoading(true);
 
       try {
-        const category = mood;
+        const moodMap = {
+          CITY: "city",
+          NATURE: "nature",
+          BEACH: "beach",
+          MUSEUM: "museum",
+          FOOD: "food",
+        };
+
+        const category = moodMap[mood] || mood.toLowerCase();
 
         const res = await API.get("/places/", {
           params: { category }
@@ -51,7 +42,6 @@ export default function TripSuggestions({ mood, onSelectDestination }) {
         setLoading(false);
       }
     };
-
     fetchSuggestions();
   }, [mood]);
 
@@ -76,34 +66,37 @@ export default function TripSuggestions({ mood, onSelectDestination }) {
 
       <div className="ts-grid">
 
-  {suggestions.map((place) => (
-    <div
-      key={place.id}
-      className="ts-card"
-      onClick={() =>
-        onSelectDestination(
-          place.name,
-          getMediaUrl(place.image_url || place.image)
-        )
-      }
-    >
+        {suggestions.map((place) => (
+          <div
+            key={place.id}
+            className="ts-card"
+            onClick={() =>
+              onSelectDestination({
+                destination: place.name,
+                image: getMediaUrl(place.image_url || place.image)
+              })
 
-      <img
-        src={getMediaUrl(place.image_url || place.image)}
-        onError={(e) => (e.currentTarget.src = "/default-place.jpg")}
-        alt={place.name}
-        className="ts-image"
-      />
 
-      <div className="ts-info">
-        <h4>{place.name}</h4>
-        <p>{place.category}</p>
+            }
+          >
+
+            <img
+              src={getMediaUrl(place.image_url || place.image, "/default-place.jpg")}
+              onError={(e) => (e.currentTarget.src = "/default-place.jpg")}
+              alt={place.name}
+              className="ts-image"
+            />
+
+
+            <div className="ts-info">
+              <h4>{place.name}</h4>
+              <p>{place.category}</p>
+            </div>
+
+          </div>
+        ))}
+
       </div>
-
-    </div>
-  ))}
-
-</div>
 
     </div>
   );
