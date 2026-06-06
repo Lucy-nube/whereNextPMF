@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import API from "../services/api";
-import TripPhotoUpload from "../components/trips/TripPhotoUpload";
+import TripPhotoUpload from "../components/trips/TripphotoUpload";
 import TripSuggestions from "../components/trips/TripSuggestions";
 import CompanionsModal from "../components/trips/CompanionsModal";
 import { getMediaUrl } from "../utils/media";

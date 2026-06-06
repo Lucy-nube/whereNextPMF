@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import { getMediaUrl } from "../utils/media";
 import { useAuth } from "../context/AuthContext";
-import "/src/styles/companionsHub.css";
+import "/src/styles/companionshub.css";
 
 export default function CompanionsHub() {
   const navigate = useNavigate();
