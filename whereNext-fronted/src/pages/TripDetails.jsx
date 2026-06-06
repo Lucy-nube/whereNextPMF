@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import API from "../services/api";
 import TripPhotoUpload from "../components/trips/TripPhotoUpload";
 import TripSuggestions from "../components/trips/TripSuggestions";
@@ -19,6 +20,11 @@ export default function TripDetails() {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const refresh = params.get("refresh");
+
 
   // FORM STATES
   const [editTitle, setEditTitle] = useState("");
@@ -48,14 +54,29 @@ export default function TripDetails() {
   };
 
 
+
   const fetchInvites = async () => {
-    const res = await API.get("/invites/trip-invites/");
+    if (!trip?.id) return;
+    const res = await API.get(`/invites/trip-invites/?trip=${trip.id}`);
     setSentInvites(res.data || []);
   };
 
+
+
   const getInviteForUser = (userId) => {
-    return sentInvites.find(inv => inv.to_user?.id === userId);
+    return sentInvites.find(inv => {
+      const invited = inv.to_user || inv.invited_user;
+
+      if (!invited) return false;
+
+      // si viene como objeto
+      if (typeof invited === "object") return invited.id === userId;
+
+      // si viene como número
+      return invited === userId;
+    });
   };
+
 
 
   // =========================================================
@@ -75,7 +96,12 @@ export default function TripDetails() {
       setEditEndDate(data.end_date || "");
       setEditIsPublic(data.is_public || false);
       setEditTripType(data.trip_type || "solo");
-      setSelectedFriend(data.co_traveler || null);
+      setSelectedFriend(
+        data.companions?.[0] ||
+        data.co_traveler ||
+        null
+      );
+
 
       const friendsRes = await API.get("companions/");
       setFriends(friendsRes.data || []);
@@ -97,12 +123,35 @@ export default function TripDetails() {
       return;
     }
     loadTripData();
-  }, [id]);
-
+  }, [id, refresh]);
 
   useEffect(() => {
-    if (trip?.id) fetchInvites();
+    if (trip?.id) {
+      fetchInvites();
+    }
   }, [trip?.id]);
+
+  useEffect(() => {
+    if (!trip) return;
+
+    const pending = trip.pending_invites?.[0]?.to_user;
+
+    // ⭐ Solo actualizar selectedFriend desde el viaje
+    setSelectedFriend(
+      trip.companions?.[0] ||
+      trip.co_traveler ||
+      pending ||
+      null
+    );
+
+    // ⭐ NO pisar el tipo si estás editando
+    if (!isEditing) {
+      setEditTripType(trip.trip_type || "solo");
+    }
+  }, [trip, isEditing]);
+
+
+
 
   // =========================================================
   // SAVE EDITS
@@ -160,7 +209,7 @@ export default function TripDetails() {
         to_user: userId,
       });
 
-      setSentInvites((prev) => [...prev, res.data]); // 🔥 INMEDIATO
+      setSentInvites((prev) => [...prev, res.data]);
 
       return res.data;
     } catch (err) {
@@ -227,7 +276,7 @@ export default function TripDetails() {
           {isEditing ? (
             <div className="td-edit-input-group">
               <input
-                value={editDescription || ""}
+                value={editTitle|| ""}
                 onChange={(e) => setEditTitle(e.target.value)}
                 className="td-edit-input"
               />
@@ -336,139 +385,132 @@ export default function TripDetails() {
               >
                 <option value="solo">🌙 Solo</option>
                 <option value="couple">💞 Pareja</option>
-                <option value="group">👥 Grupo</option>
               </select>
             ) : (
               <strong className="td-mood-highlight">
-                {trip.trip_type === "solo" && "🌙 Solo"}
-                {trip.trip_type === "couple" && "💞 Pareja"}
-                {trip.trip_type === "group" && "👥 Grupo"}
+                {trip.trip_type?.toLowerCase() === "solo" && "🌙 Solo"}
+                {trip.trip_type?.toLowerCase() === "couple" && "💞 Pareja"}
+
               </strong>
             )}
           </div>
 
           {/* COMPAÑEROS */}
-          {/* SECCIÓN DE COMPAÑEROS SEGÚN TIPO DE VIAJE */}
-          <div className="td-companions-section">
-            <h3>👥 Compañeros del viaje</h3>
+          {isEditing ? (
+            <div className="td-companions-section">
+              <h3>👥 Compañer@ del viaje</h3>
 
-            {/* 🌙 SOLO → no muestra nada */}
-            {editTripType === "solo" && (
-              <p className="td-empty-msg">Este viaje es individual.</p>
-            )}
+              {editTripType?.toLowerCase() === "solo" && (
+                <p className="td-empty-msg">Este viaje es individual.</p>
+              )}
 
-            {/* 💞 PAREJA → elegir UN compañero */}
-            {editTripType === "couple" && (
-              <div className="td-meta-item td-couple-select">
-                <label>COMPAÑERO DE VIAJE</label>
+              {editTripType?.toLowerCase() === "couple" && (
+                <div className="td-meta-item td-couple-select">
+                  <label>COMPAÑERO DE VIAJE</label>
 
-                {isEditing ? (
-                  <>
-                    {selectedFriend ? (
-                      <div className="td-selected-friend">
+                  {selectedFriend ? (
+                    <div className="td-selected-friend">
+                      <span>@{selectedFriend.username}</span>
 
-                        <span>
-                          @{selectedFriend.username}
-                        </span>
+                      {(() => {
+                        const invite = getInviteForUser(selectedFriend.id);
 
-                        {getInviteForUser(selectedFriend.id) ? (
-                          <button
-                            type="button"
-                            className="invite-btn sent"
-                            onClick={() =>
-                              cancelInvite(
-                                getInviteForUser(selectedFriend.id).id
-                              )
-                            }
-                          >
-                            ✓ Invitación enviada (Cancelar)
-                          </button>
-                        ) : (
+                        // compañero ya aceptado
+                        if (trip?.companions?.some(c => c.id === selectedFriend.id)) {
+                          return (
+                            <span className="invite-accepted">
+                              💞 Compañero confirmado
+                            </span>
+                          );
+                        }
+
+                        // invitación pendiente
+                        if (invite?.status === "PENDING") {
+                          return (
+                            <button
+                              type="button"
+                              className="invite-btn sent"
+                              onClick={async () => {
+                                await cancelInvite(invite.id);
+                                await fetchInvites();
+                              }}
+                            >
+                              ✓ Invitación enviada (Cancelar)
+                            </button>
+                          );
+                        }
+
+                        // aceptada (por si companions aún no se ha actualizado)
+                        if (invite?.status === "ACCEPTED") {
+                          return (
+                            <span className="invite-accepted">
+                              💞 Compañero confirmado
+                            </span>
+                          );
+                        }
+
+                        // rechazada o inexistente
+                        return (
                           <button
                             type="button"
                             className="invite-btn"
-                            onClick={() => sendInvite(selectedFriend.id)}
+                            onClick={async () => {
+                              await sendInvite(selectedFriend.id);
+                              await fetchInvites();
+                            }}
                           >
                             Enviar invitación
                           </button>
-                        )}
+                        );
+                      })()}
 
-                        <button
-                          type="button"
-                          className="td-remove-friend-btn"
-                          onClick={() => setSelectedFriend(null)}
-                        >
-                          Quitar
-                        </button>
-
-                      </div>
-                    ) : (
                       <button
                         type="button"
-                        className="td-upload-trigger-btn"
-                        onClick={() => setShowCompanionsModal(true)}
+                        className="td-remove-friend-btn"
+                        onClick={() => setSelectedFriend(null)}
                       >
-                        👤 Elegir compañero
+                        Quitar
                       </button>
-                    )}
-                  </>
-                ) : (
-                  <strong className="td-mood-highlight">
-                    {selectedFriend
-                      ? `👤 @${selectedFriend.username}`
-                      : "Sin compañero seleccionado"}
-                  </strong>
-                )}
-              </div>
-            )}
-
-            {/* 👥 GRUPO → lista de amigos + invitar */}
-            {editTripType === "group" && (
-              <div className="td-group-list">
-                {friends.length === 0 && (
-                  <p className="td-empty-msg">
-                    No tienes amigos agregados aún.
-                  </p>
-                )}
-
-                {friends.map((u) => {
-                  const invite = getInviteForUser(u.id);
-
-                  return (
-                    <div key={u.id} className="user-item">
-                      <span>@{u.username}</span>
-
-                      {!invite ? (
-                        <button
-                          type="button"
-                          className="invite-btn"
-                          onClick={async () => {
-                            await sendInvite(u.id);
-                            await fetchInvites();
-                          }}
-                        >
-                          Enviar invitación
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="invite-btn sent"
-                          onClick={async () => {
-                            await cancelInvite(invite.id);
-                            await fetchInvites();
-                          }}
-                        >
-                          ✓ Invitación enviada (Cancelar)
-                        </button>
-                      )}
-
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="td-upload-trigger-btn"
+                      onClick={() => setShowCompanionsModal(true)}
+                    >
+                      👤 Elegir compañero
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* ⭐ MODO VISTA */
+            <div className="td-companions-section">
+              <h3>👥 Compañer@ del viaje</h3>
 
+              {trip.trip_type === "solo" && (
+                <p className="td-empty-msg">Este viaje es individual.</p>
+              )}
+
+              {trip.trip_type === "couple" && (
+                <>
+                  {trip.companions?.length > 0 ? (
+                    <p className="td-mood-highlight">
+                      👤 @{trip.companions[0].username}
+                    </p>
+                  ) : trip.pending_invites?.length > 0 ? (
+                    <p className="td-mood-highlight">
+                      ⏳ Invitación pendiente para @{trip.pending_invites[0].to_user.username}
+                    </p>
+                  ) : (
+                    <p className="td-empty-msg">Sin compañero seleccionado.</p>
+                  )}
+                </>
+              )}
+            </div>
+
+          )}
 
           {/* DATES */}
           <div className="td-dates-row">
@@ -614,7 +656,7 @@ export default function TripDetails() {
                 await API.patch(`/trips/${trip.id}/`, { is_published: true });
                 setTrip((prev) => ({ ...prev, is_published: true }));
                 showToast("🚀 Aventura publicada en el feed");
-                navigate("/");
+                navigate("/home");
               } catch (err) {
                 console.error(err);
                 showToast("❌ No se pudo publicar la aventura");
@@ -638,6 +680,7 @@ export default function TripDetails() {
               setSelectedFriend(f);
 
               setSentInvites((prev) => [...prev, invite]); // 🔥 CLAVE
+             
 
               showToast(`📨 Invitación enviada a @${f.username}`);
 

@@ -116,7 +116,6 @@ export default function Trips() {
                     <span className="td-mood-highlight">
                       {trip.trip_type === "solo" && "🌙 Solo"}
                       {trip.trip_type === "couple" && "💞 En pareja"}
-                      {trip.trip_type === "group" && "👥 En grupo"}
                     </span>
                   )}
                 </div>

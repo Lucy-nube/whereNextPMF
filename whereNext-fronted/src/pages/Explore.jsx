@@ -15,7 +15,6 @@ export default function Explore() {
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
   const [activeFilter, setActiveFilter] = useState("ALL");
-  const [sourceFilter, setSourceFilter] = useState("ALL");
 
   const navigate = useNavigate();
 
@@ -50,19 +49,6 @@ export default function Explore() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // =========================================================
-  // BOOLEAN SAFE CHECK
-  // =========================================================
-  const checkTrue = (value) => {
-    if (value === true) return true;
-    if (typeof value === "string") {
-      return value.toLowerCase() === "true" || value === "1";
-    }
-    if (typeof value === "number") {
-      return value === 1;
-    }
-    return false;
-  };
 
   // =========================================================
   // MAIN FILTER ENGINE
@@ -83,21 +69,13 @@ export default function Explore() {
       const matchesCategory =
         activeFilter === "ALL" || p.category === activeFilter;
 
-      const isOfficial = checkTrue(p.is_official);
 
-      const matchesSource =
-        sourceFilter === "ALL"
-          ? true
-          : sourceFilter === "OFFICIAL"
-            ? isOfficial
-            : !isOfficial;
-
-      return matchesText && matchesCategory && matchesSource;
+      return matchesText && matchesCategory;
     });
 
     setFiltered(filteredPlaces);
 
-  }, [places, debouncedQuery, activeFilter, sourceFilter]);
+  }, [places, debouncedQuery, activeFilter]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -161,7 +139,7 @@ export default function Explore() {
           )}
 
           {/* USERS DROPDOWN */}
-          {searchQuery && filteredUsers.length > 0 && (
+          {debouncedQuery.trim() !== "" && filteredUsers.length > 0 && (
             <div className="explore-user-dropdown">
               {filteredUsers.map((userItem) => (
                 <div
@@ -176,18 +154,15 @@ export default function Explore() {
                     )}
                     alt="avatar"
                   />
-
                   <span>@{userItem.username}</span>
                 </div>
               ))}
             </div>
           )}
 
-          {searchQuery && filteredUsers.length === 0 && (
-            <div className="explore-user-dropdown">
-              <div className="explore-user-item" style={{ opacity: 0.6 }}>
-                No se encontraron usuarios
-              </div>
+          {debouncedQuery.trim() !== "" && filteredUsers.length === 0 && (
+            <div className="explore-no-results">
+              No se encontraron usuarios
             </div>
           )}
         </div>
@@ -201,12 +176,6 @@ export default function Explore() {
           <button className={activeFilter === "BEACH" ? "active" : ""} onClick={() => setActiveFilter("BEACH")}>🏖️ Playa</button>
           <button className={activeFilter === "CITY" ? "active" : ""} onClick={() => setActiveFilter("CITY")}>🏙️ Ciudad</button>
         </div>
-
-        <div className="filters verification-filters">
-          <button className={sourceFilter === "ALL" ? "active" : ""} onClick={() => setSourceFilter("ALL")}>👥 Todo</button>
-          <button className={sourceFilter === "OFFICIAL" ? "active" : ""} onClick={() => setSourceFilter("OFFICIAL")}>⭐ Oficiales</button>
-          <button className={sourceFilter === "TRAVELER" ? "active" : ""} onClick={() => setSourceFilter("TRAVELER")}>🎒 Viajeros</button>
-        </div>
       </div>
 
       {/* GRID */}
@@ -217,27 +186,28 @@ export default function Explore() {
           </p>
         ) : (
           filtered.map((place) => {
-            const isOfficial = checkTrue(place.is_official);
+            const creatorName = "Oficial";
+            const creatorAvatar = "/default-avatar.png";
 
-            const creator = place.owner || place.created_by;
-            const creatorId = creator?.id || place.owner_id;
-            const creatorName = creator?.username || "Viajero";
-            const creatorAvatar =
-              creator?.avatar || creator?.profile?.avatar || place.owner_avatar;
 
             return (
               <div
                 key={place.id}
                 className="card"
-                onClick={() => navigate(`/places/${place.id}`)}
+                onClick={() => {
+                  const isLoggedIn = !!localStorage.getItem("access");
+                  if (!isLoggedIn) {
+                    navigate("/login");
+                    return;
+                  }
+                  navigate(`/places/${place.id}`);
+                }}
               >
-                <span className={isOfficial ? "official-badge-tag variant-official" : "official-badge-tag variant-traveler"}>
-                  {isOfficial ? "✓ Oficial" : "🎒 Viajero"}
-                </span>
+                <span className="official-badge-tag variant-official">✓ Oficial</span>
 
                 <div className="card-image">
                   <img
-                    src={getMediaUrl(place.image_url || place.image, "/default-place.jpg")}
+                    src={getMediaUrl(place.image_url, "/default-place.jpg")}
                     alt={place.name}
                   />
                 </div>
@@ -246,25 +216,30 @@ export default function Explore() {
                   <h3>{place.name}</h3>
                   <p>{place.description}</p>
 
+                  {/* OWNER */}
                   <div
                     className="place-owner-mini owner-link-active"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (creatorId) navigate(`/users/${creatorId}`);
+                      if (place.owner?.id) navigate(`/users/${place.owner.id}`);
                     }}
                   >
                     <img
-                      src={getMediaUrl(creatorAvatar, "/default-avatar.png")}
+                      src={getMediaUrl(
+                        place.owner?.avatar || place.owner?.profile?.avatar,
+                        "/default-avatar.png"
+                      )}
                       alt="owner"
                       className="place-owner-avatar"
                     />
-                    <span>@{creatorName}</span>
+                    <span>@{place.owner?.username}</span>
                   </div>
 
                   <span className="badge">{place.category}</span>
                 </div>
               </div>
             );
+
           })
         )}
       </div>

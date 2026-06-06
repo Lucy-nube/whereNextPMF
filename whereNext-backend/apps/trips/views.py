@@ -6,6 +6,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.exceptions import PermissionDenied
+from django.contrib.auth.models import User
+
 
 from django.db import models
 from django.db.models import Q
@@ -65,10 +67,21 @@ class TripViewSet(viewsets.ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    from django.db.models import Q
+
     def get_queryset(self):
-        return Trip.objects.filter(
-            Q(owner=self.request.user) | Q(is_public=True)
-        ).select_related("owner", "owner__profile").order_by("-created_at")
+     user = self.request.user
+
+     return Trip.objects.filter(
+        Q(owner=user) |
+        Q(companions=user) |
+        Q(is_public=True)
+     ).select_related(
+        "owner", "owner__profile"
+     ).prefetch_related(
+        "companions"
+     ).distinct().order_by("-created_at")
+
 
     # ============================================================
     # 📸 SUBIR FOTOS A UN VIAJE → /api/trips/<id>/photos/
@@ -106,28 +119,36 @@ class TripViewSet(viewsets.ModelViewSet):
     # ============================================================
     def perform_create(self, serializer):
         raw_data = self.request.data
-        trip_type = raw_data.get("trip_type", "solo")
 
-        # ============================================================
-        # 👥 MANEJO DE CO-TRAVELER PARA TRIP TYPE "COUPLE"
-        # ============================================================
+        # ============================
+        # Normalizar trip_type
+        # ============================
+        trip_type = raw_data.get("trip_type", "SOLO").upper()
+        VALID_TYPES = {"SOLO", "COUPLE"}
+        if trip_type not in VALID_TYPES:
+            trip_type = "SOLO"
+
+        # ============================
+        # Manejo de co-traveler
+        # ============================
         co_traveler_id = None
-        if trip_type == "couple":
+        if trip_type == "COUPLE":
             invited_list = raw_data.get("invited_companions", [])
             if isinstance(invited_list, list) and len(invited_list) > 0:
-                co_traveler_id = invited_list[0]
+                invited_id = invited_list[0]
+                # Validar que exista
+                if User.objects.filter(id=invited_id).exists():
+                    co_traveler_id = invited_id
 
-        # ============================================================
-        # 🧭 CREAR EL VIAJE
-        # ============================================================
+        # ============================
+        # Crear viaje
+        # ============================
         trip = serializer.save(
             trip_type=trip_type,
             co_traveler_id=co_traveler_id
         )
 
-        # ⭐ OTORGAR SELLO POR MOOD
         give_mood_stamp(self.request.user, trip.mood)
-
 
     # ============================================================
     # ❤️ LISTAR LIKES
@@ -158,7 +179,6 @@ class TripViewSet(viewsets.ModelViewSet):
         trip = self.get_object()
         user = request.user
 
-        # Alternar like
         if user in trip.likes.all():
             trip.likes.remove(user)
             liked = False
@@ -166,7 +186,6 @@ class TripViewSet(viewsets.ModelViewSet):
             trip.likes.add(user)
             liked = True
         
-            # ⭐ Crear notificación
             if trip.owner != user:
                 Notification.objects.create(
                     user=trip.owner,
@@ -210,6 +229,32 @@ class TripViewSet(viewsets.ModelViewSet):
             TripCommentSerializer(comment).data,
             status=status.HTTP_201_CREATED
         )
+        
+        # ============================================================
+        # ➕ AÑADIR LUGAR A UN VIAJE → /api/trips/<id>/add_place/
+        # ============================================================
+    @action(detail=True, methods=["post"])
+    def add_place(self, request, pk=None):
+     trip = self.get_object()
+     place_id = request.data.get("place_id")
+
+     if not place_id:
+         return Response({"error": "place_id es requerido"}, status=400)
+
+     # Buscar el lugar
+     try:
+        place = Place.objects.get(id=place_id)
+     except Place.DoesNotExist:
+        return Response({"error": "El lugar no existe"}, status=404)
+
+     # Verificar que el viaje tenga el campo ManyToMany
+     try:
+        trip.places.add(place)
+     except Exception as e:
+         return Response({"error": str(e)}, status=500)
+
+     return Response({"message": "Lugar añadido correctamente"}, status=201)
+
 
 
 # =========================================================
@@ -379,7 +424,6 @@ class FeedTripsView(APIView):
             for t in trips
         ], status=status.HTTP_200_OK)
 
-# Append this to the absolute bottom of apps/trips/views.py
 
 # =========================================================
 # 🌍 PUBLIC TRIP DETAILS VIEW (Restored & Optimized)

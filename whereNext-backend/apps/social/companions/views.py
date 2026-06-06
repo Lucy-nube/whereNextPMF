@@ -220,10 +220,11 @@ class FeedTripsView(APIView):
         friend_ids = list(friends_as_user) + list(friends_as_companion)
 
         trips = Trip.objects.filter(
-            Q(owner__id__in=friend_ids) |
-            Q(is_public=True, owner__profile__is_private=False) |
-            Q(owner=user)
+         Q(owner=user) |  # mis viajes (públicos y privados)
+         Q(owner__id__in=friend_ids, is_public=True) |  # viajes públicos de amigos
+         Q(is_public=True, owner__profile__is_private=False)  # viajes públicos de desconocidos
         ).order_by("-created_at")
+
 
         serializer = TripSerializer(trips, many=True, context={"request": request})
         return Response(serializer.data)

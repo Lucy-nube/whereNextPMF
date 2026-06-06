@@ -42,12 +42,13 @@ class Trip(models.Model):
         related_name="co_adventures"
     )
 
-    # ⭐ AÑADIR ESTO
+    
     companions = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         related_name="trips_as_companion",
         blank=True
     )
+
 
     def __str__(self):
         return self.title

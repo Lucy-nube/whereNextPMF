@@ -33,7 +33,7 @@ export default function Login() {
 
     try {
       await login(username, password);
-      navigate("/");
+      navigate("/home");
     } catch (err) {
       console.log(err.response?.data);
       setError("Credenciales incorrectas");

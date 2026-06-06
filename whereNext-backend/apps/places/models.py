@@ -1,5 +1,8 @@
 from django.conf import settings
 from django.db import models
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 
 
 class Place(models.Model):
@@ -85,3 +88,13 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.place}"
+    
+    
+
+class FavoritePlace(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    place = models.ForeignKey(Place, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "place")

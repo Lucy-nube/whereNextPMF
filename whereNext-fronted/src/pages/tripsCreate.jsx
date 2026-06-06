@@ -65,50 +65,90 @@ export default function TripCreate() {
   // SELECCIÓN DE SUGERENCIA
   // =========================================================
   const handleSelectSuggestion = (placeName, placeImage) => {
-    setDestination(placeName);
-    setSelectedImageUrl(placeImage);
+    // Si placeName es un objeto → extraemos su nombre
+    if (typeof placeName === "object") {
+      setDestination(placeName.name || placeName.title || placeName.destination || "");
+      setSelectedImageUrl(placeName.image || placeImage || "");
+    } else {
+      // Si ya es un string → lo usamos directo
+      setDestination(placeName);
+      setSelectedImageUrl(placeImage);
+    }
   };
+
 
   // =========================================================
   // SUBMIT
   // =========================================================
+  const [error, setError] = useState(null); // <-- Añadir este estado arriba
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
 
-    if (!title.trim()) return;
+    // ============================
+    // 1. Validación de fechas
+    // ============================
+    if (new Date(startDate) > new Date(endDate)) {
+      setError("La fecha de inicio no puede ser mayor que la fecha de fin");
+      return;
+    }
 
-    setLoading(true);
+    // ============================
+    // 2. Normalizar trip_type
+    // ============================
+    const normalizedTripType = tripType.toUpperCase();
+
+    // ============================
+    // 3. Validar co-traveler si es COUPLE
+    // ============================
+    let invited_companions_clean = selectedFriends || [];
+
+    if (normalizedTripType === "COUPLE") {
+      if (!invited_companions_clean.length) {
+        setError("Debes seleccionar un acompañante para un viaje en pareja");
+        return;
+      }
+    }
+
+    // ============================
+    // 4. Payload limpio
+    // ============================
+    const payload = {
+      title,
+      description,
+      destination,
+      mood,
+      start_date: startDate,
+      end_date: endDate,
+      is_public: isPublic,
+      trip_type: normalizedTripType,
+      invited_companions: invited_companions_clean
+    };
 
     try {
-      const payload = {
-        title,
-        description,
-        destination,
-        mood,
-        start_date: startDate || null,
-        end_date: endDate || null,
-        is_public: isPublic,
-        trip_type: tripType,
-        invited_companions: selectedFriends,
-
-        photos: [],
-
-
-      };
+      setLoading(true);
 
       if (isEditing) {
-        await API.put(`/trips/${id}/`, payload);
+        await API.patch(`/trips/${id}/`, payload);
       } else {
         await API.post("/trips/", payload);
       }
 
       navigate("/trips");
+
     } catch (err) {
-      console.error("Error al guardar viaje:", err);
+      if (err.response?.data) {
+        const backendError = Object.values(err.response.data)[0];
+        setError(backendError);
+      } else {
+        setError("Error inesperado. Intenta de nuevo.");
+      }
     } finally {
       setLoading(false);
     }
   };
+
 
   // =========================================================
   // MEDIA FORMATTER
@@ -186,6 +226,29 @@ export default function TripCreate() {
             placeholder="París, Tokio..."
           />
         </div>
+        {/* START DATE */}
+        <div className="td-meta-item">
+          <label>FECHA DE INICIO</label>
+          <input
+            type="date"
+            className="td-edit-input"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            required
+          />
+        </div>
+
+        {/* END DATE */}
+        <div className="td-meta-item">
+          <label>FECHA DE FIN</label>
+          <input
+            type="date"
+            className="td-edit-input"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            required
+          />
+        </div>
 
         <div className="td-meta-item">
           <label>¿Hacer público?</label>
@@ -234,6 +297,13 @@ export default function TripCreate() {
           mood={mood}
           onSelectDestination={handleSelectSuggestion}
         />
+
+        {/* ⭐ ERROR BONITO */}
+        {error && (
+          <div className="td-error-message">
+            {error}
+          </div>
+        )}
 
         {/* 🚀 SUBMIT */}
         <div className="td-publish-wrapper">

@@ -258,6 +258,189 @@
   padding: 24px 0 !important;
 }
 
+/* =========================================================
+   MODAL OVERLAY
+   ========================================================= */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+
+  z-index: 9999;
+
+  animation: modalOverlayFade .25s ease;
+}
+
+/* =========================================================
+   MODAL CARD
+   ========================================================= */
+
+.modal-card {
+  width: 90%;
+  max-width: 460px;
+
+  padding: 24px;
+
+  border-radius: 20px;
+
+  background: rgba(30, 41, 59, 0.95);
+
+  border: 1px solid rgba(255,255,255,.08);
+
+  box-shadow:
+    0 25px 60px rgba(0,0,0,.45);
+
+  color: #e2e8f0;
+
+  backdrop-filter: blur(12px);
+
+  animation: modalFadeIn .25s ease;
+}
+
+.modal-card h2,
+.modal-card h3 {
+  margin: 0 0 18px;
+
+  color: white;
+
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.modal-card p {
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+/* =========================================================
+   TRIP LIST
+   ========================================================= */
+
+.trip-list {
+  list-style: none;
+
+  margin: 20px 0;
+  padding: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* =========================================================
+   TRIP ITEM
+   ========================================================= */
+
+.trip-item {
+  padding: 14px 16px;
+
+  border-radius: 14px;
+
+  background: rgba(255,255,255,.04);
+
+  border: 1px solid rgba(255,255,255,.06);
+
+  color: #e2e8f0;
+
+  cursor: pointer;
+
+  transition: all .25s ease;
+}
+
+.trip-item:hover {
+  transform: translateY(-2px);
+
+  border-color: #38bdf8;
+
+  background: rgba(56,189,248,.08);
+
+  box-shadow:
+    0 12px 24px rgba(56,189,248,.12);
+}
+
+/* =========================================================
+   CLOSE BUTTON
+   ========================================================= */
+
+.modal-close-btn {
+  width: 100%;
+
+  margin-top: 12px;
+
+  padding: 12px;
+
+  border: none;
+  border-radius: 14px;
+
+  cursor: pointer;
+
+  font-weight: 700;
+
+  color: white;
+
+  background: linear-gradient(
+    135deg,
+    #ef4444,
+    #dc2626
+  );
+
+  transition: all .25s ease;
+}
+
+.modal-close-btn:hover {
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 12px 25px rgba(239,68,68,.35);
+}
+
+/* =========================================================
+   SCROLL
+   ========================================================= */
+
+.trip-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.trip-list::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 20px;
+}
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modalOverlayFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
 /* =========================================================================
    📱 RESPONSIVE MEDIA BREAKPOINT
    ========================================================================= */
@@ -294,5 +477,14 @@
 
   .comment-submit-btn {
     width: 100% !important;
+  }
+
+  .modal-card {
+    width: calc(100% - 24px);
+    padding: 20px;
+  }
+
+  .trip-item {
+    padding: 12px;
   }
 }

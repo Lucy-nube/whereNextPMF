@@ -39,6 +39,7 @@ class EmailOrUsernameTokenObtainPairView(TokenObtainPairView):
 # PERFIL /api/me/
 # =========================================================
 class MeView(APIView):
+    authentication_classes = [JWTAuthentication] 
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -55,7 +56,6 @@ class MeView(APIView):
         serializer.save()
         return Response(serializer.data)
 
-# apps/users/views.py
 
 
 class ProfileMeView(APIView):

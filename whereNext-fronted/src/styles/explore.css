@@ -593,7 +593,9 @@
 }
 
 .explore-search-input-wrapper {
-  position: relative; /* NECESARIO para el dropdown */
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 

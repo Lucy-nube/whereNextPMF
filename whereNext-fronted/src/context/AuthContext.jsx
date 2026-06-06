@@ -8,9 +8,18 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
 
-  const [token, setToken] = useState(localStorage.getItem("access"));
+  // 1. Inicializar token correctamente
+  const [token, setToken] = useState(() => localStorage.getItem("access"));
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // 2. Sincronizar token al montar
+  useEffect(() => {
+    const stored = localStorage.getItem("access");
+    if (stored && !token) {
+      setToken(stored);
+    }
+  }, []);
 
   // ============================================================
   // LOGIN
@@ -18,10 +27,11 @@ export function AuthProvider({ children }) {
   const login = async (username, password) => {
     const data = await authService.login(username, password);
 
-    
-    setToken(data.access);
+    // Guardar token ANTES de navegar
     localStorage.setItem("access", data.access);
     localStorage.setItem("refresh", data.refresh);
+
+    setToken(data.access); // Esto dispara loadUser()
 
     return data;
   };
@@ -50,12 +60,7 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        // Mantengo token en localStorage
-        localStorage.setItem("access", token);
-
-       
         const res = await API.get("users/me/");
-
         setUser(res.data);
       } catch (err) {
         console.log("Token inválido, cerrando sesión");

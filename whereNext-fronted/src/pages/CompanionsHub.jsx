@@ -12,21 +12,18 @@ export default function CompanionsHub() {
   const [actionId, setActionId] = useState(null);
   const { user: currentUser } = useAuth();
 
-
-  // 🚀 ESTADO DEL MODAL DE AVISOS PREMIUM
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
     title: "",
     text: "",
+    confirmText: "",
     onConfirm: null,
   });
 
   const fetchConnections = async () => {
     try {
       setLoading(true);
-
       const res = await API.get("companions/hub/");
-
       setFriends(res.data.friends || []);
     } catch (err) {
       console.error("Error al cargar el directorio social:", err);
@@ -39,12 +36,13 @@ export default function CompanionsHub() {
     fetchConnections();
   }, []);
 
-  // 🗑️ DISPARADOR CRUD DELETE
+  // 🗑️ DELETE
   const openDeleteModal = (rowId, username) => {
     setModalConfig({
       isOpen: true,
       title: "⚠️ ¿Eliminar compañero?",
       text: `Estás a punto de remover a @${username} de tu círculo de amigos. Perderás el acceso directo a sus bitácoras privadas.`,
+      confirmText: "Eliminar",
       onConfirm: () => executeDeleteFriend(rowId),
     });
   };
@@ -54,7 +52,6 @@ export default function CompanionsHub() {
     closeCustomModal();
     try {
       await API.delete(`companions/${rowId}/remove/`);
-
       setFriends((prev) => prev.filter((f) => f.id !== rowId));
     } catch (err) {
       console.error("Error al eliminar fila:", err);
@@ -63,13 +60,13 @@ export default function CompanionsHub() {
     }
   };
 
-
-  // 🚫 DISPARADOR CRUD BLOCK
+  // 🚫 BLOCK
   const openBlockModal = (rowId, username) => {
     setModalConfig({
       isOpen: true,
       title: "🚫 ¿Bloquear explorador?",
       text: `¿Seguro que deseas bloquear a @${username}? Esta acción restringirá de forma permanente el envío de mensajes y comentarios mudos.`,
+      confirmText: "Bloquear",
       onConfirm: () => executeBlockFriend(rowId),
     });
   };
@@ -78,9 +75,7 @@ export default function CompanionsHub() {
     setActionId(rowId);
     closeCustomModal();
     try {
-      //   RUTA CORRECTA
       await API.patch(`companions/hub/${rowId}/`, { action: "BLOCK" });
-
       setFriends((prev) => prev.filter((f) => f.companion_row_id !== rowId));
     } catch (err) {
       console.error("Error al transmitir bloqueo:", err);
@@ -90,22 +85,24 @@ export default function CompanionsHub() {
   };
 
   const closeCustomModal = () => {
-    setModalConfig({ isOpen: false, title: "", text: "", onConfirm: null });
+    setModalConfig({
+      isOpen: false,
+      title: "",
+      text: "",
+      confirmText: "",
+      onConfirm: null,
+    });
   };
 
   const handleSendMessage = async (friendId) => {
     try {
       const token = localStorage.getItem("access");
-
       const res = await API.post(
         `/chats/start/${friendId}/`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      const roomId = res.data.room_id;
-      navigate(`/chats/${roomId}`);
-
+      navigate(`/chats/${res.data.room_id}`);
     } catch (err) {
       if (err.response?.status === 403) {
         showToast("Debes ser compañero para enviar mensajes 🤝");
@@ -115,24 +112,20 @@ export default function CompanionsHub() {
     }
   };
 
-
-
-
   if (loading) {
     return (
       <div className="hub-centered-container">
         <div className="hub-spinner"></div>
-        <p className="hub-loading-text">Sincronizando coordenadas de tu círculo social...</p>
+        <p className="hub-loading-text">
+          Sincronizando coordenadas de tu círculo social...
+        </p>
       </div>
     );
   }
 
-
-
   return (
     <div className="hub-layout-view">
-
-      {/* HEADER PANEL */}
+      {/* HEADER */}
       <div className="hub-glass-card hub-header-card">
         <div className="hub-topbar-badge">
           <span>👥 CENTRAL SOCIAL</span>
@@ -144,12 +137,16 @@ export default function CompanionsHub() {
           Administra tus conexiones activas en WhereNext. Puedes chatear, revocar accesos de amistad o bloquear cuentas de forma permanente.
         </p>
 
-        <button type="button" className="hub-btn-back" onClick={() => navigate("/profile")}>
+        <button
+          type="button"
+          className="hub-btn-back"
+          onClick={() => navigate("/profile")}
+        >
           ← Volver a mi Perfil
         </button>
       </div>
 
-      {/* REJILLA DE AMIGOS */}
+      {/* LISTA */}
       <div className="hub-glass-card hub-list-card">
         <div className="hub-list-header">
           <h3>🤝 Tus compañeros aprobados ({friends.length})</h3>
@@ -160,21 +157,21 @@ export default function CompanionsHub() {
             <div className="hub-empty-state">
               <span className="hub-empty-icon">🎒</span>
               <p>Tu círculo de viaje está vacío de momento.</p>
-              <button type="button" className="hub-btn-action hub-btn-message" onClick={() => navigate("/explore")}>
+              <button
+                type="button"
+                className="hub-btn-action hub-btn-message"
+                onClick={() => navigate("/explore")}
+              >
                 Explorar Viajeros
               </button>
             </div>
           ) : (
-
-
-
             friends.map((f) => {
               const friendObj =
                 f.user?.id === currentUser.id ? f.companion : f.user;
 
               return (
                 <div key={f.id} className="hub-user-row">
-
                   <div className="hub-user-profile">
                     <div className="hub-avatar-wrapper">
                       <img
@@ -185,9 +182,12 @@ export default function CompanionsHub() {
                     </div>
 
                     <div className="hub-user-metadata">
-                      <strong className="hub-user-username">@{friendObj.username}</strong>
+                      <strong className="hub-user-username">
+                        @{friendObj.username}
+                      </strong>
                       <p className="hub-user-bio">
-                        {friendObj.bio || "Explorador listo para conectar en WhereNext"}
+                        {friendObj.bio ||
+                          "Explorador listo para conectar en WhereNext"}
                       </p>
                     </div>
                   </div>
@@ -206,7 +206,9 @@ export default function CompanionsHub() {
                       type="button"
                       className="hub-btn-action hub-btn-delete"
                       disabled={actionId === f.id}
-                      onClick={() => openDeleteModal(f.id, friendObj.username)}
+                      onClick={() =>
+                        openDeleteModal(f.id, friendObj.username)
+                      }
                     >
                       🗑️ Eliminar
                     </button>
@@ -215,16 +217,19 @@ export default function CompanionsHub() {
                       type="button"
                       className="hub-btn-action hub-btn-block"
                       disabled={actionId === f.companion_row_id}
-                      onClick={() => openBlockModal(f.companion_row_id, friendObj.username)}
+                      onClick={() =>
+                        openBlockModal(
+                          f.companion_row_id,
+                          friendObj.username
+                        )
+                      }
                     >
                       🚫 Bloquear
                     </button>
                   </div>
-
                 </div>
               );
             })
-
           )}
         </div>
       </div>
@@ -236,17 +241,24 @@ export default function CompanionsHub() {
             <h3>{modalConfig.title}</h3>
             <p className="td-modal-text">{modalConfig.text}</p>
             <div className="td-modal-actions">
-              <button type="button" className="td-modal-btn-confirm" onClick={modalConfig.onConfirm}>
-                Confirmar
+              <button
+                type="button"
+                className="td-modal-btn-confirm"
+                onClick={modalConfig.onConfirm}
+              >
+                {modalConfig.confirmText || "Confirmar"}
               </button>
-              <button type="button" className="td-modal-btn-cancel" onClick={closeCustomModal}>
+              <button
+                type="button"
+                className="td-modal-btn-cancel"
+                onClick={closeCustomModal}
+              >
                 Cancelar
               </button>
             </div>
           </div>
         </div>
       )}
-
     </div>
   );
 }

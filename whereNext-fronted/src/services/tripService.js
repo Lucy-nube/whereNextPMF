@@ -11,10 +11,14 @@ const tripService = {
     return response.data;
   },
 
-  addPlaceToTrip: async (placeId) => {
-    const response = await API.post("/trips/add_place/", { place_id: placeId });
+  addPlaceToTrip: async (tripId, placeId) => {
+    const response = await API.post(`/trips/${tripId}/add_place/`, {
+      place_id: placeId,
+    });
     return response.data;
   },
+
+
 };
 
 export default tripService;

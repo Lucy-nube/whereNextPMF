@@ -13,7 +13,6 @@ export default function Notifications() {
   const loadNotifications = async () => {
     try {
       const res = await API.get("social/notifications/");
-      console.log("🔍 Notificaciones crudas:", res.data);
       setNotifications(res.data || []);
     } catch (err) {
       console.error("Error cargando notificaciones:", err);
@@ -147,11 +146,9 @@ export default function Notifications() {
 
                   {/* ❌ INVITE DECLINED */}
                   {type === "INVITE_DECLINED" && (
-                    <p>
-                      ❌ <strong>@{n.from_user?.username}</strong> rechazó tu invitación
-                      al viaje
-                    </p>
+                    <p>❌ {n.text_preview}</p>
                   )}
+
 
                   {/* 🔔 FALLBACK */}
                   {![
@@ -164,8 +161,8 @@ export default function Notifications() {
                     "INVITE_ACCEPTED",
                     "INVITE_DECLINED",
                   ].includes(type) && (
-                    <p>🔔 {n.text_preview || "Nueva alerta recibida"}</p>
-                  )}
+                      <p>🔔 {n.text_preview || "Nueva alerta recibida"}</p>
+                    )}
 
                   <small className="notif-time-stamp">
                     Hace un momento • #{n.id}

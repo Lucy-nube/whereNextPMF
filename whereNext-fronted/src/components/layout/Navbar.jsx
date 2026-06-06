@@ -12,9 +12,9 @@ function Navbar() {
   const [unreadChatsCount, setUnreadChatsCount] = useState(0);
   const [unreadInvitesCount, setUnreadInvitesCount] = useState(0);
 
-  const [invites, setInvites] = useState([]);
 
   const { user, logout } = useAuth();
+  const isLoggedIn = !!localStorage.getItem("access");
   const navigate = useNavigate();
 
   /* =========================================================
@@ -49,7 +49,6 @@ function Navbar() {
           const pendingInvites = (invitesRes.data || []).filter(inv => inv.status === "PENDING");
           setUnreadInvitesCount(pendingInvites.length);
 
-          setInvites(invitesRes.data || []);
         }
       } catch (err) {
         if (err.response?.status === 401) {
@@ -94,11 +93,8 @@ function Navbar() {
   }, [sidebarOpen]);
 
   const handleOpenNotifications = async () => {
-    // abrir/cerrar dropdown
-    setNotifOpen(prev => !prev);
-
-    // si lo acabas de abrir → marcar todo como leído
-    if (!notifOpen) {
+    // si está abierto y lo vas a cerrar → borrar notificaciones
+    if (notifOpen) {
       try {
         await API.post("social/notifications/read_all/");
         setNotifications([]);   // vacía la lista
@@ -106,6 +102,9 @@ function Navbar() {
         console.error("Error marcando todas como leídas:", err);
       }
     }
+
+    // abrir/cerrar dropdown
+    setNotifOpen(prev => !prev);
   };
 
 
@@ -125,49 +124,6 @@ function Navbar() {
     }
   };
 
-
-
-  /* =========================================================
-     ACEPTAR / RECHAZAR INVITACIONES DE VIAJE
-     ========================================================= */
-  const acceptNotification = async (notif) => {
-    const invite = invites.find(inv => inv.id == notif.object_id);
-
-    if (!invite) {
-      console.error("❌ No existe un TripInvite con ese ID");
-      return;
-    }
-
-    try {
-      await API.post(`invites/trip-invites/${invite.id}/accept/`);
-
-      setNotifications(prev => prev.filter(n => n.id !== notif.id));
-
-      // ⭐ REDIRECCIÓN AL VIAJE ACEPTADO
-      if (notif.trip_id) {
-        navigate(`/trips/${notif.trip_id}`);
-      }
-
-    } catch (err) {
-      console.error("Error aceptando:", err);
-    }
-  };
-
-  const rejectNotification = async (notif) => {
-    const invite = invites.find(inv => inv.id == notif.object_id);
-
-    if (!invite) {
-      console.error("❌ No existe un TripInvite con ese ID");
-      return;
-    }
-
-    try {
-      await API.post(`invites/trip-invites/${invite.id}/decline/`);
-      setNotifications(prev => prev.filter(n => n.id !== notif.id));
-    } catch (err) {
-      console.error("Error rechazando:", err);
-    }
-  };
 
   const getMediaUrl = (path, fallback = "/default-avatar.png") => {
     if (!path) return fallback;
@@ -222,6 +178,16 @@ function Navbar() {
                       notif.notification_type || ""
                     ).toUpperCase();
 
+                    if (
+                      ![
+                        "FRIEND_REQUEST",
+                        "FRIEND_ACCEPTED",
+                        "LIKE",
+                        "COMMENT"
+                      ].includes(currentType)
+                    ) {
+                      return null;
+                    }
                     return (
                       <div key={notif.id} className="notif-item">
                         <span>
@@ -237,11 +203,6 @@ function Navbar() {
                             </>
                           )}
 
-                          {currentType === "TRIP_INVITE" && (
-                            <>
-                              ✈️ <strong>@{notif.from_user?.username}</strong> te invitó a un viaje
-                            </>
-                          )}
 
                           {currentType === "LIKE" && (
                             <>
@@ -254,6 +215,7 @@ function Navbar() {
                               💬 <strong>@{notif.from_user?.username}</strong> comentó: "{notif.text_preview}"
                             </>
                           )}
+
                         </span>
 
                         {/* ACCIONES PARA FRIEND REQUEST */}
@@ -275,25 +237,6 @@ function Navbar() {
                           </div>
                         )}
 
-
-                        {/* ACCIONES PARA TRIP INVITE */}
-                        {currentType === "TRIP_INVITE" && (
-                          <div className="notif-actions">
-                            <button
-                              className="notif-accept-btn"
-                              onClick={() => acceptNotification(notif)}
-                            >
-                              Aceptar
-                            </button>
-
-                            <button
-                              className="notif-reject-btn"
-                              onClick={() => rejectNotification(notif)}
-                            >
-                              Rechazar
-                            </button>
-                          </div>
-                        )}
                       </div>
                     );
                   })
@@ -324,21 +267,23 @@ function Navbar() {
           }`}
       >
         <div className="sidebar-header-zone">
-          <img
-            src={avatarUrl}
-            alt="passport"
-            className="sidebar-passport-pic sidebar-avatar-interactive"
-            onClick={() => {
-              navigate("/profile");
-              closePanels();
-            }}
-          />
+          {isLoggedIn && (
+            <img
+              src={avatarUrl}
+              alt="passport"
+              className="sidebar-passport-pic sidebar-avatar-interactive"
+              onClick={() => {
+                navigate("/profile");
+                closePanels();
+              }}
+            />
+          )}
           <h3>@{user?.username || "Explorer"}</h3>
           <span>TRVL-#{user?.id || "000"}</span>
         </div>
 
         <div className="sidebar-links-stack">
-          <NavLink to="/" end onClick={closePanels}>
+          <NavLink to="/home" end onClick={closePanels}>
             🗺️ Inicio
           </NavLink>
           <NavLink to="/trips" onClick={closePanels}>
@@ -372,6 +317,15 @@ function Navbar() {
               </span>
             )}
           </NavLink>
+          <NavLink
+            to="/favorites"
+            className={({ isActive }) =>
+              isActive ? "nav-item active" : "nav-item"
+            }
+          >
+            📌 Favoritos
+          </NavLink>
+
 
           <NavLink to="/profile" onClick={closePanels}>
             👤 Perfil

@@ -1,0 +1,195 @@
+/* =========================================================
+   FAVORITES PAGE
+   ========================================================= */
+
+.explore-page {
+  max-width: 1200px;
+  margin: 90px auto 60px;
+  padding: 20px;
+  color: #e2e8f0;
+}
+
+/* =========================================================
+   TITLE
+   ========================================================= */
+
+.explore-title {
+  text-align: center;
+
+  font-size: 2rem;
+  font-weight: 800;
+
+  margin-bottom: 32px;
+
+  color: white;
+}
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.no-comments-fallback,
+.loading-text {
+  text-align: center;
+
+  padding: 50px 20px;
+
+  color: #94a3b8;
+
+  font-size: 1rem;
+}
+
+/* =========================================================
+   GRID
+   ========================================================= */
+
+.explore-grid {
+  display: grid;
+
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+
+  gap: 24px;
+}
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.explore-card {
+  background: rgba(30, 41, 59, 0.92);
+
+  border: 1px solid rgba(255,255,255,.06);
+
+  border-radius: 20px;
+
+  overflow: hidden;
+
+  cursor: pointer;
+
+  transition: all .28s ease;
+
+  backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.18);
+}
+
+.explore-card:hover {
+  transform: translateY(-6px);
+
+  border-color: #38bdf8;
+
+  box-shadow:
+    0 20px 40px rgba(56,189,248,.15);
+}
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.explore-card-image {
+  width: 100%;
+  height: 220px;
+
+  object-fit: cover;
+
+  display: block;
+
+  transition: transform .4s ease;
+}
+
+.explore-card:hover .explore-card-image {
+  transform: scale(1.05);
+}
+
+/* =========================================================
+   INFO
+   ========================================================= */
+
+.explore-card-info {
+  padding: 18px;
+}
+
+.explore-card-info h3 {
+  margin: 0 0 10px;
+
+  color: white;
+
+  font-size: 1.1rem;
+  font-weight: 700;
+
+  line-height: 1.3;
+}
+
+.explore-card-country {
+  margin: 0;
+
+  color: #94a3b8;
+
+  font-size: .92rem;
+}
+
+/* =========================================================
+   OPTIONAL GLASS EFFECT
+   ========================================================= */
+
+.explore-card::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.03),
+    transparent
+  );
+}
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  .explore-page {
+    padding: 16px;
+  }
+
+  .explore-title {
+    font-size: 1.7rem;
+  }
+
+  .explore-grid {
+    gap: 18px;
+  }
+
+  .explore-card-image {
+    height: 190px;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+  .explore-title {
+    font-size: 1.5rem;
+  }
+
+  .explore-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .explore-card-image {
+    height: 200px;
+  }
+
+  .explore-card-info {
+    padding: 16px;
+  }
+}

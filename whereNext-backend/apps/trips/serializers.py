@@ -7,6 +7,7 @@ from rest_framework import status
 
 from apps.places.models import Place
 from apps.users.serializers import UserSerializer,PublicUserSerializer
+from apps.users.models import TripInvite
 
 from .models import Trip, TripPlace, TripPhoto,TripComment
 
@@ -169,7 +170,7 @@ class TripSerializer(serializers.ModelSerializer):
     likes_count = serializers.IntegerField(source="likes.count", read_only=True)
     liked_by_me = serializers.SerializerMethodField()
     co_traveler = PublicUserSerializer(read_only=True)
-
+    pending_invites = serializers.SerializerMethodField()
 
     class Meta:
         model = Trip
@@ -182,7 +183,7 @@ class TripSerializer(serializers.ModelSerializer):
             "start_date",
             "end_date",
             "is_public",
-            "is_published", 
+            "is_published",
             "trip_type",
             "co_traveler",
             "owner",
@@ -190,23 +191,50 @@ class TripSerializer(serializers.ModelSerializer):
             "trip_places",
             "photos",
             "likes_count",
-            "liked_by_me"
-        ]
+            "liked_by_me",
+                "pending_invites"
+            ]
         read_only_fields = ["id"]
-     
-    def validate(self, data):
-     start_date = data.get("start_date")
-     end_date = data.get("end_date")
 
-     if start_date and end_date:
-        if end_date < start_date:
+    # ============================================================
+    # VALIDACIONES CRÍTICAS
+    # ============================================================
+    def validate(self, data):
+        # -----------------------------
+        # Validación de fechas (create + update)
+        # -----------------------------
+        start_date = data.get("start_date", getattr(self.instance, "start_date", None))
+        end_date = data.get("end_date", getattr(self.instance, "end_date", None))
+
+        if start_date and end_date and end_date < start_date:
             raise serializers.ValidationError({
                 "end_date": "La fecha de fin no puede ser anterior a la de inicio."
             })
 
-     return data
+        # -----------------------------
+        # Normalizar trip_type
+        # -----------------------------
+        trip_type = data.get("trip_type", getattr(self.instance, "trip_type", "SOLO"))
+        trip_type = trip_type.upper()
+
+        VALID_TYPES = {"SOLO", "COUPLE",}
+        if trip_type not in VALID_TYPES:
+            trip_type = "SOLO"
+
+        data["trip_type"] = trip_type
+
+        return data
      
-    # ⭐ DEVOLVER FOTOS REALES
+    def get_pending_invites(self, obj):
+     from apps.social.invites.serializers import TripInviteSerializer
+     invites = TripInvite.objects.filter(trip=obj, status="PENDING")
+     return TripInviteSerializer(invites, many=True, context=self.context).data
+
+
+
+    # ============================================================
+    # FOTOS
+    # ============================================================
     def get_photos(self, obj):
         return [
             {
@@ -222,6 +250,9 @@ class TripSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         return obj.likes.filter(id=user.id).exists()
 
+    # ============================================================
+    # CREATE
+    # ============================================================
     @transaction.atomic
     def create(self, validated_data):
         request = self.context["request"]
@@ -249,6 +280,9 @@ class TripSerializer(serializers.ModelSerializer):
 
         return trip
 
+    # ============================================================
+    # UPDATE
+    # ============================================================
     def update(self, instance, validated_data):
         if "trip_places" in validated_data:
             raise serializers.ValidationError(
@@ -260,11 +294,7 @@ class TripSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-    
-    def destroy(self, request, *args, **kwargs):
-     trip = self.get_object()
-     trip.delete()
-     return Response(status=status.HTTP_204_NO_CONTENT)
+
     
 
 class TripCommentSerializer(serializers.ModelSerializer):

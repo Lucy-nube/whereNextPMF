@@ -1,103 +1,269 @@
 import { useEffect, useState } from "react";
-import API from "../services/api";
 import { useNavigate } from "react-router-dom";
-import "../styles/invites.css";
+import API from "../services/api";
 
 export default function Invites() {
   const [invites, setInvites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+
   const navigate = useNavigate();
-  // =========================
-  // CARGAR INVITACIONES
-  // =========================
+
+  // ============================
+  // USUARIO ACTUAL
+  // ============================
+  const loadCurrentUser = async () => {
+    try {
+      const res = await API.get("/users/me/");
+      setCurrentUser(res.data);
+    } catch (err) {
+      console.error("Error cargando usuario:", err);
+    }
+  };
+
+  // ============================
+  // INVITACIONES
+  // ============================
   const loadInvites = async () => {
     try {
-      const res = await API.get("invites/trip-invites/");
-
-      // ✔ backend ya filtra por usuario (to_user)
+      const res = await API.get("/invites/trip-invites/");
       setInvites(res.data);
     } catch (err) {
-      console.error("Error cargando invites:", err);
+      console.error("Error cargando invitaciones:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // =========================
-  // ACEPTAR INVITACIÓN
-  // =========================
+  // ============================
+  // ACCIONES
+  // ============================
   const acceptInvite = async (invite) => {
     try {
-      await API.post(`invites/trip-invites/${invite.id}/accept/`);
+      const res = await API.post(`/invites/trip-invites/${invite.id}/accept/`);
+      const { invite: updatedInvite, trip } = res.data;
 
-      navigate(`/trips/${invite.trip.id}`);
+      // 1. Actualizar la invitación en pantalla
+      setInvites(prev =>
+        prev.map(i => (i.id === updatedInvite.id ? updatedInvite : i))
+      );
+
+      // 2. Redirigir al viaje actualizado
+      navigate(`/trips/${trip.id}?refresh=${Date.now()}`);
 
     } catch (err) {
-      console.error("Error aceptando invitación:", err);
+      console.error("Error aceptando:", err);
     }
   };
 
-  // =========================
-  // RECHAZAR INVITACIÓN
-  // =========================
+
   const declineInvite = async (id) => {
     try {
-      await API.post(`invites/trip-invites/${id}/decline/`);
-
-      // refrescar lista
+      await API.post(`/invites/trip-invites/${id}/decline/`);
       loadInvites();
-
-      // (opcional) refrescar notificaciones globales
-      // await fetchNotifications();
     } catch (err) {
-      console.error("Error rechazando invitación:", err);
+      console.error("Error rechazando:", err);
     }
   };
 
-  // =========================
+  const cancelInvite = async (id) => {
+    try {
+      await API.post(`/invites/trip-invites/${id}/cancel/`);
+      loadInvites();
+    } catch (err) {
+      console.error("Error cancelando:", err);
+    }
+  };
+
+  // ============================
+  // BORRAR TODAS LAS INVITACIONES (VISUAL)
+  // ============================
+  const deleteAllFromSection = (ids) => {
+    setInvites((prev) => prev.filter((inv) => !ids.includes(inv.id)));
+  };
+
+  // ============================
   // INIT
-  // =========================
+  // ============================
   useEffect(() => {
+    loadCurrentUser();
     loadInvites();
   }, []);
 
-  // =========================
-  // UI
-  // =========================
+  if (!currentUser) return <p>Cargando usuario...</p>;
   if (loading) return <p>Cargando invitaciones...</p>;
 
-  return (
-    <div className="invites-page">
-      <h2>✈️ Invitaciones recibidas</h2>
+  // ============================
+  // FILTROS
+  // ============================
+  const sent = invites.filter((i) => i.from_user.id === currentUser.id);
+  const received = invites.filter((i) => i.to_user.id === currentUser.id);
 
-      {invites.length === 0 ? (
-        <p>No tienes invitaciones.</p>
-      ) : (
-        invites.map((inv) => (
-          <div key={inv.id} className="invite-item">
+  const sentPending = sent.filter((i) => i.status === "PENDING");
+  const sentAccepted = sent.filter((i) => i.status === "ACCEPTED");
+  const sentDeclined = sent.filter((i) => i.status === "DECLINED");
+
+  const receivedPending = received.filter((i) => i.status === "PENDING");
+  const receivedAccepted = received.filter((i) => i.status === "ACCEPTED");
+  const receivedDeclined = received.filter((i) => i.status === "DECLINED");
+
+  return (
+    <div className="invites-container">
+
+      <h1>✉️ Invitaciones</h1>
+
+      {/* =========================
+          RECIBIDAS PENDIENTES
+      ========================= */}
+      <section>
+        <div className="section-header">
+          <h2>📥 Recibidas (pendientes)</h2>
+
+          <button className="clear-btn"
+            onClick={() =>
+              deleteAllFromSection(receivedPending.map((i) => i.id))
+            }
+          >
+            🗑️ Borrar todas
+          </button>
+        </div>
+
+        {receivedPending.length === 0 && (
+          <p>No tienes invitaciones pendientes.</p>
+        )}
+
+        {receivedPending.map((inv) => (
+          <div key={inv.id} className="invite-card">
             <p>
-              <strong>@{inv.from_user.username}</strong> te invitó a{" "}
+              <strong>{inv.from_user.username}</strong> te invitó a{" "}
               <strong>{inv.trip.title}</strong>
             </p>
 
-            <div className="invite-actions">
-              <button
-                onClick={() => acceptInvite(inv)}
-                className="invite-accept"
-              >
-                Aceptar
-              </button>
-
-              <button
-                onClick={() => declineInvite(inv.id)}
-                className="invite-decline"
-              >
-                Rechazar
-              </button>
-            </div>
+            <button onClick={() => acceptInvite(inv)}>Aceptar</button>
+            <button onClick={() => declineInvite(inv.id)}>Rechazar</button>
           </div>
-        ))
-      )}
+        ))}
+      </section>
+
+      {/* =========================
+          ENVIADAS PENDIENTES
+      ========================= */}
+      <section>
+        <div className="section-header">
+          <h2>📤 Enviadas (pendientes)</h2>
+
+          <button className="clear-btn"
+            onClick={() =>
+              deleteAllFromSection(sentPending.map((i) => i.id))
+            }
+          >
+            🗑️ Borrar todas
+          </button>
+        </div>
+
+        {sentPending.length === 0 && (
+          <p>No has enviado invitaciones pendientes.</p>
+        )}
+
+        {sentPending.map((inv) => (
+          <div key={inv.id} className="invite-card">
+            <p>
+              Invitaste a <strong>{inv.to_user.username}</strong> a{" "}
+              <strong>{inv.trip.title}</strong>
+            </p>
+
+            <button onClick={() => cancelInvite(inv.id)}>
+              Cancelar
+            </button>
+          </div>
+        ))}
+      </section>
+
+      {/* =========================
+          ACEPTADAS
+      ========================= */}
+      <section>
+        <div className="section-header">
+          <h2>✔ Aceptadas</h2>
+
+          <button className="clear-btn"
+            onClick={() =>
+              deleteAllFromSection([
+                ...sentAccepted.map((i) => i.id),
+                ...receivedAccepted.map((i) => i.id),
+              ])
+            }
+          >
+            🗑️ Borrar todas
+          </button>
+        </div>
+
+        {sentAccepted.map((inv) => (
+          <div key={inv.id} className="invite-card accepted">
+            <p>
+              <strong>{inv.to_user.username}</strong> aceptó tu invitación a{" "}
+              <strong>{inv.trip.title}</strong>
+            </p>
+          </div>
+        ))}
+
+        {receivedAccepted.map((inv) => (
+          <div key={inv.id} className="invite-card accepted">
+            <p>
+              Aceptaste la invitación de{" "}
+              <strong>{inv.from_user.username}</strong> a{" "}
+              <strong>{inv.trip.title}</strong>
+            </p>
+
+            {/* ⭐ BOTÓN PARA IR AL VIAJE ⭐ */}
+            <button
+              className="td-primary-btn"
+              onClick={() => navigate(`/trips/${inv.trip.id}`)}
+            >
+              Ver viaje
+            </button>
+          </div>
+        ))}
+      </section>
+
+      {/* =========================
+          RECHAZADAS
+      ========================= */}
+      <section>
+        <div className="section-header">
+          <h2>❌ Rechazadas</h2>
+
+          <button className="clear-btn"
+            onClick={() =>
+              deleteAllFromSection([
+                ...sentDeclined.map((i) => i.id),
+                ...receivedDeclined.map((i) => i.id),
+              ])
+            }
+          >
+            🗑️ Borrar todas
+          </button>
+        </div>
+
+        {sentDeclined.map((inv) => (
+          <div key={inv.id} className="invite-card declined">
+            <p>
+              <strong>{inv.to_user.username}</strong> rechazó tu invitación a{" "}
+              <strong>{inv.trip.title}</strong>
+            </p>
+          </div>
+        ))}
+
+        {receivedDeclined.map((inv) => (
+          <div key={inv.id} className="invite-card declined">
+            <p>
+              Rechazaste la invitación de{" "}
+              <strong>{inv.from_user.username}</strong> a{" "}
+              <strong>{inv.trip.title}</strong>
+            </p>
+          </div>
+        ))}
+      </section>
     </div>
   );
 }

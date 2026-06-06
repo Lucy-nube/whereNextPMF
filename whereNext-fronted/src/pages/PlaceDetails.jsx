@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import placeService from "../services/placeService";
-import tripService from "../services/tripService";
 import { useAuth } from "../context/AuthContext";
 import API from "../services/api";
 import Loading from "../components/common/Loading";
@@ -15,7 +14,6 @@ export default function PlaceDetails() {
 
   const [place, setPlace] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [added, setAdded] = useState(false);
 
   const [likesCount, setLikesCount] = useState(0);
   const [hasLiked, setHasLiked] = useState(false);
@@ -26,6 +24,7 @@ export default function PlaceDetails() {
   const [rating, setRating] = useState(0);
   const [userRating, setUserRating] = useState(0);
 
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     async function fetchPlaceData() {
@@ -38,6 +37,18 @@ export default function PlaceDetails() {
         setComments(data.comments || []);
         setRating(data.average_rating || 0);
         setUserRating(data.user_rating || 0);
+
+        //  comprobar si es favorito
+        if (currentUser) {
+          try {
+            const favs = await placeService.getFavorites();
+            const isFav = favs.data.some((p) => p.id === data.id);
+            setIsFavorite(isFav);
+          } catch (err) {
+            console.log("No se pudieron cargar favoritos (usuario no logueado)");
+          }
+        }
+
       } catch (error) {
         console.error("Error fetching place data:", error);
       } finally {
@@ -47,6 +58,17 @@ export default function PlaceDetails() {
 
     if (id) fetchPlaceData();
   }, [id, currentUser?.id]);
+
+
+  const toggleFavorite = async () => {
+    try {
+      const res = await placeService.favorite(place.id);
+      setIsFavorite(res.data.favorited);
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+    }
+  };
+
 
   const handleToggleLike = async () => {
     try {
@@ -89,16 +111,6 @@ export default function PlaceDetails() {
       setNewComment("");
     } catch (error) {
       console.error("Error al publicar comentario:", error);
-    }
-  };
-
-  const handleAddToTrip = async () => {
-    try {
-      await tripService.addPlaceToTrip(place.id);
-      setAdded(true);
-      setTimeout(() => setAdded(false), 2000);
-    } catch (error) {
-      console.error("Error adding place:", error);
     }
   };
 
@@ -155,11 +167,10 @@ export default function PlaceDetails() {
           </button>
 
           <button
-            type="button"
             className="comment-submit-btn"
-            onClick={handleAddToTrip}
+            onClick={toggleFavorite}
           >
-            {added ? "Añadido ✓" : "✈️ Añadir a mi viaje"}
+            {isFavorite ? "📍 Guardado" : "📍 Quiero ir"}
           </button>
         </div>
 

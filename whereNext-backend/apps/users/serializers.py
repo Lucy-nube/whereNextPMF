@@ -2,8 +2,9 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
 from apps.users.models import Profile
-from apps.trips.models import Trip
-from apps.users.models import TripInvite   
+from apps.users.models import TripInvite 
+from apps.users.models import Profile  
+
 
 
 User = get_user_model()
@@ -74,18 +75,3 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 
-class TripInviteSerializer(serializers.ModelSerializer):
-    from_user = PublicUserSerializer(read_only=True)
-    to_user = PublicUserSerializer(read_only=True)
-    trip = serializers.SerializerMethodField()
-
-    class Meta:
-        model = TripInvite
-        fields = ["id", "from_user", "to_user", "trip", "status", "created_at"]
-
-    def get_trip(self, obj):
-        return {
-            "id": obj.trip.id,
-            "title": obj.trip.title,
-            "destination": obj.trip.destination
-        }

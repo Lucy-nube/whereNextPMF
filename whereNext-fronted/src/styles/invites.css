@@ -1,44 +1,171 @@
-/* ======================================================
-   INVITES PAGE
-   ====================================================== */
-
-.invites-page {
-  max-width: 700px;
-  margin: 120px auto;
-  padding: 20px;
-  color: white;
+/* =========================
+   GLOBAL CONTAINER
+========================= */
+.invites-container {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  color: #1f2937;
+  background: #fafafa;
 }
 
-.invite-item {
-  background: rgba(255,255,255,0.04);
-  padding: 14px;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  border: 1px solid rgba(255,255,255,0.1);
+.invites-container h1 {
+  text-align: center;
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 35px;
+  color: #111827;
 }
 
-.invite-actions {
-  margin-top: 10px;
+/* =========================
+   SECTION CARD
+========================= */
+section {
+  background: #ffffff;
+  border: 1px solid #eef0f3;
+  border-radius: 16px;
+  padding: 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+  transition: 0.2s ease;
+}
+
+section:hover {
+  transform: translateY(-2px);
+}
+
+/* =========================
+   SECTION HEADER + DELETE BTN
+========================= */
+.section-header {
   display: flex;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
-.invite-accept {
-  background: #38bdf8;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: none;
-  color: #10172a;
+.section-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* 🔥 BOTÓN ELIMINAR TODO */
+.clear-btn {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.invite-decline {
-  background: rgba(255,255,255,0.1);
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: none;
+.clear-btn:hover {
+  background: #111827;
   color: white;
+  border-color: #111827;
+  transform: scale(1.05);
+}
+
+/* =========================
+   INVITE CARD
+========================= */
+.invite-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #f9fafb;
+  border: 1px solid #eef2f7;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+}
+
+.invite-card:hover {
+  background: #f3f4f6;
+}
+
+.invite-card p {
+  margin: 0;
+  font-size: 14px;
+  color: #374151;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.invite-card button {
+  border: none;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* ACEPTAR */
+.invite-card button:first-of-type {
+  background: #22c55e;
+  color: white;
+}
+
+.invite-card button:first-of-type:hover {
+  background: #16a34a;
+  transform: scale(1.05);
+}
+
+/* RECHAZAR / CANCELAR */
+.invite-card button:last-of-type {
+  background: #ef4444;
+  color: white;
+}
+
+.invite-card button:last-of-type:hover {
+  background: #dc2626;
+  transform: scale(1.05);
+}
+
+/* =========================
+   STATES
+========================= */
+.invite-card.accepted {
+  border-left: 5px solid #22c55e;
+  background: #ecfdf5;
+}
+
+.invite-card.declined {
+  border-left: 5px solid #ef4444;
+  background: #fef2f2;
+}
+
+/* =========================
+   EMPTY TEXT
+========================= */
+section p {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 600px) {
+  .invite-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }
 
 /* ======================================================

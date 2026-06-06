@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 
 import Login from "../pages/login";
 import Register from "../pages/Register";
+import Landing from "../pages/Landing";
 
 import PrivateRoute from "./PrivateRoute";
 
@@ -15,10 +16,9 @@ import Explore from "../pages/Explore";
 import Profile from "../pages/Profile";
 import ChatsPage from "../pages/Chatspage";
 import PlaceDetails from "../pages/PlaceDetails";
+import Favorites from "../pages/favorites";
 import EditProfile from "../pages/EditProfile";
 import Invites from "../pages/Invites";
-
-
 import CompanionsHub from "../pages/CompanionsHub"; 
 
 export default function AppRouter() {
@@ -26,24 +26,28 @@ export default function AppRouter() {
     <Routes>
 
       {/* 🌍 PUBLIC ROUTES */}
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+
+      {/* 🌍 PUBLIC EXPLORE */}
+      <Route element={<AppLayout />}>
+        <Route path="/explore" element={<Explore />} />
+        <Route path="/places/:id" element={<PlaceDetails />} />
+        <Route path="/favorites" element={<Favorites />} />
+      </Route>
 
       {/* 🔐 PROTECTED ROUTES */}
       <Route element={<PrivateRoute />}>
         <Route element={<AppLayout />}> 
 
-          {/* HOME */}
-          <Route path="/" element={<Home />} />
+          {/* HOME (solo para usuarios logueados) */}
+          <Route path="/home" element={<Home />} />
 
           {/* TRIPS */}
           <Route path="/trips" element={<Trips />} />
           <Route path="/trips/create" element={<TripCreate />} />
           <Route path="/trips/:id" element={<TripDetail />} />
-
-          {/* EXPLORE */}
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/places/:id" element={<PlaceDetails />} />
 
           {/* PROFILE */}
           <Route path="/profile" element={<Profile />} />
@@ -57,7 +61,6 @@ export default function AppRouter() {
           <Route path="/chats/:id?" element={<ChatsPage />} />
 
           <Route path="/trip-invites" element={<Invites />} />
-
 
         </Route>
       </Route>
