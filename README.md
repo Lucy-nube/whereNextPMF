@@ -275,7 +275,7 @@ Todo centralizado en una única plataforma.
 # 🏗️ Arquitectura
 
 <div align="center">
-<img src="media\portada.png" width="900"/>
+<img src="media/arquitectura.png" width="900"/>
 </div>
 
 React → API REST Django → SQLite
