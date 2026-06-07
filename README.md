@@ -489,7 +489,7 @@ Este proyecto ha sido desarrollado con fines académicos y educativos.
 
 # 🙏 Agradecimientos
 
-Gracias al equipo docente del Máster en Desarrollo Full Stack por su acompañamiento durante todo el proceso de aprendizaje.
+Gracias primeramente a Dios y luego al equipo docente del Máster por su acompañamiento durante todo el proceso de aprendizaje.
 
 También a la comunidad de desarrolladores por compartir conocimiento y buenas prácticas que han ayudado a construir este proyecto.
 
