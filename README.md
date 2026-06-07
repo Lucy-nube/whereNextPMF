@@ -2,15 +2,46 @@
 
 <div align="center">
 
-<img src="media/wherenext.png" alt="WhereNext Banner" width="850"/>
+<img src="media/portada.png" alt="WhereNext Banner" width="850"/>
 
 ### ✈️ Explora · 🤝 Comparte · 🌎 Conecta · 🧳 Viaja
 
 **La plataforma colaborativa para organizar viajes, descubrir destinos y compartir experiencias en tiempo real.**
 <div align="center">
 
-## 🎥 Demo en Vídeo  
-🔗 https://youtu.be/20Vlv-Rmy0k
+ ## 🎥 Demo en Vídeo  
+ 🔗 https://youtu.be/20Vlv-Rmy0k
+
+# 📚 Documentación
+
+- 📄 [Memoria del proyecto](docs/manual_usuario.md)
+- 📘 [Manual técnico](docs/manual_tecnico.md)
+- 📄 [Memoria completa del proyecto (PDF)](https://docs.google.com/document/d/1hwzKJa_mjWAMLgb93fjRlPvE0dXNJgfTZYP6wlO7g2U/edit?usp=sharing)
+
+ ## 🌐 Aplicación en Producción
+
+ La plataforma WhereNext está desplegada en Render, con servicios independientes para el frontend y el backend.
+
+ ### 🔵 Frontend (React)
+ Interfaz pública de la aplicación:
+ 
+ 👉 **https://wherenextpmf-1.onrender.com/**
+
+ ### 🟢 Backend (Django API)
+ API REST en producción:
+ 
+ 👉 **https://wherenextpmf.onrender.com/api/trips/**
+ (API pública de demostración)
+
+ > Nota: La ruta `/api/` no existe como endpoint directo, por eso se usa `/api/trips/` para mostrar la API funcionando.
+
+ ### 📡 Comunicación Frontend → Backend
+
+ El frontend utiliza variables de entorno para conectarse al backend:
+
+ ```env
+ VITE_API_URL=https://wherenextpmf.onrender.com
+ ```
 
 </div>
 
@@ -23,7 +54,6 @@
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens)
 ![WebSockets](https://img.shields.io/badge/WebSockets-4CAF50?style=for-the-badge)
 ![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render)
-![Railway](https://img.shields.io/badge/Railway-0B0D0E?style=for-the-badge&logo=railway)
 
 <br>
 
@@ -175,7 +205,6 @@ Todo centralizado en una única plataforma.
 |------------|-----|
 | GitHub | Control de versiones |
 | Render | Backend Deployment |
-| Railway | Hosting |
 | Environment Variables | Seguridad |
 
 ---
@@ -185,7 +214,7 @@ Todo centralizado en una única plataforma.
 ## 🏠 Home
 
 <div align="center">
-<img src="media/loginfrontend.png" width="900"/>
+<img src="media\loginfrontend.png" width="900"/>
 </div>
 
 ---
@@ -193,7 +222,7 @@ Todo centralizado en una única plataforma.
 ## 👤 Perfil
 
 <div align="center">
-<img src="media/Profile.png" width="900"/>
+<img src="media\Profile.png" width="900"/>
 </div>
 
 ---
@@ -201,7 +230,7 @@ Todo centralizado en una única plataforma.
 ## ✈️ Detalle del Viaje
 
 <div align="center">
-<img src="media/misviajesfronted.png" width="900"/>
+<img src="media\misviajesfronted.png" width="900"/>
 </div>
 
 ---
@@ -209,7 +238,7 @@ Todo centralizado en una única plataforma.
 ## 💬 Chat en Tiempo Real
 
 <div align="center">
-<img src="media/ChatSauloluz.png" width="900"/>
+<img src="media\ChatSauloluz.png" width="900"/>
 </div>
 
 ---
@@ -217,37 +246,41 @@ Todo centralizado en una única plataforma.
 ## 📱 Responsive
 
 <div align="center">
-<img src="media/responsivehome.png" width="350"/>
+<img src="media\responsivehome.png" width="350"/>
+</div>
+
+---
+# 📤 Despliegue en Render
+
+## 🚀 Backend en Render (Django API)
+<div align="center">
+  <img src="media\desplieguebackend2.png" width="900"/>
 </div>
 
 ---
 
+## 🌐 Frontend en Render (React)
+<div align="center">
+  <img src="media\desplieguefrontend.png" width="900"/>
+</div>
+
+---
+
+## 🌍 Aplicación funcionando en producción
+<div align="center">
+  <img src="media\loginfrontend.png" width="900"/>
+</div>
+
+
 # 🏗️ Arquitectura
 
-```text
-┌────────────────────┐
-│      React         │
-│     Frontend       │
-└─────────┬──────────┘
-          │ Axios + JWT
-          ▼
-┌────────────────────┐
-│ Django REST API    │
-└─────────┬──────────┘
-          │
-          ▼
-┌────────────────────┐
-│       SQLite      │
-└────────────────────┘
+<div align="center">
+<img src="media\portada.png" width="900"/>
+</div>
 
-          ▲
-          │ WebSockets
-          ▼
+React → API REST Django → SQLite
 
-┌────────────────────┐
-│ Django Channels    │
-└────────────────────┘
-```
+WebSockets → Django Channels → Chat en tiempo real
 
 ---
 
@@ -319,9 +352,12 @@ SECRET_KEY=your_secret_key
 
 DEBUG=False
 
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+
 # SQLite no requiere DATABASE_URL
 # Django usa automáticamente db.sqlite3
-ALLOWED_HOSTS=localhost,127.0.0.1
+
 
 
 ## Frontend (.env)
@@ -356,8 +392,8 @@ DELETE /api/trips/:id/
 ```http
 GET    /api/trip-invites/
 POST   /api/trip-invites/
-PATCH  /api/trip-invites/:id/accept/
-PATCH  /api/trip-invites/:id/reject/
+POST /api/invites/trip-invites/:id/accept/
+POST /api/invites/trip-invites/:id/decline/
 ```
 
 ## Chat
@@ -402,6 +438,22 @@ Durante el desarrollo de este proyecto se profundizó en:
 
 ---
 
+# 🗺️ Roadmap
+
+## Próximas funcionalidades
+ 
+ Estas funcionalidades forman parte de futuras iteraciones del proyecto y no están incluidas en la versión actual.
+
+- [ ] Viajes grupales
+- [ ] Sistema de recomendaciones basado en IA
+- [ ] Álbum colaborativo de viaje
+- [ ] Calendario compartido
+- [ ] Mapa interactivo
+- [ ] Notificaciones en tiempo real
+- [ ] Modo oscuro
+- [ ] Geolocalización
+- [ ] Roles dentro del viaje
+
 # 👩🏽‍💻 Autora
 
 ## Lucy Esther De León Corporán
@@ -425,7 +477,7 @@ Responsable de:
 ### Tecnologías utilizadas
 
 ```text
-React • Django • SQLite  • JWT • WebSockets • Render • Railway
+React • Django • SQLite  • JWT • WebSockets • Render 
 ```
 
 ---
