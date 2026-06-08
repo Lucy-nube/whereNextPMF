@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from apps.social.chats.models import ChatRoom, Message
 
 User = get_user_model()
@@ -14,8 +15,9 @@ class PublicUserSerializer(serializers.ModelSerializer):
     def get_avatar(self, obj):
         request = self.context.get("request")
 
-        if obj.avatar and request:
-            return request.build_absolute_uri(obj.avatar.url)
+        if obj.avatar:
+            url = obj.avatar.url
+            return request.build_absolute_uri(url) if request else url
 
         return None
 
