@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { getMediaUrl } from "../utils/media";
 import "../styles/Home.css";
 
 export default function Home() {
@@ -142,17 +143,6 @@ export default function Home() {
     }
   };
 
-  // =========================================================
-  // FORMATTEADOR MULTIMEDIA EXTRA-SEGURO CONTRA DUPLICADOS
-  // =========================================================
-  const getMediaUrl = (path, fallback = "https://flaticon.com") => {
-    if (!path) return fallback;
-    if (path.startsWith("http://") || path.startsWith("https://")) {
-      return path;
-    }
-    const cleanPath = path.startsWith("/") ? path : `/${path}`;
-    return `http://127.0.0.1:8000${cleanPath}`;
-  };
 
 
   if (isInitialLoading) {
