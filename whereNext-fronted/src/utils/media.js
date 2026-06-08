@@ -1,15 +1,19 @@
 const BASE_URL = "https://wherenextpmf.onrender.com";
 
-import defaultAvatar from "../assets/default-avatar.png";
-
-export const getMediaUrl = (path, fallback = defaultAvatar) => {
+export const getMediaUrl = (
+  path,
+  fallback = "public/default-avatar.png"
+) => {
   if (!path) return fallback;
 
-  if (path.startsWith("http://") || path.startsWith("https://")) {
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://")
+  ) {
     return path;
   }
 
-  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  const clean = path.replace(/^\/+/, "");
 
-  return `${BASE_URL}${cleanPath}`;
+  return `${BASE_URL}/${clean}`;
 };
