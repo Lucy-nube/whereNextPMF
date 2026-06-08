@@ -125,10 +125,7 @@ function Navbar() {
     }
   };
 
- const avatarUrl = getMediaUrl(
-  user?.avatar,
-  "/default-avatar.png"
- );
+  const avatarUrl = getMediaUrl(user?.avatar, "/default-avatar.png");
 
   const closePanels = () => {
     setSidebarOpen(false);
