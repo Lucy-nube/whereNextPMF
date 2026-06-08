@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import "../../styles/navbar.css";
 import { useAuth } from "../../context/AuthContext";
+import { getMediaUrl } from "../../utils/media";
 import API from "../../services/api";
 
 function Navbar() {
@@ -124,14 +125,10 @@ function Navbar() {
     }
   };
 
-
-  const getMediaUrl = (path, fallback = "/default-avatar.png") => {
-    if (!path) return fallback;
-    if (path.startsWith("http")) return path;
-    return `http://127.0.0.1:8000${path}`;
-  };
-
-  const avatarUrl = getMediaUrl(user?.avatar);
+ const avatarUrl = getMediaUrl(
+  user?.avatar,
+  "/default-avatar.png"
+ );
 
   const closePanels = () => {
     setSidebarOpen(false);

@@ -22,9 +22,7 @@ export default function EditProfile() {
     if (avatar) formData.append("avatar", avatar);
     formData.append("bio", bio);
 
-    await API.patch("users/profile/", formData, {
-      headers: { "Content-Type": "multipart/form-data" }
-    });
+    await API.patch("users/profile/", formData);
 
     navigate("/profile");
   };
@@ -37,7 +35,7 @@ export default function EditProfile() {
 
         <div className="avatar-preview">
           <img 
-            src={preview || "/default-avatar.png"} 
+            src={preview || "/default-avatar.png"}
             alt="preview" 
           />
         </div>

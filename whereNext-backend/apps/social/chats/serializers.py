@@ -5,9 +5,19 @@ from apps.social.chats.models import ChatRoom, Message
 User = get_user_model()
 
 class PublicUserSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "username", "avatar"]  
+        fields = ["id", "username", "avatar"]
+
+    def get_avatar(self, obj):
+        request = self.context.get("request")
+
+        if obj.avatar and request:
+            return request.build_absolute_uri(obj.avatar.url)
+
+        return None
 
 class ChatRoomSerializer(serializers.ModelSerializer):
     friend = serializers.SerializerMethodField()

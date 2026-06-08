@@ -1,12 +1,19 @@
-export const getMediaUrl = (path) => {
-  if (!path) return "/default-place.jpg";
+const BASE_URL = "https://wherenextpmf.onrender.com";
 
-  if (path.startsWith("http://") || path.startsWith("https://")) {
+export const getMediaUrl = (
+  path,
+  fallback = "/default-avatar.png"
+) => {
+  if (!path) return fallback;
+
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://")
+  ) {
     return path;
   }
 
-  let clean = path.replace(/^\/+/, "");
-  clean = clean.replace(/^media\/media\//, "media/");
+  const clean = path.replace(/^\/+/, "");
 
-  return `http://127.0.0.1:8000/${clean}`;
+  return `${BASE_URL}/${clean}`;
 };

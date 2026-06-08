@@ -84,7 +84,10 @@ class PublicUserView(APIView):
 
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
-        return Response(PublicUserSerializer(user).data)
+      
+        return Response(
+     PublicUserSerializer(user, context={"request": request}).data
+)
 
 
 # =========================================================

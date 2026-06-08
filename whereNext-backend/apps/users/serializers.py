@@ -25,11 +25,20 @@ class UserSerializer(serializers.ModelSerializer):
             return obj.profile.avatar.url
         return None
     
+
 class ProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
     class Meta:
         model = Profile
         fields = ["bio", "avatar", "is_private"]
 
+    def get_avatar(self, obj):
+     request = self.context.get("request")
+     if obj.avatar:
+        url = obj.avatar.url
+        return request.build_absolute_uri(url) if request else url
+     return "/default-avatar.png"
 
 class PublicUserSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
