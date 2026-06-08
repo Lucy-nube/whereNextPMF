@@ -3,11 +3,14 @@ import os
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-xxxxx'
-DEBUG = True
+
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+DEBUG = False
 ALLOWED_HOSTS = ["*"]
 
 
@@ -101,6 +104,16 @@ TEMPLATES = [
         },
     },
 ]
+
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),   # 1 hora
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),      # 7 días
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
 
 
 # =========================
