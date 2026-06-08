@@ -128,10 +128,6 @@ class UsersearchView(APIView):
 
 
 
-User = get_user_model()
-
-from .models import Profile
-
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -158,10 +154,9 @@ class RegisterView(APIView):
             )
 
             #   CREA EL PROFILE AUTOMÁTICAMENTE
-            Profile.objects.create(
-                user=new_user,
-                bio="¡Nuevo explorador de WhereNext!"
-            )
+            profile, _ = Profile.objects.get_or_create(user=new_user)
+            profile.bio = "¡Nuevo explorador de WhereNext!"
+            profile.save()
 
             refresh = RefreshToken.for_user(new_user)
 
