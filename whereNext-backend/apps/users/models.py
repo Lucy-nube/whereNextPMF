@@ -15,6 +15,8 @@ class User(AbstractUser):
 # =========================
 # PROFILE (perfil editable)
 # =========================
+from cloudinary.models import CloudinaryField
+
 class Profile(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -23,12 +25,14 @@ class Profile(models.Model):
     )
 
     bio = models.TextField(blank=True)
-    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+
+    avatar = CloudinaryField(
+        "avatar",
+        blank=True,
+        null=True
+    )
+
     is_private = models.BooleanField(default=False)
-
-    def __str__(self):
-        return f"Perfil de {self.user.username}"
-
 
 # =========================
 # TRIP INVITES (invitaciones a lugares)

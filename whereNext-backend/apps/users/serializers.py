@@ -27,21 +27,21 @@ class UserSerializer(serializers.ModelSerializer):
     
 
 class ProfileSerializer(serializers.ModelSerializer):
-    avatar = serializers.SerializerMethodField()
+    avatar = serializers.ImageField(required=False)
 
     class Meta:
         model = Profile
         fields = ["bio", "avatar", "is_private"]
 
-    def get_avatar(self, obj):
-     request = self.context.get("request")
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
 
-     if obj.avatar:
-         url = obj.avatar.url
-         return request.build_absolute_uri(url) if request else url
+        request = self.context.get("request")
 
-     return None
- 
+        if data["avatar"] and request:
+            data["avatar"] = request.build_absolute_uri(data["avatar"])
+
+        return data
 
 class PublicUserSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()

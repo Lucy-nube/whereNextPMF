@@ -20,7 +20,7 @@ urlpatterns = [
     path("search/", UsersearchView.as_view(), name="user-search"),
     path("<int:user_id>/", PublicUserView.as_view(), name="public-user"),
     path("register/", RegisterView.as_view(), name="user-register"), 
-     path("profile/", ProfileMeView.as_view(), name="profile"),
+    path("profile/", ProfileMeView.as_view(), name="profile"),
 
 
 ]

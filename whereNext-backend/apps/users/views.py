@@ -39,41 +39,68 @@ class EmailOrUsernameTokenObtainPairView(TokenObtainPairView):
 # PERFIL /api/me/
 # =========================================================
 class MeView(APIView):
-    authentication_classes = [JWTAuthentication] 
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        serializer = UserSerializer(request.user)
-        return Response(serializer.data)
+        user = request.user
+        profile, _ = Profile.objects.get_or_create(user=user)
+
+        avatar_url = None
+        if profile.avatar:
+            try:
+                avatar_url = request.build_absolute_uri(profile.avatar.url)
+            except Exception:
+                # Cloudinary u otro storage que ya devuelve URL absoluta
+                avatar_url = profile.avatar.url
+
+        return Response({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "bio": profile.bio or "",
+            "avatar": avatar_url,
+            "is_private": profile.is_private,
+        })
 
     def put(self, request):
         serializer = UserSerializer(
             request.user,
             data=request.data,
-            partial=True
+            partial=True,
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
-
+    
+    
 
 
 class ProfileMeView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    def get(self, request):
+    def post(self, request):
         profile, _ = Profile.objects.get_or_create(user=request.user)
-        return Response(ProfileSerializer(profile).data)
 
-    def patch(self, request):
-        profile, _ = Profile.objects.get_or_create(user=request.user)
-        serializer = ProfileSerializer(profile, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        # texto
+        profile.bio = request.data.get("bio", profile.bio)
+        profile.is_private = request.data.get("is_private", profile.is_private)
 
+        # imagen
+        if request.FILES.get("avatar"):
+            profile.avatar = request.FILES["avatar"]
 
+        profile.save()
+
+        print("FILES:", request.FILES)
+        print("DATA:", request.data)
+
+        return Response({
+            "bio": profile.bio,
+            "avatar": profile.avatar.url if profile.avatar else None,
+            "is_private": profile.is_private,
+        })
 
 # =========================================================
 # PERFIL PÚBLICO (SIN LÓGICA SOCIAL)
