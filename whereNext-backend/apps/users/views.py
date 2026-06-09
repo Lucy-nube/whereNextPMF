@@ -75,26 +75,24 @@ class MeView(APIView):
     
     
 
-
 class ProfileMeView(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    def post(self, request):
+    def patch(self, request):
         profile, _ = Profile.objects.get_or_create(user=request.user)
 
-        # texto
+        print("FILES:", request.FILES)
+        print("DATA:", request.data)
+
         profile.bio = request.data.get("bio", profile.bio)
         profile.is_private = request.data.get("is_private", profile.is_private)
 
-        # imagen
         if request.FILES.get("avatar"):
             profile.avatar = request.FILES["avatar"]
 
         profile.save()
-
-        print("FILES:", request.FILES)
-        print("DATA:", request.data)
 
         return Response({
             "bio": profile.bio,
