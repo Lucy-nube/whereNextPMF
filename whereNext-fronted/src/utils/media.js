@@ -1,14 +1,13 @@
-const BASE_URL = "https://wherenextpmf.onrender.com";
-
 export const getMediaUrl = (path) => {
   if (!path) return "/default-avatar.png";
 
-  // Si ya es una URL completa (Cloudinary), devuélvela tal cual
+  if (typeof path !== "string") return "/default-avatar.png";
+
+  // Si ya es URL completa (Cloudinary o externa)
   if (path.startsWith("http")) return path;
 
-  // Si es una ruta relativa (solo pasará con datos antiguos)
-  let clean = path.replace(/^\/+/, "");
-  clean = clean.replace(/^media\/media\//, "media/");
+  // Si por alguna razón llega una ruta local vieja (legacy Django)
+  const clean = path.replace(/^\/+/, "");
 
-  return `${BASE_URL}/${clean}`;
+  return `https://wherenextpmf.onrender.com/${clean}`;
 };

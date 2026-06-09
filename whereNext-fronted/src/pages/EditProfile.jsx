@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { getMediaUrl } from "../utils/media";
+import { useAuth } from "../context/AuthContext";
 import "../styles/Profile.css";
 
 export default function EditProfile() {
@@ -8,6 +10,18 @@ export default function EditProfile() {
   const [avatar, setAvatar] = useState(null);
   const [preview, setPreview] = useState(null);
   const [bio, setBio] = useState("");
+  const { user, setUser } = useAuth();
+
+
+  // Cargar datos actuales del usuario
+  useEffect(() => {
+    async function loadUser() {
+      const res = await API.get("users/me/");
+      setBio(res.data.bio || "");
+      setPreview(getMediaUrl(res.data.avatar));
+    }
+    loadUser();
+  }, []);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -19,12 +33,17 @@ export default function EditProfile() {
 
   const handleSave = async () => {
     const formData = new FormData();
-    if (avatar) formData.append("avatar", avatar);
+
+    console.log("AVATAR:", avatar);
+
     formData.append("bio", bio);
+    formData.append("avatar", avatar);
+
+    for (let pair of formData.entries()) {
+      console.log("FORMDATA ENTRY:", pair[0], pair[1]);
+    }
 
     await API.patch("users/profile/", formData);
-
-    navigate("/profile");
   };
 
   return (
@@ -34,18 +53,20 @@ export default function EditProfile() {
         <h1>Editar perfil</h1>
 
         <div className="avatar-preview">
-          <img 
+          <img
             src={preview || "/default-avatar.png"}
-            alt="preview" 
+            alt="preview"
           />
         </div>
 
         <label>Foto de perfil</label>
-        <input 
-          type="file" 
+        <input
+          type="file"
+          name="avatar"
           accept="image/*"
           onChange={handleAvatarChange}
         />
+
 
         <label>Biografía</label>
         <textarea
