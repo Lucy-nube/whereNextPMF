@@ -32,19 +32,35 @@ export default function EditProfile() {
   };
 
   const handleSave = async () => {
-    const formData = new FormData();
+  const formData = new FormData();
 
-    console.log("AVATAR:", avatar);
+  console.log("AVATAR:", avatar);
 
-    formData.append("bio", bio);
+  formData.append("bio", bio);
+
+  if (avatar) {
     formData.append("avatar", avatar);
+  }
 
-    for (let pair of formData.entries()) {
-      console.log("FORMDATA ENTRY:", pair[0], pair[1]);
-    }
+  for (let pair of formData.entries()) {
+    console.log("FORMDATA ENTRY:", pair[0], pair[1]);
+  }
 
-    await API.patch("users/profile/", formData);
-  };
+  try {
+    const res = await API.patch("users/profile/", formData);
+
+    console.log("RESPONSE:", res.data);
+
+    // 🔥 refrescar usuario
+    const updated = await API.get("users/me/");
+    setUser(updated.data);
+
+    navigate("/profile");
+
+  } catch (err) {
+    console.log("ERROR:", err.response?.data || err.message);
+  }
+};
 
   return (
     <div className="edit-profile-page">

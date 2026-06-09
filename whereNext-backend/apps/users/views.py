@@ -80,11 +80,17 @@ class ProfileMeView(APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
-    def patch(self, request):
+    def get(self, request):
         profile, _ = Profile.objects.get_or_create(user=request.user)
 
-        print("FILES:", request.FILES)
-        print("DATA:", request.data)
+        return Response({
+            "bio": profile.bio,
+            "avatar": request.build_absolute_uri(profile.avatar.url) if profile.avatar else None,
+            "is_private": profile.is_private,
+        })
+
+    def patch(self, request):
+        profile, _ = Profile.objects.get_or_create(user=request.user)
 
         profile.bio = request.data.get("bio", profile.bio)
         profile.is_private = request.data.get("is_private", profile.is_private)
@@ -96,7 +102,7 @@ class ProfileMeView(APIView):
 
         return Response({
             "bio": profile.bio,
-            "avatar": profile.avatar.url if profile.avatar else None,
+            "avatar": request.build_absolute_uri(profile.avatar.url) if profile.avatar else None,
             "is_private": profile.is_private,
         })
 
