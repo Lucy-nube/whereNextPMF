@@ -9,7 +9,7 @@ import environ
 import os
 import dj_database_url
 from dotenv import load_dotenv
-
+load_dotenv()
 # =========================
 # BASE
 # =========================
@@ -38,7 +38,7 @@ cloudinary.config(
 # =========================
 # SECURITY
 # =========================
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
@@ -124,18 +124,33 @@ TEMPLATES = [
 
 
 
-DATABASES = {
-    "default": dj_database_url.config(
-        default="sqlite:///db.sqlite3",
-        conn_max_age=600,
-        ssl_require=True,
-    )
-}
+
+
+if DEBUG:
+    # LOCAL → SQLite
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+else:
+    # PRODUCCIÓN → PostgreSQL
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+
 # ========================
 # AUTH
 # =========================
 AUTH_USER_MODEL = "users.User"
-
+SECRET_KEY = os.getenv(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-dev-key"
+)
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]

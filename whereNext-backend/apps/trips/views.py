@@ -4,10 +4,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.permissions import AllowAny
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.exceptions import PermissionDenied
 from django.contrib.auth.models import User
-
+import cloudinary.uploader
 
 from django.db import models
 from django.db.models import Q
@@ -62,6 +63,9 @@ def give_mood_stamp(user, mood):
 # =========================================================
 # TRIP VIEWSET 
 # =========================================================
+# =========================================================
+# TRIP VIEWSET 
+# =========================================================
 class TripViewSet(viewsets.ModelViewSet):
     serializer_class = TripSerializer
     authentication_classes = [JWTAuthentication]
@@ -98,16 +102,22 @@ class TripViewSet(viewsets.ModelViewSet):
         caption = request.data.get("caption", "")
 
         if not image:
-            return Response({"error": "No image provided"}, status=400)
+            return Response({"error": "No se envió ninguna imagen."},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         photo = TripPhoto.objects.create(
             trip=trip,
-            image=image,  # <-- Cloudinary se activa AQUÍ
+            image=image,
             caption=caption
         )
 
-        return Response(TripPhotoSerializer(photo).data, status=201)
-    
+        return Response({
+            "id": photo.id,
+            "image": photo.image.url,   
+            "caption": photo.caption,
+            "created_at": photo.created_at
+        }, status=status.HTTP_201_CREATED)
+
     # ============================================================
     # 🧭 CREAR VIAJE + INVITACIONES + SELLOS
     # ============================================================
@@ -251,9 +261,7 @@ class TripViewSet(viewsets.ModelViewSet):
 
 
 
-# =========================================================
-# TRIP PLACE VIEWSET
-# =========================================================
+
 class TripPlaceViewSet(viewsets.ModelViewSet):
     serializer_class = TripPlaceSerializer
     permission_classes = [IsAuthenticated]
@@ -531,15 +539,13 @@ class TripSuggestionsView(APIView):
 
 
 
+
 class TripPhotoViewSet(ModelViewSet):
     queryset = TripPhoto.objects.all()
     serializer_class = TripPhotoSerializer
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return TripPhoto.objects.filter(trip__owner=self.request.user)
-
     def perform_destroy(self, instance):
+        # Esto dispara mi signal y borra el archivo físico
         instance.delete()
-

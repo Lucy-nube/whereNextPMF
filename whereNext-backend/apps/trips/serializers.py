@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator
 from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework import status
+from cloudinary.models import CloudinaryField
 
 
 from apps.places.models import Place
@@ -153,15 +154,20 @@ class TripPlaceSerializer(serializers.ModelSerializer):
         return instance
 
 
-
 class TripPhotoSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    
+
     class Meta:
         model = TripPhoto
         fields = ["id", "trip", "image", "caption", "created_at"]
         read_only_fields = ["trip", "created_at"]
 
-
-
+    def get_image(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
+    
 class TripSerializer(serializers.ModelSerializer):
     trip_places = TripPlaceSerializer(many=True, required=False)
     photos = serializers.SerializerMethodField()
@@ -236,7 +242,15 @@ class TripSerializer(serializers.ModelSerializer):
     # FOTOS
     # ============================================================
     def get_photos(self, obj):
-     return TripPhotoSerializer(obj.photos.all(), many=True, context=self.context).data
+        return [
+            {
+                "id": p.id,
+                "image": p.image.url if p.image else None,
+                "caption": p.caption,
+                "created_at": p.created_at
+            }
+            for p in obj.photos.all()
+        ]
  
     def get_liked_by_me(self, obj):
         user = self.context["request"].user
