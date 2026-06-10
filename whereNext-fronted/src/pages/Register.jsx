@@ -38,7 +38,7 @@ export default function Register() {
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
 
-      window.location.href = "/explore";
+      navigate("/explore");
     } catch (err) {
       const serverMsg = err.response?.data?.error || "Fallo en los datos de aduana del pasaporte.";
       setError(serverMsg);

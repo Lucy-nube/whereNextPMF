@@ -5,7 +5,6 @@ import API from "../services/api";
 import TripPhotoUpload from "../components/trips/TripphotoUpload";
 import TripSuggestions from "../components/trips/TripSuggestions";
 import CompanionsModal from "../components/trips/CompanionsModal";
-import { getMediaUrl } from "../utils/media";
 import "/src/styles/TripDetails.css";
 
 export default function TripDetails() {
@@ -257,7 +256,11 @@ export default function TripDetails() {
       </div>
     );
   }
-
+  
+  const fetchTrip = async (id) => {
+  const res = await API.get(`/trips/${id}/`);
+  return res.data;
+};
 
   return (
     <div className="trip-details-view">
@@ -276,7 +279,7 @@ export default function TripDetails() {
           {isEditing ? (
             <div className="td-edit-input-group">
               <input
-                value={editTitle|| ""}
+                value={editTitle || ""}
                 onChange={(e) => setEditTitle(e.target.value)}
                 className="td-edit-input"
               />
@@ -609,22 +612,29 @@ export default function TripDetails() {
           {trip.photos?.length ? (
             trip.photos
               .filter((p) => p && p.image)
-              .map((p) => (
-                <div key={p.id} className="td-photo-item">
-                  <img
-                    src={getMediaUrl(p.image)}
-                    className="td-gallery-image"
-                    alt="Recuerdo"
-                  />
-                  <button
-                    type="button"
-                    className="td-photo-delete-btn"
-                    onClick={() => setPhotoToDelete(p.id)}
-                  >
-                    🗑️
-                  </button>
-                </div>
-              ))
+              .map((p) => {
+                console.log("PHOTO:", p);
+                console.log("IMAGE:", p.image);
+                console.log("FINAL URL:", (p.image));
+                console.log("TRIP PHOTOS RAW:", trip.photos);
+
+                return (
+                  <div key={p.id} className="td-photo-item">
+                    <img
+                      src={p.image}
+                      className="td-gallery-image"
+                      alt="Recuerdo"
+                    />
+                    <button
+                      type="button"
+                      className="td-photo-delete-btn"
+                      onClick={() => setPhotoToDelete(p.id)}
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                );
+              })
           ) : (
             <p className="td-empty-gallery-msg">Aún no hay fotos.</p>
           )}
@@ -680,7 +690,7 @@ export default function TripDetails() {
               setSelectedFriend(f);
 
               setSentInvites((prev) => [...prev, invite]); // 🔥 CLAVE
-             
+
 
               showToast(`📨 Invitación enviada a @${f.username}`);
 

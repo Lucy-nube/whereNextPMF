@@ -2,6 +2,7 @@ import { useState } from "react";
 import API from "../../services/api";
 import "../../styles/TripDetails.css";
 
+
 export default function TripPhotoUpload({ tripId, onUploaded, currentPhotos = [] }) {
   const [image, setImage] = useState(null);
   const [caption, setCaption] = useState("");
@@ -18,6 +19,7 @@ export default function TripPhotoUpload({ tripId, onUploaded, currentPhotos = []
     e.preventDefault();
 
     if (currentPhotos.length >= 5) {
+      console.log("currentPhotos:", currentPhotos);
       showToast("📸 Solo puedes subir hasta 5 fotos por viaje.");
       return;
     }
@@ -115,7 +117,6 @@ export default function TripPhotoUpload({ tripId, onUploaded, currentPhotos = []
               className="tpu-preview-image"
             />
           )}
-
           {/* BOTÓN */}
           <button
             type="submit"
