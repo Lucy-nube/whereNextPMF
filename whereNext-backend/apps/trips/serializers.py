@@ -153,12 +153,12 @@ class TripPlaceSerializer(serializers.ModelSerializer):
         return instance
 
 
+
 class TripPhotoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TripPhoto
         fields = ["id", "trip", "image", "caption", "created_at"]
         read_only_fields = ["trip", "created_at"]
-
 
 
 
@@ -236,16 +236,8 @@ class TripSerializer(serializers.ModelSerializer):
     # FOTOS
     # ============================================================
     def get_photos(self, obj):
-        return [
-            {
-                "id": p.id,
-                "image": p.image.url if p.image else None,
-                "caption": p.caption,
-                "created_at": p.created_at
-            }
-            for p in obj.photos.all()
-        ]
-
+     return TripPhotoSerializer(obj.photos.all(), many=True, context=self.context).data
+ 
     def get_liked_by_me(self, obj):
         user = self.context["request"].user
         return obj.likes.filter(id=user.id).exists()

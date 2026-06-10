@@ -8,7 +8,6 @@ from .views import (
     ExploreTripsView,
     FeedTripsView,
     TripDetailPublicView,
-    TripPhotoUploadView,
     TripSuggestionsView,
     TripPhotoViewSet
 )
@@ -22,7 +21,6 @@ urlpatterns = [
     path("explore/", ExploreTripsView.as_view(), name="trip-explore"),
     path("public/<int:trip_id>/", TripDetailPublicView.as_view(), name="trip-public-detail"),
 
-    path("<int:trip_id>/upload-photo/", TripPhotoUploadView.as_view(), name="trip-photo-upload"),
     path("<int:trip_id>/suggestions/", TripSuggestionsView.as_view(), name="trip-suggestions"),
 
     path("<int:trip_id>/places/", TripPlacesListCreateView.as_view(), name="trip-places-list-create"),

@@ -98,22 +98,16 @@ class TripViewSet(viewsets.ModelViewSet):
         caption = request.data.get("caption", "")
 
         if not image:
-            return Response({"error": "No se envió ninguna imagen."},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "No image provided"}, status=400)
 
         photo = TripPhoto.objects.create(
             trip=trip,
-            image=image,
+            image=image,  # <-- Cloudinary se activa AQUÍ
             caption=caption
         )
 
-        return Response({
-            "id": photo.id,
-            "image": photo.image.url,   
-            "caption": photo.caption,
-            "created_at": photo.created_at
-        }, status=status.HTTP_201_CREATED)
-
+        return Response(TripPhotoSerializer(photo).data, status=201)
+    
     # ============================================================
     # 🧭 CREAR VIAJE + INVITACIONES + SELLOS
     # ============================================================
@@ -426,7 +420,7 @@ class FeedTripsView(APIView):
 
 
 # =========================================================
-# 🌍 PUBLIC TRIP DETAILS VIEW (Restored & Optimized)
+# 🌍 PUBLIC TRIP DETAILS VIEW 
 # =========================================================
 class TripDetailPublicView(APIView):
     authentication_classes = [JWTAuthentication]
@@ -490,50 +484,8 @@ class TripDetailPublicView(APIView):
 
 
 # =========================================================
-# 📷 TRIP PHOTO UPLOAD VIEW (Restaurado y Optimizado)
-# =========================================================
-class TripPhotoUploadView(APIView):
-    authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
-    
-    # Inyecto los parsers estándar de Django para procesar flujos de archivos binarios (Multipart)
-    parser_classes = [MultiPartParser, FormParser]
-
-    def post(self, request, trip_id):
-        # Localizo el itinerario correspondiente
-        trip = get_object_or_404(Trip, id=trip_id)
-
-        # Filtro de seguridad perimetral de autoría
-        if trip.owner != request.user:
-            raise PermissionDenied("No puedes subir recuerdos multimedia al pasaporte de viaje de otra persona.")
-
-        image_file = request.FILES.get("image")
-        caption = request.data.get("caption", "").strip()
-
-        if not image_file:
-            return Response({"error": "No se proporcionó ninguna imagen válida o archivo binario"}, status=400)
-
-        # Creo el registro en la base de datos SQLite mapeado con mi modelo real
-        photo = TripPhoto.objects.create(
-            trip=trip,
-            image=image_file,
-            caption=caption
-        )
-
-        return Response({
-            "id": photo.id,
-            "image": photo.image.url,
-            "caption": photo.caption,
-            "created_at": photo.created_at
-        }, status=status.HTTP_201_CREATED)
-
-
-
-
-# =========================================================
 # 🧭 TRIP SUGGESTIONS VIEW (Recomendaciones Inteligentes)
 # =========================================================
-
 
 
 class TripSuggestionsView(APIView):
@@ -585,6 +537,9 @@ class TripPhotoViewSet(ModelViewSet):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return TripPhoto.objects.filter(trip__owner=self.request.user)
+
     def perform_destroy(self, instance):
-        # Esto dispara mi signal y borra el archivo físico
         instance.delete()
+

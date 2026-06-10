@@ -1,6 +1,9 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.conf import settings
+from cloudinary.models import CloudinaryField
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 # ============================================================
 # MODELOS PRINCIPALES
@@ -110,6 +113,8 @@ class TripPlace(models.Model):
         return f"{self.place.name} in {self.trip.title}"
 
 
+
+
 class TripPhoto(models.Model):
     trip = models.ForeignKey(
         "trips.Trip",
@@ -117,21 +122,13 @@ class TripPhoto(models.Model):
         related_name="photos"
     )
 
-    image = models.ImageField(upload_to="trip_photos/")
+    image = CloudinaryField("image")  
     caption = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"Photo of {self.trip.title}"
-
 
 # ============================================================
 # SIGNALS PARA BORRAR ARCHIVOS FÍSICOS
 # ============================================================
-
-from django.db.models.signals import post_delete
-from django.dispatch import receiver
-
 #   Cuando se borra una foto → borrar archivo físico
 @receiver(post_delete, sender=TripPhoto)
 def delete_photo_file(sender, instance, **kwargs):
