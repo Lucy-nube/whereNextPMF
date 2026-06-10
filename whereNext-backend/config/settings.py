@@ -38,7 +38,7 @@ cloudinary.config(
 # =========================
 # SECURITY
 # =========================
-SECRET_KEY = os.environ.get("SECRET_KEY", "dev-key")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 DEBUG = False
 ALLOWED_HOSTS = ["*"]
 
@@ -124,12 +124,11 @@ TEMPLATES = [
 
 
 
-
 DATABASES = {
     "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        default="sqlite:///db.sqlite3",
         conn_max_age=600,
-        ssl_require=not DEBUG,
+        ssl_require=True,
     )
 }
 # ========================
