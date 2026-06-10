@@ -5,7 +5,6 @@ from datetime import timedelta
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-
 import environ
 
 # =========================
@@ -14,13 +13,17 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # =========================
-# ENV
+# ENV (SAFE PARA LOCAL + RENDER)
 # =========================
 env = environ.Env()
-environ.Env.read_env(BASE_DIR / ".env")
+
+# SOLO carga .env si existe (EVITA ERROR EN RENDER)
+env_file = BASE_DIR / ".env"
+if env_file.exists():
+    environ.Env.read_env(env_file)
 
 # =========================
-# CLOUDINARY SAFE INIT
+# CLOUDINARY (SAFE)
 # =========================
 cloudinary.config(
     cloud_name=env("CLOUDINARY_CLOUD_NAME", default=""),
@@ -41,7 +44,6 @@ ALLOWED_HOSTS = ["*"]
 # =========================
 INSTALLED_APPS = [
     "channels",
-
     "cloudinary_storage",
 
     "django.contrib.admin",
@@ -75,7 +77,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 
 # =========================
-# CHANNELS (DEV SAFE)
+# CHANNELS
 # =========================
 CHANNEL_LAYERS = {
     "default": {
@@ -118,7 +120,7 @@ TEMPLATES = [
 ]
 
 # =========================
-# DATABASE
+# DATABASE (ESTABLE)
 # =========================
 DATABASES = {
     "default": {
@@ -137,7 +139,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # =========================
-# REST
+# REST FRAMEWORK
 # =========================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -166,7 +168,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # =========================
-# STATIC (FIX RENDER)
+# STATIC (RENDER FIX)
 # =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -192,5 +194,3 @@ USE_TZ = True
 # META
 # =========================
 PROJECT_NAME = "whereNext"
-AUTHOR = "Lucy Esther De León Córporan"
-VERSION = "1.0.0"
