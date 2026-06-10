@@ -39,7 +39,7 @@ cloudinary.config(
 # SECURITY
 # =========================
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 # =========================
@@ -183,6 +183,9 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 
 # =========================
 # INTERNATIONALIZATION
