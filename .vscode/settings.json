@@ -1,0 +1,4 @@
+{
+  "python.envFile": "${workspaceFolder}/whereNext-backend/.env",
+  "python.terminal.useEnvFile": true
+}
