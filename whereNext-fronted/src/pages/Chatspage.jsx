@@ -32,7 +32,7 @@ export default function ChatPage() {
         const rooms = res.data || [];
         setChatRooms(rooms);
 
-        const activeRoom = rooms.find(r => String(r.room) === String(roomId));
+        const activeRoom = rooms.find(r => String(r.id) === String(roomId));
 
         if (activeRoom) {
           setReceiverId(activeRoom.friend.id);
@@ -75,7 +75,7 @@ export default function ChatPage() {
   // 3. WEBSOCKET ESTABLE
   // =========================================================
   useEffect(() => {
-    if (!roomId || !receiverId || loadingRooms || loadingMessages) return;
+    if (!roomId || loadingRooms) return;
 
     const token = localStorage.getItem("access");
 
@@ -84,12 +84,12 @@ export default function ChatPage() {
     }
 
     const wsUrl = `ws://localhost:8000/ws/chat/${roomId}/?token=${token}`;
-    socketRef.current = new WebSocket(wsUrl);
 
-    socketRef.current.onopen = () => {
-    };
+    const socket = new WebSocket(wsUrl);
+    socketRef.current = socket;
 
-    socketRef.current.onmessage = (event) => {
+
+    socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
 
       const normalizedMsg = {
@@ -103,16 +103,16 @@ export default function ChatPage() {
       setMessages((prev) => [...prev, normalizedMsg]);
     };
 
-    socketRef.current.onclose = () => {
-    };
-
     return () => {
       if (socketRef.current) {
         socketRef.current.close();
         socketRef.current = null;
       }
     };
-  }, [roomId, receiverId, loadingRooms, loadingMessages]);
+  }, [roomId, loadingRooms]);
+
+
+
 
 
   // =========================================================
@@ -144,7 +144,7 @@ export default function ChatPage() {
     if (e.key === "Enter") sendMessage();
   };
 
- 
+
   // =========================================================
   // RENDER
   // =========================================================

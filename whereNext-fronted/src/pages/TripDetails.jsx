@@ -130,13 +130,17 @@ export default function TripDetails() {
       fetchInvites();
     }
   }, [trip?.id]);
+  
 
   useEffect(() => {
     if (!trip) return;
 
+    // Si ya envié una invitación, NO pisar el estado
+    const alreadyInvited = sentInvites.length > 0;
+    if (alreadyInvited) return;
+
     const pending = trip.pending_invites?.[0]?.to_user;
 
-    // ⭐ Solo actualizar selectedFriend desde el viaje
     setSelectedFriend(
       trip.companions?.[0] ||
       trip.co_traveler ||
@@ -144,11 +148,11 @@ export default function TripDetails() {
       null
     );
 
-    // ⭐ NO pisar el tipo si estás editando
     if (!isEditing) {
       setEditTripType(trip.trip_type || "solo");
     }
-  }, [trip, isEditing]);
+  }, [trip, isEditing, sentInvites]);
+
 
 
 

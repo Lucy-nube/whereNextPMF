@@ -1,9 +1,10 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://wherenextpmf.onrender.com/api/",
- });
- API.interceptors.request.use((config) => {
+  baseURL: import.meta.env.VITE_API_URL,   
+});
+
+API.interceptors.request.use((config) => {
   const token = localStorage.getItem("access");
 
   if (token) {
@@ -13,7 +14,6 @@ const API = axios.create({
   const isFormData = config.data instanceof FormData;
 
   if (isFormData) {
-    // MUY IMPORTANTE: no tocar headers
     delete config.headers["Content-Type"];
   } else {
     config.headers["Content-Type"] = "application/json";
