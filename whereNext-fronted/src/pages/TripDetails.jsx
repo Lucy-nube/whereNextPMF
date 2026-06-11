@@ -5,6 +5,7 @@ import API from "../services/api";
 import TripPhotoUpload from "../components/trips/TripphotoUpload";
 import TripSuggestions from "../components/trips/TripSuggestions";
 import CompanionsModal from "../components/trips/CompanionsModal";
+import { getMediaUrl } from "../utils/media";
 import "/src/styles/TripDetails.css";
 
 export default function TripDetails() {
@@ -184,7 +185,9 @@ export default function TripDetails() {
   // =========================================================
   const deletePhoto = async (photoId) => {
     try {
-      await API.delete(`/trips/photos/${photoId}/`);
+      const response = await API.delete(`/trips/photos/${photoId}/`);
+
+      console.log("RAW RESPONSE:", response);
 
       setTrip((prev) => ({
         ...prev,
@@ -193,11 +196,11 @@ export default function TripDetails() {
 
       showToast("🗑️ Foto eliminada");
     } catch (err) {
-      console.error("Error al borrar la foto:", err);
-      showToast("❌ No se pudo borrar la foto");
+      console.error("ERROR FULL:", err);
+      console.error("STATUS:", err.response?.status);
+      console.error("DATA:", err.response?.data);
     }
   };
-
   // =========================================================
   // INVITACIONES
   // =========================================================
@@ -256,11 +259,11 @@ export default function TripDetails() {
       </div>
     );
   }
-  
+
   const fetchTrip = async (id) => {
-  const res = await API.get(`/trips/${id}/`);
-  return res.data;
-};
+    const res = await API.get(`/trips/${id}/`);
+    return res.data;
+  };
 
   return (
     <div className="trip-details-view">
@@ -621,10 +624,11 @@ export default function TripDetails() {
                 return (
                   <div key={p.id} className="td-photo-item">
                     <img
-                      src={p.image}
+                      src={getMediaUrl(p.image)}
                       className="td-gallery-image"
                       alt="Recuerdo"
                     />
+
                     <button
                       type="button"
                       className="td-photo-delete-btn"

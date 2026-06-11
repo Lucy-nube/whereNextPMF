@@ -109,21 +109,29 @@ function Navbar() {
   };
 
 
-  const handleFriendRequest = async (notif, action) => {
-    try {
-      // 1. Aceptar o rechazar la solicitud
-      await API.post(`companions/${action}/${notif.object_id}/`);
+ const handleFriendRequest = async (notif, action) => {
+  try {
+    // 1. Aceptar o rechazar
+    await API.post(`companions/${action}/${notif.object_id}/`);
 
-      // 2. Marcar la notificación como leída (todas) en el backend
-      await API.patch(`social/notifications/${notif.id}/mark_read/`);
+    // 2. Refrescar notificaciones reales desde el backend
+    const res = await API.get("social/notifications/");
+    const fresh = res.data || [];
 
-      // 3. Eliminarla del estado local
-      setNotifications(prev => prev.filter(n => n.id !== notif.id));
-
-    } catch (err) {
-      console.error("Error procesando solicitud de amistad:", err);
+    // 3. Buscar la notificación real por ID
+    const realNotif = fresh.find(n => n.id === notif.id);
+    if (realNotif) {
+      await API.patch(`social/notifications/${realNotif.id}/mark_read/`);
     }
-  };
+
+    // 4. Actualizar estado local
+    setNotifications(fresh);
+
+  } catch (err) {
+    console.error("Error procesando solicitud de amistad:", err);
+  }
+};
+
 
   const avatarUrl = getMediaUrl(user?.avatar, "/default-avatar.png");
 
