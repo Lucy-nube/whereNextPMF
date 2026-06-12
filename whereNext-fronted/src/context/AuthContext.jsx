@@ -60,7 +60,7 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const res = await API.get("/users/me/");
+        const res = await API.get("users/me/");
         setUser(res.data);
       } catch (err) {
         console.log("Token inválido, cerrando sesión");
