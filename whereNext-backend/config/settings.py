@@ -2,10 +2,10 @@ from pathlib import Path
 from datetime import timedelta
 import os
 import environ
+import dj_database_url
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-import dj_database_url
 
 # =========================
 # BASE
@@ -24,7 +24,12 @@ if env_file.exists():
 # SECURITY
 # =========================
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = ["*"]
+
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    ".onrender.com",
+]
 
 # =========================
 # CLOUDINARY
@@ -40,8 +45,7 @@ cloudinary.config(
 # APPS
 # =========================
 INSTALLED_APPS = [
-    "channels",
-    "cloudinary_storage",
+    "corsheaders",
 
     "django.contrib.admin",
     "django.contrib.auth",
@@ -50,35 +54,19 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
+
     "cloudinary",
+    "cloudinary_storage",
+
+    "channels",
 
     "apps.users",
     "apps.trips",
     "apps.places",
     "apps.social",
-
-    "apps.social.chats.apps.ChatsConfig",
-    "apps.social.companions",
-    "apps.social.notifications",
-    "apps.social.invites",
 ]
-
-# =========================
-# CORE
-# =========================
-ROOT_URLCONF = "config.urls"
-WSGI_APPLICATION = "config.wsgi.application"
-ASGI_APPLICATION = "config.asgi.application"
-
-# =========================
-# CHANNELS
-# =========================
-CHANNEL_LAYERS = {
-    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
-}
 
 # =========================
 # MIDDLEWARE
@@ -86,7 +74,8 @@ CHANNEL_LAYERS = {
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # solo afecta producción
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -94,6 +83,19 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
+# =========================
+# CORS (FRONTEND OK)
+# =========================
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+# =========================
+# URLS
+# =========================
+ROOT_URLCONF = "config.urls"
+WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
 
 # =========================
 # TEMPLATES
@@ -114,34 +116,24 @@ TEMPLATES = [
 ]
 
 # =========================
-# DATABASES
+# DATABASE (PROD SAFE)
 # =========================
-if DEBUG:
-    # LOCAL → SQLite
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
-else:
-    # PRODUCCIÓN → PostgreSQL
-    DATABASES = {
-        "default": dj_database_url.config(
-            default=os.environ.get("DATABASE_URL"),
-            conn_max_age=600,
-            ssl_require=True,
-        )
-    }
+DATABASES = {
+    "default": dj_database_url.config(
+        default=os.environ["DATABASE_URL"],
+        conn_max_age=600,
+        ssl_require=True,
+    )
+}
 
 # =========================
 # AUTH
 # =========================
 AUTH_USER_MODEL = "users.User"
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-dev-key")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-key")
 
 # =========================
-# REST FRAMEWORK
+# REST FRAMEWORK (API SAFE)
 # =========================
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -164,18 +156,13 @@ SIMPLE_JWT = {
 }
 
 # =========================
-# CORS
-# =========================
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
-
-# =========================
-# STATICFILES
+# STATICFILES (FIX RENDER + COLLECTSTATIC)
 # =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Cloudinary para media, Whitenoise para static
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -185,13 +172,15 @@ STORAGES = {
     },
 }
 
-STATICFILES_FINDERS = [
-    "django.contrib.staticfiles.finders.FileSystemFinder",
-    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-]
+# =========================
+# CHANNELS (DEV SIMPLE)
+# =========================
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
-import os
-os.makedirs(STATIC_ROOT, exist_ok=True)
 # =========================
 # INTERNATIONALIZATION
 # =========================
