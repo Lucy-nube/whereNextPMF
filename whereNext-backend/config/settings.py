@@ -1,29 +1,33 @@
 from pathlib import Path
 from datetime import timedelta
-
+import os
+import environ
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-import environ
-import os
 import dj_database_url
+
 # =========================
 # BASE
 # =========================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # =========================
-# ENV (SAFE PARA LOCAL + RENDER)
+# ENV
 # =========================
 env = environ.Env()
-
-# SOLO carga .env si existe (EVITA ERROR EN RENDER)
 env_file = BASE_DIR / ".env"
 if env_file.exists():
     environ.Env.read_env(env_file)
 
 # =========================
-# CLOUDINARY (SAFE)
+# SECURITY
+# =========================
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+ALLOWED_HOSTS = ["*"]
+
+# =========================
+# CLOUDINARY
 # =========================
 cloudinary.config(
     cloud_name=env("CLOUDINARY_CLOUD_NAME", default=""),
@@ -31,13 +35,6 @@ cloudinary.config(
     api_secret=env("CLOUDINARY_API_SECRET", default=""),
     secure=True,
 )
-
-# =========================
-# SECURITY
-# =========================
-
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = ["*"]
 
 # =========================
 # APPS
@@ -80,9 +77,7 @@ ASGI_APPLICATION = "config.asgi.application"
 # CHANNELS
 # =========================
 CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
+    "default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
 }
 
 # =========================
@@ -91,8 +86,7 @@ CHANNEL_LAYERS = {
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",
-
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # solo afecta producción
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -119,10 +113,9 @@ TEMPLATES = [
     },
 ]
 
-
-
-
-
+# =========================
+# DATABASES
+# =========================
 if DEBUG:
     # LOCAL → SQLite
     DATABASES = {
@@ -132,25 +125,20 @@ if DEBUG:
         }
     }
 else:
+    # PRODUCCIÓN → PostgreSQL
     DATABASES = {
         "default": dj_database_url.config(
             default=os.environ.get("DATABASE_URL"),
             conn_max_age=600,
-            ssl_require=True
+            ssl_require=True,
         )
     }
 
-# ========================
+# =========================
 # AUTH
 # =========================
 AUTH_USER_MODEL = "users.User"
-SECRET_KEY = os.getenv(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-dev-key"
-)
-AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
-]
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-dev-key")
 
 # =========================
 # REST FRAMEWORK
@@ -182,11 +170,12 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 # =========================
-# STATIC (RENDER FIX)
+# STATICFILES
 # =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# Cloudinary para media, Whitenoise para static
 STORAGES = {
     "default": {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
@@ -198,7 +187,6 @@ STORAGES = {
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
-
 # =========================
 # INTERNATIONALIZATION
 # =========================
@@ -207,7 +195,4 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# =========================
-# META
-# =========================
 PROJECT_NAME = "whereNext"
