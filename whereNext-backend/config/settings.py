@@ -120,10 +120,13 @@ TEMPLATES = [
 # =========================
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.environ["DATABASE_URL"],
+        default=os.environ.get("DATABASE_URL", None),
         conn_max_age=600,
-        ssl_require=True,
-    )
+        ssl_require=not DEBUG,
+    ) if not DEBUG and os.environ.get("DATABASE_URL") else {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
 }
 
 # =========================
