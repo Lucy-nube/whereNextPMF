@@ -1,5 +1,4 @@
 from pathlib import Path
-import os
 from datetime import timedelta
 
 import cloudinary
@@ -8,8 +7,6 @@ import cloudinary.api
 import environ
 import os
 import dj_database_url
-from dotenv import load_dotenv
-load_dotenv()
 # =========================
 # BASE
 # =========================
@@ -39,7 +36,7 @@ cloudinary.config(
 # SECURITY
 # =========================
 
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 ALLOWED_HOSTS = ["*"]
 
 # =========================
@@ -135,9 +132,9 @@ if DEBUG:
         }
     }
 else:
-    # PRODUCCIÓN → PostgreSQL
     DATABASES = {
         "default": dj_database_url.config(
+            default=os.environ.get("DATABASE_URL"),
             conn_max_age=600,
             ssl_require=True
         )
