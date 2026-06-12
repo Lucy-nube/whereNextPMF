@@ -41,6 +41,7 @@ export default function Register() {
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
       
+      setToken(res.data.access);
 
       navigate("/explore");
     } catch (err) {
