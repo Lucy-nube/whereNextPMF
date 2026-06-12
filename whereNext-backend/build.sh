@@ -2,7 +2,7 @@
 set -o errexit
 
 echo "📦 Moving into backend..."
-cd whereNext-backend
+
 
 echo "📦 Installing dependencies..."
 pip install -r requirements.txt
