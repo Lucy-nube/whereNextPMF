@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import API from "../services/api";
 import "../styles/Auth.css";
 
@@ -10,6 +11,8 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { setToken } = useAuth();
+
 
   //   CARRUSEL ANIMADO
   useEffect(() => {
@@ -37,6 +40,9 @@ export default function Register() {
 
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
+
+      setToken(res.data.access);
+
 
       navigate("/explore");
     } catch (err) {

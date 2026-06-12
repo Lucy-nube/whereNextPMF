@@ -109,28 +109,28 @@ function Navbar() {
   };
 
 
- const handleFriendRequest = async (notif, action) => {
-  try {
-    // 1. Aceptar o rechazar
-    await API.post(`companions/${action}/${notif.object_id}/`);
+  const handleFriendRequest = async (notif, action) => {
+    try {
+      // 1. Aceptar o rechazar
+      await API.post(`companions/${action}/${notif.object_id}/`);
 
-    // 2. Refrescar notificaciones reales desde el backend
-    const res = await API.get("social/notifications/");
-    const fresh = res.data || [];
+      // 2. Refrescar notificaciones reales desde el backend
+      const res = await API.get("social/notifications/");
+      const fresh = res.data || [];
 
-    // 3. Buscar la notificación real por ID
-    const realNotif = fresh.find(n => n.id === notif.id);
-    if (realNotif) {
-      await API.patch(`social/notifications/${realNotif.id}/mark_read/`);
+      // 3. Buscar la notificación real por ID
+      const realNotif = fresh.find(n => n.id === notif.id);
+      if (realNotif) {
+        await API.patch(`social/notifications/${realNotif.id}/mark_read/`);
+      }
+
+      // 4. Actualizar estado local
+      setNotifications(fresh);
+
+    } catch (err) {
+      console.error("Error procesando solicitud de amistad:", err);
     }
-
-    // 4. Actualizar estado local
-    setNotifications(fresh);
-
-  } catch (err) {
-    console.error("Error procesando solicitud de amistad:", err);
-  }
-};
+  };
 
 
   const avatarUrl = getMediaUrl(user?.avatar, "/default-avatar.png");
@@ -269,17 +269,22 @@ function Navbar() {
           }`}
       >
         <div className="sidebar-header-zone">
-          {isLoggedIn && (
-            <img
-              src={avatarUrl}
-              alt="passport"
-              className="sidebar-passport-pic sidebar-avatar-interactive"
-              onClick={() => {
-                navigate("/profile");
-                closePanels();
-              }}
-            />
-          )}
+          <div className="sidebar-header-zone">
+            {isLoggedIn && (
+              <img
+                src={avatarUrl}
+                alt="passport"
+                className="sidebar-passport-pic sidebar-avatar-interactive"
+                onClick={() => {
+                  navigate("/profile");
+                  closePanels();
+                }}
+                onError={(e) => {
+                  e.target.src = "/default-avatar.png";
+                }}
+              />
+            )}
+          </div>
           <h3>@{user?.username || "Explorer"}</h3>
           <span>TRVL-#{user?.id || "000"}</span>
         </div>

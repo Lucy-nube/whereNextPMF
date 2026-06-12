@@ -25,7 +25,7 @@
 
   background: rgba(15, 23, 42, 0.72);
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
   border-radius: 24px;
 
@@ -33,7 +33,7 @@
   -webkit-backdrop-filter: blur(18px);
 
   box-shadow:
-    0 12px 40px rgba(0,0,0,0.35);
+    0 12px 40px rgba(0, 0, 0, 0.35);
 
   z-index: 999;
 }
@@ -84,7 +84,7 @@
 
   cursor: pointer;
 
-  border: 2px solid rgba(255,255,255,0.12);
+  border: 2px solid rgba(255, 255, 255, 0.12);
 
   transition: all 0.25s ease;
 }
@@ -95,7 +95,7 @@
   border-color: #38bdf8;
 
   box-shadow:
-    0 0 18px rgba(56,189,248,0.35);
+    0 0 18px rgba(56, 189, 248, 0.35);
 }
 
 /* =========================================================
@@ -114,9 +114,9 @@
 
   border-radius: 16px;
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
 
   color: white;
 
@@ -128,9 +128,9 @@
 }
 
 .notif-bell:hover {
-  background: rgba(56,189,248,0.12);
+  background: rgba(56, 189, 248, 0.12);
 
-  border-color: rgba(56,189,248,0.3);
+  border-color: rgba(56, 189, 248, 0.3);
 
   transform: translateY(-1px);
 }
@@ -168,9 +168,9 @@
 
   width: 320px;
 
-  background: rgba(15,23,42,0.95);
+  background: rgba(15, 23, 42, 0.95);
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
   border-radius: 22px;
 
@@ -179,7 +179,7 @@
   backdrop-filter: blur(18px);
 
   box-shadow:
-    0 20px 50px rgba(0,0,0,0.45);
+    0 20px 50px rgba(0, 0, 0, 0.45);
 
   z-index: 999;
 }
@@ -198,9 +198,9 @@
 
   border-radius: 14px;
 
-  background: rgba(255,255,255,0.04);
+  background: rgba(255, 255, 255, 0.04);
 
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 
   margin-bottom: 10px;
 
@@ -210,15 +210,15 @@
 }
 
 .notif-item:hover {
-  background: rgba(56,189,248,0.08);
+  background: rgba(56, 189, 248, 0.08);
 
-  border-color: rgba(56,189,248,0.25);
+  border-color: rgba(56, 189, 248, 0.25);
 
   transform: translateY(-1px);
 }
 
 .notif-item span {
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
 
   font-size: 13px;
 
@@ -226,7 +226,7 @@
 }
 
 .no-notifs {
-  color: rgba(255,255,255,0.45);
+  color: rgba(255, 255, 255, 0.45);
 
   text-align: center;
 
@@ -248,9 +248,9 @@
 
   border-radius: 18px;
 
-  background: rgba(15,23,42,0.82);
+  background: rgba(15, 23, 42, 0.82);
 
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
   backdrop-filter: blur(18px);
 
@@ -272,10 +272,10 @@
 .ambient-scroll-trigger:hover {
   transform: scale(1.04);
 
-  border-color: rgba(56,189,248,0.25);
+  border-color: rgba(56, 189, 248, 0.25);
 
   box-shadow:
-    0 10px 30px rgba(56,189,248,0.15);
+    0 10px 30px rgba(56, 189, 248, 0.15);
 }
 
 /* =========================================================
@@ -299,8 +299,7 @@
 
 .trigger--active-close .line-top {
   transform:
-    translateY(8px)
-    rotate(45deg);
+    translateY(8px) rotate(45deg);
 }
 
 .trigger--active-close .line-mid {
@@ -309,17 +308,14 @@
 
 .trigger--active-close .line-bottom {
   transform:
-    translateY(-8px)
-    rotate(-45deg);
+    translateY(-8px) rotate(-45deg);
 }
 
 /* =========================================================
    SIDEBAR
    ========================================================= */
-
 .navigation-sidebar {
   position: fixed;
-
   top: 0;
   left: 0;
 
@@ -328,19 +324,13 @@
 
   padding: 120px 30px 30px;
 
-  background: rgba(15,23,42,0.92);
-
-  border-right: 1px solid rgba(255,255,255,0.08);
-
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-
   display: flex;
   flex-direction: column;
 
-  z-index: 1000;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 
-  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  z-index: 1000;
 }
 
 /* =========================================================
@@ -369,10 +359,10 @@
 
   margin-bottom: 18px;
 
-  border: 3px solid rgba(56,189,248,0.35);
+  border: 3px solid rgba(56, 189, 248, 0.35);
 
   box-shadow:
-    0 0 25px rgba(56,189,248,0.2);
+    0 0 25px rgba(56, 189, 248, 0.2);
 }
 
 .navigation-sidebar h3 {
@@ -385,7 +375,7 @@
 }
 
 .navigation-sidebar span {
-  color: rgba(255,255,255,0.45);
+  color: rgba(255, 255, 255, 0.45);
 
   font-size: 13px;
 
@@ -409,22 +399,22 @@
 
   text-decoration: none;
 
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
 
   font-size: 15px;
   font-weight: 700;
 
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
 
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 
   transition: all 0.25s ease;
 }
 
 .sidebar-links-stack a:hover {
-  background: rgba(56,189,248,0.12);
+  background: rgba(56, 189, 248, 0.12);
 
-  border-color: rgba(56,189,248,0.28);
+  border-color: rgba(56, 189, 248, 0.28);
 
   color: #38bdf8;
 
@@ -432,14 +422,14 @@
 }
 
 .sidebar-links-stack a.active {
-  background: rgba(56,189,248,0.14);
+  background: rgba(56, 189, 248, 0.14);
 
   border-color: #38bdf8;
 
   color: #38bdf8;
 
   box-shadow:
-    0 0 18px rgba(56,189,248,0.14);
+    0 0 18px rgba(56, 189, 248, 0.14);
 }
 
 /* =========================================================
@@ -460,11 +450,9 @@
   border-radius: 16px;
 
   background:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       #ef4444,
-      #dc2626
-    );
+      #dc2626);
 
   color: white;
 
@@ -480,23 +468,26 @@
   transform: translateY(-2px);
 
   box-shadow:
-    0 16px 35px rgba(239,68,68,0.35);
+    0 16px 35px rgba(239, 68, 68, 0.35);
 }
 
 .capsule-avatar {
   position: relative;
-  z-index: 20; /* Avatar siempre arriba */
+  z-index: 20;
+  /* Avatar siempre arriba */
 }
 
 .notif-wrapper {
   position: relative;
-  z-index: 5; /* Notificaciones por debajo */
+  z-index: 5;
+  /* Notificaciones por debajo */
 }
+
 /* =========================================================================
    💬 CONTADOR DE CHATS NO LEÍDOS — BURBUJA FLOTANTE NEÓN
    ========================================================================= */
 
-   .notif-actions {
+.notif-actions {
   display: flex;
   gap: 8px;
   margin-top: 6px;
@@ -534,12 +525,14 @@
   right: 24px !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
-  background: #ef4444 !important; /* Rojo vibrante de alerta de aduana */
+  background: #ef4444 !important;
+  /* Rojo vibrante de alerta de aduana */
   color: #ffffff !important;
   font-size: 11px !important;
   font-weight: 800 !important;
   padding: 2px 7px !important;
-  border-radius: 8px !important; /* Estilo píldora compacta */
+  border-radius: 8px !important;
+  /* Estilo píldora compacta */
   min-width: 14px !important;
   text-align: center !important;
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.4) !important;
@@ -547,9 +540,17 @@
 }
 
 @keyframes badgePulseAlpha {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
-  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
 
 
@@ -562,7 +563,7 @@
   position: fixed;
   inset: 0;
 
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
 
   backdrop-filter: blur(4px);
 
@@ -575,6 +576,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -620,4 +622,3 @@
   }
 
 }
-

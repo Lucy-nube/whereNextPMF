@@ -1,14 +1,17 @@
 export const getMediaUrl = (path) => {
-  if (!path) return "/default-avatar.png";
+  const fallback = "/default-avatar.png";
 
-  // Si ya es URL completa (Cloudinary o cualquier otra)
-  if (path.startsWith("http")) return path;
+  if (!path) return fallback;
 
-  // Si es una imagen vieja de Render
-  if (path.startsWith("/media/")) {
+  // URLs completas
+  if (typeof path === "string" && path.startsWith("http")) {
+    return path;
+  }
+
+  // media local (Render / Django)
+  if (typeof path === "string" && path.startsWith("/media/")) {
     return `https://wherenextpmf.onrender.com${path}`;
   }
 
-  // Si no es URL completa, ni /media/, devuélvela tal cual
-  return path;
+  return fallback;
 };
