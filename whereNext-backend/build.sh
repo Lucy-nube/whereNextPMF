@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 set -o errexit
 
-export DJANGO_SETTINGS_MODULE=config.settings
+echo "📦 Moving into backend..."
+cd whereNext-backend
 
-echo "Installing dependencies..."
+echo "📦 Installing dependencies..."
 pip install -r requirements.txt
 
-echo "Checking Django..."
-python manage.py check
+echo "🗄 Running migrations..."
+python manage.py migrate --noinput
 
-echo "Making migrations..."
-python manage.py migrate
+echo "📁 Creating static directory..."
+mkdir -p staticfiles
 
-echo "Collecting static..."
-python manage.py collectstatic --noinput || true
+echo "🎨 Collecting static..."
+python manage.py collectstatic --noinput
+
+echo "👤 Creating superuser (safe)..."
+python manage.py shell < config/create_superuser.py
