@@ -163,7 +163,7 @@ El sistema de mensajería en tiempo real está implementado mediante Django Chan
 
 La funcionalidad ha sido desarrollada, integrada y probada correctamente en entorno local utilizando un servidor ASGI.
 
-Debido a las limitaciones de la infraestructura utilizada para el despliegue gratuito y a la configuración necesaria para mantener conexiones WebSocket persistentes en producción, esta funcionalidad no se encuentra actualmente habilitada en la versión desplegada.
+El problema no es que Render no soporte WebSockets, sino que un chat con Django Channels necesita una infraestructura de producción más completa: servidor ASGI, conexión segura wss://, channel layer con Redis y manejo de reconexión. En el plan gratuito estas conexiones no son suficientemente estables para considerarlo producción.
 
 No obstante, todo el código, arquitectura y lógica de comunicación en tiempo real forman parte del proyecto y pueden ejecutarse localmente iniciando el servidor ASGI:
 
@@ -199,7 +199,7 @@ uvicorn config.asgi:application --reload --port 8000
 | Pillow | Imágenes |
 | SQLite | Desarrollo |
 | PostgreSQL | Producción |
-| Cloudinary | Almacenamiento multimedia |
+| Cloudinary | Almacenamiento de imágenes|
 
 ---
 
@@ -332,7 +332,7 @@ DEBUG=False
 ALLOWED_HOSTS=localhost,127.0.0.1
 ```
 
-> Render añade automáticamente `DATABASE_URL` para PostgreSQL.
+> Render genera la URL de PostgreSQL, pero debes añadir manualmente DATABASE_URL en el servicio backend copiándola desde el panel de la base de datos.
 
 ---
 
@@ -394,10 +394,9 @@ WS /ws/chat/:room_id/
 - JWT Authentication
 - Permisos por endpoint
 - Validaciones backend y frontend
-- Protección CSRF
 - Protección XSS
 - Hashing seguro de contraseñas
-- HTTPS en producción
+- La aplicación se sirve sobre HTTPS gracias a Render
 
 ---
 
