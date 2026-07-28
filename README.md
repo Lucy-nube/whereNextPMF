@@ -22,15 +22,15 @@ Toda la documentación del proyecto está disponible dentro del repositorio, en 
 
 ### 📘 Manual Técnico
 
-[Ver Manual Técnico](docs/manual_tecnico.pdf)
+[Ver Manual Técnico](docs/manual_tecnico.md)
 
 ### 📄 Manual de Usuario
 
-[Ver Manual de Usuario](docs/manual_usuario.pdf)
+[Ver Manual de Usuario](docs/manual_usuario.md)
 
 ### 🎬 Guion del Vídeo Demo
 
-[Ver Guion del Vídeo](docs/guion_video_demo.pdf)
+[Ver Guion del Vídeo](docs/video_script.md)
 
 ### 📄 Memoria completa del proyecto
 
